@@ -1,0 +1,127 @@
+'use client'
+
+import { useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+
+type NavActionsProps = {
+  email: string | null
+}
+
+export function NavActions({ email }: NavActionsProps) {
+  const supabase = useMemo(() => createClient(), [])
+  const router = useRouter()
+  const [sessionEmail, setSessionEmail] = useState<string | null>(email)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) return
+      setSessionEmail(data.session?.user?.email ?? null)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSessionEmail(session?.user?.email ?? null)
+      router.refresh()
+    })
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
+  }, [supabase, router])
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+
+    function handleEsc(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEsc)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEsc)
+    }
+  }, [])
+
+  async function handleSignOut() {
+    setLoading(true)
+    setError(null)
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+      return
+    }
+
+    setSessionEmail(null)
+    setLoading(false)
+    setMenuOpen(false)
+    router.replace('/')
+  }
+
+  if (!sessionEmail) {
+    return (
+      <Link
+        href="/auth"
+        className="text-base font-semibold text-black transition hover:text-zinc-700 dark:text-white dark:hover:text-zinc-200"
+      >
+        Sign Up / Sign In
+      </Link>
+    )
+  }
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        type="button"
+        onClick={() => setMenuOpen((open) => !open)}
+        aria-expanded={menuOpen}
+        aria-haspopup="menu"
+        className="flex items-center text-base font-semibold text-black transition hover:text-zinc-700 dark:text-white dark:hover:text-zinc-200"
+      >
+        <span className="max-w-[180px] truncate">{sessionEmail}</span>
+      </button>
+
+      {menuOpen ? (
+        <div className="absolute right-0 top-full z-20 mt-2 w-44 rounded-xl border border-zinc-200 bg-white py-2 shadow-lg ring-1 ring-black/5 dark:border-zinc-800 dark:bg-zinc-900">
+          <Link
+            href="/account"
+            onClick={() => setMenuOpen(false)}
+            className="block px-3 py-2 text-sm font-semibold text-black transition hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-800/80"
+          >
+            Account
+          </Link>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={loading}
+            className="flex w-full items-center px-3 py-2 text-left text-sm font-semibold text-black transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-70 dark:text-white dark:hover:bg-zinc-800/80"
+          >
+            {loading ? 'Signing out…' : 'Log out'}
+          </button>
+          {error ? (
+            <span className="block px-3 pt-1 text-xs font-medium text-red-600 dark:text-red-300">
+              {error}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  )
+}

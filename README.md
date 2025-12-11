@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Scoreboard + Supabase
 
-## Getting Started
+A minimal Next.js app that tests a Supabase connection by reading from a single `scoreboards` table (it now holds the scores themselves). The home page shows a green box when it can read from Supabase (and prints the latest scoreboard), or a red box when something is misconfigured.
 
-First, run the development server:
+## Quick start
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+1) Install deps (uses pnpm by default): `pnpm install`
+2) Copy `.env-sample` to `.env.local` and fill in your Supabase project URL + anon key.
+3) Configure Supabase (table, policy, optional seed) with the SQL below.
+4) Run the app: `pnpm dev` then open http://localhost:3000.
+
+Key pages:
+- `/` splash/landing
+- `/auth` sign in/sign up + forgot password
+- `/dashboard` authenticated view (redirects to `/auth` if signed out)
+
+## Required environment
+
+Set these in `.env.local` (never commit this file):
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+You can find both under Supabase Dashboard → Project Settings → API → API Keys (use **Publishable key**, not secret).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Supabase schema and policy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run this in the Supabase SQL editor to create the table the app expects:
 
-## Learn More
+```sql
+create table if not exists public.scoreboards (
+  id uuid primary key default gen_random_uuid(),
+  name text,
+  share_token text unique,
+  owner_id uuid not null references auth.users(id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  a_side text not null default 'A',
+  b_side text not null default 'B',
+  a_score int not null default 0,
+  b_score int not null default 0
+);
+```
 
-To learn more about Next.js, take a look at the following resources:
+Optional: seed one row so the UI has data to print:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```sql
+-- Replace the UUIDs/token below with real values from your project
+insert into public.scoreboards (id, name, owner_id, share_token, a_side, b_side, a_score, b_score)
+values (
+  gen_random_uuid(),
+  'Demo board',
+  '00000000-0000-0000-0000-000000000000',
+  'demo-share-token',
+  'Player A',
+  'Player B',
+  12,
+  8
+);
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+If you want realtime updates later, go to Replication → Realtime in Supabase and enable `scoreboards` so score/name changes stream to the dashboard and shared view.
 
-## Deploy on Vercel
+### Row level security
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Enable RLS and owner-scoped policies (plus a read-only policy for shared links):
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```sql
+alter table public.scoreboards enable row level security;
+
+create policy "Owners can select their scoreboards"
+on public.scoreboards
+for select
+using (auth.uid() = owner_id);
+
+create policy "Owners can update their scoreboards"
+on public.scoreboards
+for update
+using (auth.uid() = owner_id)
+with check (auth.uid() = owner_id);
+
+create policy "Owners can insert their scoreboards"
+on public.scoreboards
+for insert
+with check (auth.uid() = owner_id);
+
+create policy "Owners can delete their scoreboards"
+on public.scoreboards
+for delete
+using (auth.uid() = owner_id);
+
+-- Allow read-only access to boards that have a share token set
+create policy "Public select via share_token"
+on public.scoreboards
+for select
+using (share_token is not null);
+```
+
+If the table already exists, add the policies above. The app filters by `owner_id` for mutations, and shared links rely on the `share_token` to allow read-only access.
+
+## Email/password auth
+
+1) Ensure `.env.local` has your publishable key + URL.
+2) In Supabase Dashboard → Authentication → Providers → Email, leave defaults on (email + password enabled, email confirmations on).
+3) Add `http://localhost:3000/auth/update-password` to Auth → URL Configuration → Redirect URLs (used for password resets).
+4) Visit http://localhost:3000/auth to sign up or sign in. Confirmation emails go to the address you enter (use a real inbox).
+5) To reset a password, enter your email in the “Forgot password?” section. The link will land on `/auth/update-password`, where you can set a new password.
+6) The current user email is displayed once signed in; “Sign out” clears it.
+
+## What to expect
+
+- If the env vars are set and the policy allows reads, the page shows **Supabase Connection SUCCESS** with the latest row (most recent `updated_at`).
+- If the table is empty, you still get a green success state with a note that no records were returned.
+- If env vars or policies are wrong, you get a red error box that includes the underlying Supabase error.
+
+## Troubleshooting
+
+- Double-check `.env.local` matches your Supabase API settings and restart the dev server after editing it.
+- Ensure the RLS policy above exists and Realtime is enabled if you later add subscriptions.
+- If you see “JWT invalid” errors, rotate the anon key in Supabase and update `.env.local`.
