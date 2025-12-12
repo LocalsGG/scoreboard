@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -9,6 +10,14 @@ export const metadata: Metadata = {
   description:
     "Drop a single URL into OBS, Streamlabs, vMix, or Wirecast and keep every score updated in real time. Built for gamers, esports, and rec leagues.",
 };
+
+const splashImagePaddingTop =
+  process.env.NEXT_PUBLIC_SPLASH_IMAGE_PADDING_TOP ?? "0px";
+const heroScoreboardImages = [
+  "/scoreboard1.svg",
+  "/scoreboard2.svg",
+  "/scoreboard3.svg",
+];
 
 export default async function Home() {
   let session = null;
@@ -27,69 +36,49 @@ export default async function Home() {
   }
 
   return (
-    <main className="mx-auto flex min-h-full w-full max-w-6xl flex-col gap-12 px-6 py-16 font-sans animate-fade-in">
-      <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] animate-rise">
-        <div className="space-y-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-            Scoreboard.to
-          </p>
-          <h1 className="text-4xl font-black text-black dark:text-white sm:text-5xl">
-            Live score overlays for gamers, esports, and pickup leagues.
-          </h1>
-          <p className="text-lg text-zinc-700 dark:text-zinc-300">
-            Drop one URL into OBS, Streamlabs, vMix, Wirecast, or XSplit and run
-            a clean, broadcast-quality scoreboard with zero plugins or setup
-            headaches. Built for modern streams that need fast, reliable updates.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/auth"
-              className="inline-flex items-center justify-center rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_40px_-16px_rgba(0,0,0,0.45)] transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 hover:shadow-[0_18px_50px_-20px_rgba(0,0,0,0.5)] active:scale-95 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-            >
-              Launch scoreboard
-            </Link>
+    <main className="flex min-h-screen flex-col items-center justify-start gap-8 px-6 pb-12 pt-12 text-center font-sans">
+      <div className="flex w-full max-w-3xl flex-col items-center gap-4">
+        <h1 className="text-4xl font-black uppercase tracking-tight text-black dark:text-white sm:text-5xl">
+          Keep every stream's score in sync anywhere
+        </h1>
+      </div>
+      <div
+        className="relative w-screen max-w-none -mx-6 sm:-mx-12"
+        style={{ paddingTop: splashImagePaddingTop }}
+      >
+        <div className="relative overflow-hidden rounded-3xl bg-transparent">
+          <div className="splash-marquee-wrapper">
+            <div className="splash-marquee-track">
+              {[...heroScoreboardImages, ...heroScoreboardImages].map(
+                (src, index) => (
+                  <div key={`${src}-${index}`} className="splash-marquee-item">
+                    <Image
+                      src={src}
+                      alt="Scoreboard overlay"
+                      width={1280}
+                      height={720}
+                      priority={index === 0}
+                      className="h-auto w-full"
+                    />
+                  </div>
+                ),
+              )}
+            </div>
           </div>
-          <ul className="grid gap-3 text-sm text-zinc-700 dark:text-zinc-300 sm:grid-cols-2">
-            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950/60">
-              <p className="font-semibold text-black dark:text-white">
-                Setup in under 60 seconds
-              </p>
-              <p>Copy the browser source URL and go live—no downloads, no bloat.</p>
-            </li>
-            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950/60">
-              <p className="font-semibold text-black dark:text-white">
-                Broadcast-ready graphics
-              </p>
-              <p>Transparent overlays, smooth motion, and HD clarity on any budget.</p>
-            </li>
-            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950/60">
-              <p className="font-semibold text-black dark:text-white">
-                Works with every rig
-              </p>
-              <p>Compatible with OBS, Streamlabs, vMix, Wirecast, and XSplit.</p>
-            </li>
-            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950/60">
-              <p className="font-semibold text-black dark:text-white">
-                Flexible for every game
-              </p>
-              <p>Perfect for gaming streams, esports productions, and weekend sports.</p>
-            </li>
-          </ul>
         </div>
-        <div className="space-y-4 rounded-2xl border border-zinc-200/80 bg-white/80 p-8 shadow-lg transition-transform duration-200 ease-out hover:-translate-y-1 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-950/60">
-          <p className="text-base font-semibold text-black dark:text-white">
-            Go live with one link
-          </p>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Drop your overlay URL into your streaming software and keep every score
-            synced in real time—no plugins, no extra downloads.
-          </p>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Compatible with OBS Studio, Streamlabs, vMix, Wirecast, XSplit, and any
-            browser-source setup.
-          </p>
-        </div>
-      </section>
+      </div>
+      <div className="flex w-full max-w-3xl flex-col items-center gap-4">
+        <p className="max-w-3xl text-lg text-zinc-800 dark:text-zinc-200 sm:text-xl">
+          Share a live scoreboard link so family and fans can follow the game in real time. Use it on a stream, a TV, or
+          just phones on the sideline. No installs, runs from your browser.
+        </p>
+        <Link
+          href="/auth"
+          className="inline-flex w-full max-w-sm items-center justify-center rounded-xl bg-black px-7 py-3.5 text-base font-semibold uppercase tracking-wide text-white transition hover:-translate-y-0.5 hover:bg-zinc-900 dark:bg-white dark:text-black"
+        >
+          Create a Scoreboard for Free
+        </Link>
+      </div>
     </main>
   );
 }
