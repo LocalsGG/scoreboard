@@ -20,11 +20,14 @@ export default function SiteLayout({
       </header>
       <main className="flex-1">{children}</main>
       <footer className="border-t border-zinc-200/70 bg-white/65 px-6 py-6 text-sm text-zinc-600 dark:border-zinc-800/70 dark:bg-zinc-950/60 dark:text-zinc-400">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
-          <span className="font-semibold text-black dark:text-white">
-            Scoreboard
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-1 text-center">
+          <span className="text-xs font-semibold tracking-[0.3em] text-black dark:text-white">
+            LOCALS.GG
           </span>
-          <span>Supabase + Next.js</span>
+          <span className="text-black dark:text-white">© 2025 LOCALS.GG</span>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Modern tools for real-world gaming events and communities.
+          </p>
         </div>
       </footer>
     </div>

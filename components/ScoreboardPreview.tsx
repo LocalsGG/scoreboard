@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { SCOREBOARD_OVERLAY_IMAGE } from "@/lib/assets";
 import { formatDateTime } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/client";
 
@@ -136,7 +137,7 @@ export function ScoreboardPreview({
           </filter>
         </defs>
         <image
-          href="/scoreboard.svg"
+          href={SCOREBOARD_OVERLAY_IMAGE}
           x="0"
           y="0"
           width="1440"
