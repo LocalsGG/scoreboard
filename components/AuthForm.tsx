@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 type Mode = 'signin' | 'signup'
 type View = 'form' | 'reset'
+type OAuthProvider = 'google' | 'discord'
 
 interface Status {
   type: 'idle' | 'loading' | 'success' | 'error'
@@ -23,6 +25,8 @@ export function AuthForm() {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [view, setView] = useState<View>('form')
   const [resetStatus, setResetStatus] = useState<Status>({ type: 'idle' })
+  const [oauthStatus, setOauthStatus] = useState<Status>({ type: 'idle' })
+  const [oauthLoading, setOauthLoading] = useState<OAuthProvider | null>(null)
   const heroTitle =
     view === 'reset' ? 'Reset password' : mode === 'signin' ? 'Welcome back' : "Let's get started"
   const heroSubtitle =
@@ -127,11 +131,92 @@ export function AuthForm() {
     mode === 'signin' ? "Don't have an account?" : 'Already have an account?'
   const toggleAction = mode === 'signin' ? 'Create one' : 'Sign in'
 
+  async function handleOAuth(provider: OAuthProvider) {
+    setOauthStatus({ type: 'loading', message: `Redirecting to ${provider === 'google' ? 'Google' : 'Discord'}...` })
+    setOauthLoading(provider)
+    const redirectTo =
+      typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: redirectTo ? { redirectTo } : undefined,
+    })
+
+    if (error) {
+      setOauthStatus({ type: 'error', message: error.message })
+      setOauthLoading(null)
+      return
+    }
+
+    setOauthStatus({ type: 'success', message: 'Redirecting...' })
+  }
+
+  const oauthProviders: Array<{
+    id: OAuthProvider
+    label: string
+    icon: string
+    className: string
+    style?: CSSProperties
+  }> = [
+    {
+      id: 'google',
+      label: 'Continue with Google',
+      icon: '/google.svg',
+      className:
+        'border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-transparent dark:text-white dark:hover:bg-zinc-900/60',
+    },
+    {
+      id: 'discord',
+      label: 'Continue with Discord',
+      icon: '/discord.svg',
+      className: 'text-white shadow hover:brightness-110 dark:text-white',
+      style: { backgroundColor: '#5865F2' },
+    },
+  ]
+
   return (
     <div className="w-full max-w-xl space-y-6">
       <div className="space-y-2">
         <h1 className="text-4xl font-extrabold text-black dark:text-white">{heroTitle}</h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">{heroSubtitle}</p>
+      </div>
+
+      <div className="space-y-3">
+        {oauthProviders.map((provider) => (
+          <button
+            key={provider.id}
+            type="button"
+            onClick={() => {
+              if (oauthLoading) return
+              void handleOAuth(provider.id)
+            }}
+            disabled={Boolean(oauthLoading)}
+            className={`flex w-full items-center justify-center gap-3 rounded-lg px-4 py-2 text-sm font-semibold transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 ${provider.className}`}
+            style={provider.style}
+          >
+            <Image src={provider.icon} alt="" width={20} height={20} className="h-5 w-5" />
+            {provider.label}
+          </button>
+        ))}
+        {oauthStatus.type !== 'idle' && oauthStatus.message && (
+          <div
+            className={`rounded-lg px-4 py-3 text-sm font-medium ${
+              oauthStatus.type === 'success'
+                ? 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-200'
+                : oauthStatus.type === 'error'
+                ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-200'
+                : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200'
+            }`}
+          >
+            {oauthStatus.message}
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-4 text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">
+        <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+        Or email
+        <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
       </div>
 
       {view === 'form' ? (

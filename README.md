@@ -109,6 +109,24 @@ If the table already exists, add the policies above. The app filters by `owner_i
 5) To reset a password, enter your email in the “Forgot password?” section. The link will land on `/auth/update-password`, where you can set a new password.
 6) The current user email is displayed once signed in; “Sign out” clears it.
 
+## Google + Discord sign-in
+
+The `/auth` page now surfaces branded Google and Discord buttons that call `supabase.auth.signInWithOAuth`. To make them live:
+
+1. Auth → URL Configuration  
+   - Set **Site URL** to your dev/prod host (e.g. `http://localhost:3000` while testing).  
+   - Keep the `/auth/update-password` redirect from the email/password setup step. No extra redirect is required for OAuth because the app asks Supabase to send users back to `/dashboard`.
+2. Auth → Providers → **Google**  
+   - Create Google OAuth “Web application” credentials in the Google Cloud Console.  
+   - Authorized redirect URI must be `https://<YOUR-PROJECT-REF>.supabase.co/auth/v1/callback`.  
+   - Paste the client ID/secret into Supabase and toggle Google on.
+3. Auth → Providers → **Discord**  
+   - Create a Discord application at https://discord.com/developers.  
+   - Under OAuth2, add the same redirect URI `https://<YOUR-PROJECT-REF>.supabase.co/auth/v1/callback`.  
+   - Copy the client ID/secret into Supabase and enable the provider.
+
+Once those providers are toggled on, clicking either button in the UI will redirect users through the provider, land them back on `/dashboard`, and keep your session handling unchanged. If a provider is disabled, the form surfaces the Supabase error so nothing silently fails.
+
 ## What to expect
 
 - If the env vars are set and the policy allows reads, the page shows **Supabase Connection SUCCESS** with the latest row (most recent `updated_at`).
