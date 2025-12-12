@@ -27,8 +27,8 @@ export default async function Home() {
   }
 
   return (
-    <main className="mx-auto flex min-h-full w-full max-w-6xl flex-col gap-12 px-6 py-16 font-sans">
-      <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+    <main className="mx-auto flex min-h-full w-full max-w-6xl flex-col gap-12 px-6 py-16 font-sans animate-fade-in">
+      <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] animate-rise">
         <div className="space-y-6">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
             Scoreboard.to
@@ -44,31 +44,31 @@ export default async function Home() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="/auth"
-              className="inline-flex items-center justify-center rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="inline-flex items-center justify-center rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_40px_-16px_rgba(0,0,0,0.45)] transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 hover:shadow-[0_18px_50px_-20px_rgba(0,0,0,0.5)] active:scale-95 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
               Launch scoreboard
             </Link>
           </div>
           <ul className="grid gap-3 text-sm text-zinc-700 dark:text-zinc-300 sm:grid-cols-2">
-            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/60">
+            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950/60">
               <p className="font-semibold text-black dark:text-white">
                 Setup in under 60 seconds
               </p>
               <p>Copy the browser source URL and go live—no downloads, no bloat.</p>
             </li>
-            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/60">
+            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950/60">
               <p className="font-semibold text-black dark:text-white">
                 Broadcast-ready graphics
               </p>
               <p>Transparent overlays, smooth motion, and HD clarity on any budget.</p>
             </li>
-            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/60">
+            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950/60">
               <p className="font-semibold text-black dark:text-white">
                 Works with every rig
               </p>
               <p>Compatible with OBS, Streamlabs, vMix, Wirecast, and XSplit.</p>
             </li>
-            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/60">
+            <li className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950/60">
               <p className="font-semibold text-black dark:text-white">
                 Flexible for every game
               </p>
@@ -76,7 +76,7 @@ export default async function Home() {
             </li>
           </ul>
         </div>
-        <div className="space-y-4 rounded-2xl border border-zinc-200/80 bg-white/80 p-8 shadow-lg dark:border-zinc-800 dark:bg-zinc-950/60">
+        <div className="space-y-4 rounded-2xl border border-zinc-200/80 bg-white/80 p-8 shadow-lg transition-transform duration-200 ease-out hover:-translate-y-1 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-950/60">
           <p className="text-base font-semibold text-black dark:text-white">
             Go live with one link
           </p>

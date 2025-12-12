@@ -76,7 +76,7 @@ export default async function NewScoreboardPage() {
 
   return (
     <div className="flex min-h-full justify-center px-6 py-16 font-sans">
-      <main className="w-full max-w-5xl space-y-10">
+      <main className="w-full max-w-5xl space-y-10 animate-fade-in">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
@@ -91,13 +91,13 @@ export default async function NewScoreboardPage() {
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-black transition hover:border-zinc-400 hover:bg-white dark:border-zinc-700 dark:text-white dark:hover:border-zinc-600 dark:hover:bg-zinc-900/70"
+            className="inline-flex items-center justify-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-zinc-400 hover:bg-white active:scale-95 dark:border-zinc-700 dark:text-white dark:hover:border-zinc-600 dark:hover:bg-zinc-900/70"
           >
             Back to dashboard
           </Link>
         </div>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200/80 bg-white/70 p-9 dark:border-zinc-800 dark:bg-zinc-950/60">
+        <section className="space-y-6 rounded-2xl border border-zinc-200/80 bg-white/70 p-9 shadow-sm animate-rise dark:border-zinc-800 dark:bg-zinc-950/60">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
@@ -115,7 +115,7 @@ export default async function NewScoreboardPage() {
                 <input type="hidden" name="name" value={template.name} />
                 <button
                   type="submit"
-                  className="group flex h-full w-full flex-col justify-between rounded-xl border border-zinc-200/80 bg-white/70 p-6 text-left transition hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950/60"
+                  className="group flex h-full w-full flex-col justify-between rounded-xl border border-zinc-200/80 bg-white/70 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] dark:border-zinc-800 dark:bg-zinc-950/60"
                 >
                   <div className="space-y-2">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">

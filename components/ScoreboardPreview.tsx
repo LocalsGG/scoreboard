@@ -125,7 +125,7 @@ export function ScoreboardPreview({
   return (
     <svg
       viewBox="0 0 1440 810"
-      className="h-auto w-full"
+      className="h-auto w-full drop-shadow-xl transition-transform duration-300 ease-out hover:scale-[1.01]"
       role="img"
       aria-label={`Preview of ${scoreboardTitle}`}
       style={{ aspectRatio: "1440 / 810", background: "transparent" }}

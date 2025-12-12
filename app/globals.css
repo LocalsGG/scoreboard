@@ -33,6 +33,55 @@ body.share-overlay {
   background-image: none !important;
 }
 
+.skeleton-shimmer {
+  background: linear-gradient(110deg, rgba(244, 244, 245, 0.65), rgba(228, 228, 231, 0.45), rgba(244, 244, 245, 0.65));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.dark .skeleton-shimmer {
+  background: linear-gradient(110deg, rgba(63, 63, 70, 0.7), rgba(39, 39, 42, 0.6), rgba(63, 63, 70, 0.7));
+}
+
+.animate-fade-in {
+  animation: fade-in 320ms ease-out both;
+}
+
+.animate-rise {
+  animation: rise 360ms ease-out both;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

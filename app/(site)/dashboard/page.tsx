@@ -60,7 +60,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex min-h-full justify-center px-6 py-16 font-sans">
-      <main className="w-full max-w-5xl space-y-8">
+      <main className="w-full max-w-5xl space-y-8 animate-fade-in">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
@@ -73,14 +73,14 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard/new"
-              className="inline-flex items-center justify-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="inline-flex items-center justify-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_40px_-16px_rgba(0,0,0,0.45)] transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 hover:shadow-[0_18px_50px_-18px_rgba(0,0,0,0.5)] active:scale-95 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
               + New board
             </Link>
           </div>
         </div>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200/80 bg-white/70 p-9 dark:border-zinc-800 dark:bg-zinc-950/60">
+        <section className="space-y-6 rounded-2xl border border-zinc-200/80 bg-white/70 p-9 shadow-sm animate-rise dark:border-zinc-800 dark:bg-zinc-950/60">
           {error ? (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
               <p className="font-semibold">Couldn&apos;t load boards</p>
@@ -95,14 +95,20 @@ export default async function DashboardPage() {
                 const viewHref = `/scoreboard/${board.id}`;
 
                 return (
-                  <li key={board.id} className="flex flex-col gap-2 py-4 first:pt-0 last:pb-0">
+                  <li
+                    key={board.id}
+                    className="flex flex-col gap-2 py-4 transition-transform duration-150 ease-out first:pt-0 last:pb-0 hover:-translate-y-0.5"
+                  >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
                           Board
                         </p>
                         <h2 className="text-base font-semibold text-black dark:text-white">
-                          <Link href={viewHref} className="transition hover:text-zinc-700 dark:hover:text-zinc-200">
+                          <Link
+                            href={viewHref}
+                            className="transition-colors duration-150 hover:text-zinc-700 dark:hover:text-zinc-200"
+                          >
                             {label}
                           </Link>
                         </h2>
@@ -118,14 +124,14 @@ export default async function DashboardPage() {
                         </span>
                         <Link
                           href={viewHref}
-                          className="rounded-full px-3 py-1 text-xs font-semibold text-black transition hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-800/60"
+                          className="rounded-full px-3 py-1 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:bg-zinc-100 active:scale-95 dark:text-white dark:hover:bg-zinc-800/60"
                         >
                           Open
                         </Link>
                         <form action={deleteBoard.bind(null, board.id)}>
                           <button
                             type="submit"
-                            className="rounded-full px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-50 dark:text-red-200 dark:hover:bg-red-950/40"
+                            className="rounded-full px-3 py-1 text-xs font-semibold text-red-600 transition-all duration-150 hover:-translate-y-0.5 hover:bg-red-50 active:scale-95 dark:text-red-200 dark:hover:bg-red-950/40"
                           >
                             Delete
                           </button>
