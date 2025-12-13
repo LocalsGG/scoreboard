@@ -1,14 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #000000;
+  --background: #fdfdfc;
+  --foreground: #0b1220;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
@@ -16,14 +17,18 @@ body {
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
-  background-color: #ffffff;
+  background-color: #fdfdfc;
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.16) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.16) 1px, transparent 1px);
-  background-size: 40px 40px;
-  background-position: -1px -1px;
+    radial-gradient(circle at 14% 18%, rgba(56, 189, 248, 0.22), transparent 32%),
+    radial-gradient(circle at 82% 0%, rgba(251, 146, 60, 0.18), transparent 28%),
+    linear-gradient(rgba(12, 18, 36, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12, 18, 36, 0.08) 1px, transparent 1px);
+  background-size: auto, auto, 44px 44px, 44px 44px;
+  background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans);
+  letter-spacing: -0.01em;
 }
 
 html.share-overlay,
@@ -46,23 +51,32 @@ body.share-overlay {
   animation: rise 360ms ease-out both;
 }
 
+.animate-glow {
+  animation: glow 2600ms ease-in-out infinite alternate;
+}
+
 .splash-marquee-wrapper {
   overflow: hidden;
+  width: 100%;
 }
 
 .splash-marquee-track {
   display: flex;
   gap: 1.75rem;
   width: max-content;
+  min-width: 100%;
   animation: splash-marquee 32s linear infinite;
 }
 
 .splash-marquee-item {
   flex-shrink: 0;
-  width: clamp(400px, 60vw, 920px);
+  width: clamp(360px, 75vw, 100vw);
 }
 
 .splash-marquee-item img {
+  display: block;
+  width: 100%;
+  height: auto;
   animation: splash-float 6s ease-in-out infinite;
   background: transparent;
 }
@@ -72,6 +86,21 @@ body.share-overlay {
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow:
+      0 15px 45px rgba(59, 130, 246, 0.12),
+      0 8px 24px rgba(59, 130, 246, 0.08);
+    transform: translateY(0);
+  }
+  to {
+    box-shadow:
+      0 22px 65px rgba(251, 146, 60, 0.18),
+      0 12px 32px rgba(12, 18, 36, 0.12);
+    transform: translateY(-4px);
   }
 }
 
@@ -121,15 +150,17 @@ body.share-overlay {
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #ffffff;
-    --foreground: #000000;
+    --foreground: #0b1220;
   }
 
   body {
-    background-color: #ffffff;
+    background-color: #fdfdfc;
     background-image:
-      linear-gradient(rgba(0, 0, 0, 0.16) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.16) 1px, transparent 1px);
-    background-size: 40px 40px;
-    background-position: -1px -1px;
+      radial-gradient(circle at 14% 18%, rgba(56, 189, 248, 0.22), transparent 32%),
+      radial-gradient(circle at 82% 0%, rgba(251, 146, 60, 0.18), transparent 28%),
+      linear-gradient(rgba(12, 18, 36, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(12, 18, 36, 0.08) 1px, transparent 1px);
+    background-size: auto, auto, 44px 44px, 44px 44px;
+    background-position: 0 0, 0 0, -1px -1px, -1px -1px;
   }
 }

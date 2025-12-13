@@ -52,21 +52,19 @@ export default async function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start gap-8 px-6 pb-12 pt-10 text-center font-sans">
-        <div className="flex w-full max-w-3xl flex-col items-center gap-2">
-          <h1 className="text-4xl font-black uppercase tracking-tight text-black sm:text-5xl">
-            Keep every stream's score in sync anywhere
-            <span className="mt-2 block text-base font-semibold normal-case tracking-normal text-zinc-700 sm:text-lg">
-              Scoreboard overlay and sharing that just works
-            </span>
-          </h1>
-        </div>
-        <div
-          className="relative w-screen max-w-none -mx-6 sm:-mx-12"
-          style={{ paddingTop: splashImagePaddingTop }}
-        >
-          <div className="relative overflow-hidden rounded-3xl bg-transparent">
-            <div className="splash-marquee-wrapper">
+    <main className="relative isolate overflow-hidden">
+      <div className="mx-auto flex min-h-screen w-full max-w-none flex-col gap-16 px-6 pb-16 pt-12">
+        <section className="flex flex-col items-center gap-10">
+          <div className="space-y-6 text-center">
+            <h1 className="text-4xl font-black uppercase leading-tight tracking-tight text-black sm:text-5xl lg:text-6xl text-center">
+              Keep every stream&apos;s score in sync
+            </h1>
+            <p className="w-full text-base font-semibold text-zinc-700 text-center sm:text-lg">
+              Drop one URL into OBS, Streamlabs, vMix, or Wirecast and watch updates land in milliseconds.
+            </p>
+          </div>
+          <div className="relative w-full" style={{ paddingTop: splashImagePaddingTop }}>
+            <div className="splash-marquee-wrapper w-full overflow-hidden">
               <div className="splash-marquee-track">
                 {[...HERO_SCOREBOARD_IMAGES, ...HERO_SCOREBOARD_IMAGES].map(
                   (src, index) => (
@@ -85,38 +83,41 @@ export default async function Home() {
               </div>
             </div>
           </div>
-        </div>
-        <div className="flex w-full max-w-3xl flex-col items-center gap-3">
-          <p className="max-w-3xl text-lg text-black sm:text-xl">
-            Share a live scoreboard link so family and fans can follow the game in real time. Use it on a stream, a TV,
-            or just phones on the sideline. No installs, runs from your browser.
-          </p>
-          <Link
-            href="/auth"
-            className="inline-flex w-full max-w-sm items-center justify-center rounded-xl bg-black px-7 py-3.5 text-base font-semibold uppercase tracking-wide text-white transition hover:-translate-y-0.5 hover:bg-zinc-900"
-          >
-            Create a Scoreboard for Free
-          </Link>
-        </div>
-      <section className="w-screen max-w-none -mx-6 sm:-mx-12">
-        <div className="w-full bg-transparent px-6 py-12 sm:px-10">
-          <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 text-center">
-            <div>
+          <div className="space-y-6 text-center">
+            <p className="max-w-2xl text-lg text-zinc-800 text-center sm:text-xl">
+              Share a live scoreboard link so family and fans can follow the game in real time. Use it on a stream, a TV,
+              or just phones on the sideline. No installs, runs from your browser.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/auth"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-black via-black to-zinc-800 px-6 py-3 text-base font-semibold uppercase tracking-wide text-white shadow-[0_15px_45px_rgba(12,18,36,0.18)] transition duration-150 hover:-translate-y-0.5 active:scale-95"
+              >
+                Create a Scoreboard
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="w-full rounded-3xl border border-black/5 bg-white/80 px-6 py-10 shadow-xl shadow-black/10 backdrop-blur">
+          <div className="mx-auto flex w-full max-w-full flex-col gap-8 text-center">
+            <div className="space-y-2">
               <p className="text-sm font-semibold uppercase tracking-wide text-zinc-600">
                 Live overlay preview
               </p>
-              <h2 className="mt-2 text-3xl font-black text-black">
+              <h2 className="text-3xl font-black text-black sm:text-4xl">
                 Drop Scoreboard.to straight into OBS or Streamlabs
               </h2>
-              <p className="mt-3 text-base text-zinc-700">
+              <p className="text-base text-zinc-700 sm:text-lg">
                 Every overlay is a single browser source so you can drag, resize, and brand it just like any other scene.
+                Updates land instantly when you tweak scores from your phone or laptop.
               </p>
             </div>
-            <div className="grid gap-8 text-left sm:grid-cols-1 md:grid-cols-2">
+            <div className="grid gap-6 text-left lg:grid-cols-3 md:grid-cols-2">
               {OBS_OVERLAY_EXAMPLES.map((card, index) => (
                 <div
                   key={card.title}
-                  className="flex h-full flex-col gap-4 rounded-3xl border border-black/10 bg-transparent p-6 shadow-sm"
+                  className="flex h-full flex-col gap-4 rounded-2xl border border-black/8 bg-gradient-to-b from-white/90 to-white/70 p-5 shadow-[0_16px_45px_rgba(12,18,36,0.1)]"
                 >
                   <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-black">
                     <Image
@@ -135,8 +136,8 @@ export default async function Home() {
                   </div>
                 </div>
               ))}
-              <div className="flex h-full flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-black/20 bg-transparent p-6 text-center shadow-sm">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-black/10 bg-transparent text-3xl font-bold text-black">
+              <div className="flex h-full flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-black/15 bg-gradient-to-b from-white/90 to-white/70 p-6 text-center shadow-[0_16px_45px_rgba(12,18,36,0.08)]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-black/10 bg-white text-3xl font-bold text-black shadow-sm shadow-black/10">
                   +
                 </div>
                 <p className="text-base font-semibold text-black">
@@ -150,13 +151,13 @@ export default async function Home() {
                   >
                     contact@locals.gg
                   </a>{" "}
-                  and let us know which games you'd like us to support!
+                  and let us know which games you&apos;d like us to support!
                 </p>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
   );
 }

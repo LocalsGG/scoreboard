@@ -11,19 +11,26 @@ export async function Navbar() {
   const email = session?.user?.email ?? null;
 
   return (
-    <nav className="flex w-full items-center justify-between py-3 text-sm font-semibold">
+    <nav className="flex w-full items-center justify-between px-4 py-2 text-sm font-semibold">
       <Link
         href="/"
-        className="flex items-center gap-2 text-base font-extrabold tracking-tight text-black transition hover:text-zinc-700"
+        className="group flex items-center gap-3 rounded-full px-2 text-base font-extrabold tracking-tight text-black transition hover:text-zinc-700"
       >
         <img
           src="https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/logo.svg"
           alt="Scoreboard logo"
-          className="h-12 w-12"
+          className="h-10 w-10 transition-transform duration-150 group-hover:scale-105"
         />
-        Scoreboard
+        <span className="leading-none">
+          Scoreboard
+          <span className="block text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500">
+            Live overlays
+          </span>
+        </span>
       </Link>
-      <NavActions email={email} />
+      <div className="flex items-center gap-3">
+        <NavActions email={email} />
+      </div>
     </nav>
   );
 }

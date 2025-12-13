@@ -79,9 +79,9 @@ export function NavActions({ email }: NavActionsProps) {
     return (
       <Link
         href="/auth"
-        className="text-base font-semibold text-black transition-transform duration-150 hover:-translate-y-0.5 hover:text-zinc-700 active:scale-95"
+        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-black via-black to-zinc-800 px-4 py-2 text-base font-semibold text-white shadow-lg shadow-black/15 transition-transform duration-150 hover:-translate-y-0.5 active:scale-95"
       >
-        Sign Up / Sign In
+        Sign up / Sign in
       </Link>
     )
   }
@@ -93,17 +93,17 @@ export function NavActions({ email }: NavActionsProps) {
         onClick={() => setMenuOpen((open) => !open)}
         aria-expanded={menuOpen}
         aria-haspopup="menu"
-        className="flex items-center text-base font-semibold text-black transition-transform duration-150 hover:-translate-y-0.5 hover:text-zinc-700 active:scale-95"
+        className="flex items-center rounded-full border border-black/10 bg-white/80 px-3 py-1.5 text-base font-semibold text-black shadow-sm shadow-black/5 transition-transform duration-150 hover:-translate-y-0.5 hover:text-zinc-700 active:scale-95"
       >
         <span className="max-w-[180px] truncate">{sessionEmail}</span>
       </button>
 
       {menuOpen ? (
-        <div className="absolute right-0 top-full z-20 mt-2 w-44 rounded-xl border border-zinc-200 bg-white py-2 shadow-lg ring-1 ring-black/5 animate-rise">
+        <div className="absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border border-black/10 bg-white/90 py-2 shadow-xl shadow-black/10 ring-1 ring-black/5 backdrop-blur animate-rise">
           <Link
             href="/account"
             onClick={() => setMenuOpen(false)}
-            className="block px-3 py-2 text-sm font-semibold text-black transition-colors duration-150 hover:bg-zinc-100"
+            className="block px-3 py-2 text-sm font-semibold text-black transition-colors duration-150 hover:bg-zinc-100/80"
           >
             Account
           </Link>
@@ -111,7 +111,7 @@ export function NavActions({ email }: NavActionsProps) {
             type="button"
             onClick={handleSignOut}
             disabled={loading}
-            className="flex w-full items-center px-3 py-2 text-left text-sm font-semibold text-black transition-colors duration-150 hover:bg-zinc-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex w-full items-center px-3 py-2 text-left text-sm font-semibold text-black transition-colors duration-150 hover:bg-zinc-100/80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? 'Signing out…' : 'Log out'}
           </button>
