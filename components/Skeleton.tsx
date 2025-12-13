@@ -6,7 +6,7 @@ export function Skeleton({ className = "" }: SkeletonProps) {
   return (
     <div
       aria-hidden
-      className={`skeleton-shimmer rounded-lg bg-white ${className}`}
+      className={`skeleton-shimmer rounded-md bg-white ${className}`}
     />
   );
 }

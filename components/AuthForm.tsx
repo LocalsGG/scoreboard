@@ -191,7 +191,7 @@ export function AuthForm() {
               void handleOAuth(provider.id)
             }}
             disabled={Boolean(oauthLoading)}
-            className={`flex w-full items-center justify-center gap-3 rounded-lg px-4 py-2 text-sm font-semibold transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 ${provider.className}`}
+            className={`flex w-full items-center justify-center gap-3 rounded-md px-4 py-2 text-sm font-semibold transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 ${provider.className}`}
             style={provider.style}
           >
             <Image src={provider.icon} alt="" width={20} height={20} className="h-5 w-5" />
@@ -230,7 +230,7 @@ export function AuthForm() {
           <div className="space-y-2">
             <label className="block text-sm font-medium text-black">Email</label>
             <input
-              className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
+              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -243,7 +243,7 @@ export function AuthForm() {
           <div className="space-y-2">
             <label className="block text-sm font-medium text-black">Password</label>
             <input
-              className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
+              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -259,7 +259,7 @@ export function AuthForm() {
                 Confirm password
               </label>
               <input
-                className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
+                className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -296,7 +296,7 @@ export function AuthForm() {
           <button
             type="submit"
             disabled={status.type === 'loading'}
-            className="flex w-full items-center justify-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {status.type === 'loading' ? 'Working...' : cta}
           </button>
@@ -312,7 +312,7 @@ export function AuthForm() {
           <div className="space-y-2">
             <label className="block text-sm font-medium text-black">Email</label>
             <input
-              className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
+              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -336,7 +336,7 @@ export function AuthForm() {
             <button
               type="submit"
               disabled={resetStatus.type === 'loading'}
-              className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {resetStatus.type === 'loading' ? 'Sending...' : 'Send reset email'}
             </button>

@@ -50,7 +50,7 @@ export function ScoreAdjuster({ boardId, column, initialValue }: Props) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between rounded-lg border border-black/20 bg-white px-3 py-2 text-sm font-semibold text-black">
+      <div className="flex items-center justify-between rounded-md border border-black/20 bg-white px-3 py-2 text-sm font-semibold text-black">
         <button
           type="button"
           onClick={() => adjust(-1)}

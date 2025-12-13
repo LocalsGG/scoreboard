@@ -79,7 +79,7 @@ export function BoardNameEditor({
           broadcastLocal(e.target.value);
         }}
         placeholder={placeholder}
-        className={`w-full rounded-lg border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none transition-all duration-150 placeholder:text-black/50 hover:-translate-y-0.5 hover:border-black/40 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] active:scale-[0.99] ${inputAlignment}`}
+        className={`w-full rounded-md border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none transition-all duration-150 placeholder:text-black/50 hover:-translate-y-0.5 hover:border-black/40 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] active:scale-[0.99] ${inputAlignment}`}
       />
       <div className={`flex items-center gap-2 text-xs text-black ${helperAlignment}`}>
         {saving ? <span>Saving…</span> : <span>Saved</span>}

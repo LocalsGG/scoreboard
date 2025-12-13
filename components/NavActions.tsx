@@ -79,7 +79,7 @@ export function NavActions({ email }: NavActionsProps) {
     return (
       <Link
         href="/auth"
-        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-black via-black to-zinc-800 px-4 py-2 text-base font-semibold text-white shadow-lg shadow-black/15 transition-transform duration-150 hover:-translate-y-0.5 active:scale-95"
+        className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-black via-black to-zinc-800 px-4 py-2 text-base font-semibold text-white shadow-lg shadow-black/15 transition-transform duration-150 hover:-translate-y-0.5 active:scale-95"
       >
         Sign up / Sign in
       </Link>

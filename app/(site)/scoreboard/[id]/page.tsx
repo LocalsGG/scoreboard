@@ -4,11 +4,9 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { CopyButton } from "@/components/CopyButton";
 import { BoardNameEditor } from "@/components/BoardNameEditor";
-import { RealtimeScoreboardName } from "@/components/RealtimeScoreboardName";
 import { ScoreAdjuster } from "@/components/ScoreAdjuster";
 import { SideNameEditor } from "@/components/SideNameEditor";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
-import { formatDateTime } from "@/lib/dates";
 import { ensureShareToken, regenerateShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -137,7 +135,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
           <div className="flex justify-center">
             <Link
               href="/dashboard"
-              className="rounded-lg border border-black/20 px-4 py-2 text-sm font-semibold text-black transition hover:border-black/40 hover:bg-white"
+              className="rounded-md border border-black/20 px-4 py-2 text-sm font-semibold text-black transition hover:border-black/40 hover:bg-white"
             >
               Back to dashboard
             </Link>
@@ -147,8 +145,6 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
     );
   }
 
-  const createdLabel = formatDateTime(board.created_at);
-  const updatedLabel = formatDateTime(board.updated_at);
   const envBase = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
   const headerBase = await (async () => {
     try {
@@ -168,47 +164,81 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
 
   return (
     <div className="relative flex min-h-full justify-center px-6 py-16 font-sans">
-      <div className="pointer-events-none absolute inset-x-0 top-8 -z-10 h-72 bg-gradient-to-b from-sky-100/60 via-white to-transparent blur-3xl" />
       <main className="relative w-full max-w-6xl space-y-10 animate-fade-in">
-        <section className="space-y-4 rounded-3xl border border-black/5 bg-white/80 px-6 py-6 shadow-[0_22px_65px_rgba(12,18,36,0.12)] backdrop-blur">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="space-y-2">
-              <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-black">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.18)] animate-pulse" />
-                Scoreboard
-              </span>
-              <h1 className="text-4xl font-extrabold text-black">
-                <RealtimeScoreboardName boardId={board.id} initialName={board.name} />
-              </h1>
-              {createdLabel ? (
-                <p className="text-sm text-black">
-                  Created {createdLabel}
-                </p>
-              ) : null}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white px-3 py-1.5 text-xs font-semibold text-black shadow-sm shadow-black/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/30 hover:bg-white active:scale-95"
+          >
+            <span aria-hidden="true">←</span>
+            Back to dashboard
+          </Link>
+          {shareUrl ? (
+            <div className="relative flex-1">
+              <input
+                readOnly
+                value={shareUrl}
+                className="w-full truncate rounded-xl border border-black/15 bg-white px-3 py-2 pr-80 text-sm font-semibold text-black shadow-inner shadow-black/5"
+              />
+              <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+                <CopyButton
+                  value={shareUrl}
+                  label="Copy"
+                  className="rounded-md border border-black/20 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                />
+                <a
+                  href={shareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 justify-center rounded-md border border-black/20 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                  aria-label="Open link in new tab"
+                >
+                  <span>Open</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="h-4 w-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                    />
+                  </svg>
+                </a>
+                <form action={generateShareToken}>
+                  <input type="hidden" name="boardId" value={board.id} />
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                  >
+                    {board.share_token ? "Regenerate" : "Generate"}
+                  </button>
+                </form>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-black">
-                {board.id}
-              </span>
-              <Link
-                href="/dashboard"
-                className="rounded-full border border-black/15 bg-white px-3 py-1.5 text-xs font-semibold text-black shadow-sm shadow-black/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/30 hover:bg-white active:scale-95"
-              >
-                Back to dashboard
-              </Link>
+          ) : (
+            <div className="flex flex-1 items-center gap-2">
+              <p className="text-xs font-medium text-black">
+                Generate a token to create a shareable URL.
+              </p>
+              <form action={generateShareToken}>
+                <input type="hidden" name="boardId" value={board.id} />
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 py-2 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                >
+                  Generate
+                </button>
+              </form>
             </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 text-xs text-black">
-            <span className="rounded-full bg-black/5 px-3 py-1 font-semibold text-black">
-              Owner: {ownerName}
-            </span>
-            <span className="rounded-full bg-black/5 px-3 py-1 font-semibold text-black">
-              {updatedLabel ? `Updated ${updatedLabel}` : "Waiting for first update."}
-            </span>
-          </div>
-        </section>
+          )}
+        </div>
 
-        <section className="space-y-6 rounded-3xl border border-black/5 bg-white/80 p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] backdrop-blur animate-rise">
+        <div className="-my-40">
           <ScoreboardPreview
             boardId={board.id}
             initialName={board.name}
@@ -218,23 +248,9 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
             initialBScore={board.b_score}
             initialUpdatedAt={board.updated_at}
           />
-        </section>
+        </div>
 
-        <section className="space-y-6 rounded-3xl border border-black/5 bg-white/80 p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] backdrop-blur animate-rise">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-black">
-                Controls
-              </p>
-              <p className="text-sm text-black">
-                Tweak names and scores — updates push to every overlay instantly.
-              </p>
-            </div>
-            <div className="rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-semibold text-black shadow-sm shadow-black/5">
-              Live editing
-            </div>
-          </div>
-
+        <section className="space-y-6 rounded-3xl border border-black/5 bg-white/80 p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] animate-rise">
           <div className="grid gap-5 lg:grid-cols-3">
             <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-5 shadow-sm shadow-black/5">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
@@ -267,91 +283,6 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                 placeholder="B Side"
               />
               <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} />
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-6 rounded-3xl border border-black/5 bg-white/80 p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] backdrop-blur animate-rise">
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="rounded-2xl border border-black/8 bg-white/80 p-5 shadow-sm shadow-black/5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
-                Share link (read-only)
-              </p>
-              <div className="mt-2 space-y-2 text-sm font-semibold text-black">
-                {shareUrl ? (
-                  <div className="space-y-2 text-xs font-medium text-black">
-                    <div className="flex items-center gap-2">
-                      <div className="relative w-full">
-                        <input
-                          readOnly
-                          value={shareUrl}
-                          className="w-full truncate rounded-xl border border-black/15 bg-white px-3 py-2 pr-24 text-sm font-semibold text-black shadow-inner shadow-black/5"
-                        />
-                        <CopyButton
-                          value={shareUrl}
-                          label="Copy"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-black/20 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                        />
-                      </div>
-                      <form action={generateShareToken}>
-                        <input type="hidden" name="boardId" value={board.id} />
-                        <button
-                          type="submit"
-                          className="inline-flex items-center justify-center rounded-lg border border-black/20 bg-white px-3 py-2 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                        >
-                          {board.share_token ? "Regenerate" : "Generate"}
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-medium text-black">
-                      Generate a token to create a shareable URL.
-                    </p>
-                    <form action={generateShareToken}>
-                      <input type="hidden" name="boardId" value={board.id} />
-                      <button
-                        type="submit"
-                        className="inline-flex items-center justify-center rounded-lg border border-black/20 bg-white px-3 py-2 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                      >
-                        Generate
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="rounded-2xl border border-black/8 bg-white/80 p-5 shadow-sm shadow-black/5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
-                Record
-              </p>
-              <div className="mt-2 space-y-1 text-sm text-black">
-                <div className="flex justify-between gap-3 text-xs text-black">
-                  <span className="font-semibold text-black">
-                    owner_id
-                  </span>
-                  <span className="font-mono text-black">{board.owner_id ?? "—"}</span>
-                </div>
-                <div className="flex justify-between gap-3 text-xs text-black">
-                  <span className="font-semibold text-black">
-                    id
-                  </span>
-                  <span className="font-mono text-black">{board.id}</span>
-                </div>
-                <div className="flex justify-between gap-3 text-xs text-black">
-                  <span className="font-semibold text-black">
-                    created_at
-                  </span>
-                  <span className="font-mono text-black">{board.created_at ?? "—"}</span>
-                </div>
-                <div className="flex justify-between gap-3 text-xs text-black">
-                  <span className="font-semibold text-black">
-                    share_token
-                  </span>
-                  <span className="font-mono text-black">{board.share_token ?? "—"}</span>
-                </div>
-              </div>
             </div>
           </div>
         </section>

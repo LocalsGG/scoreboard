@@ -91,7 +91,7 @@ export default async function Home() {
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/auth"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-black via-black to-zinc-800 px-6 py-3 text-base font-semibold uppercase tracking-wide text-white shadow-[0_15px_45px_rgba(12,18,36,0.18)] transition duration-150 hover:-translate-y-0.5 active:scale-95"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-black via-black to-zinc-800 px-6 py-3 text-base font-semibold uppercase tracking-wide text-white shadow-[0_15px_45px_rgba(12,18,36,0.18)] transition duration-150 hover:-translate-y-0.5 active:scale-95"
               >
                 Create a Scoreboard
               </Link>
