@@ -16,9 +16,9 @@ export default async function AuthPage() {
   }
 
   return (
-    <div className="relative flex min-h-full items-center justify-center px-6 py-12 font-sans">
-      <main className="relative z-10 w-full max-w-xl animate-fade-in">
-        <section className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm animate-rise">
+    <div className="relative flex min-h-full items-center justify-center px-4 sm:px-6 py-12 font-sans">
+      <main className="relative z-10 w-full max-w-sm animate-fade-in">
+        <section className="rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm animate-rise">
           <AuthForm />
         </section>
       </main>

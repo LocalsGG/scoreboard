@@ -53,7 +53,7 @@ export default async function Home() {
 
   return (
     <main className="relative isolate overflow-hidden">
-      <div className="mx-auto flex min-h-screen w-full max-w-none flex-col gap-16 px-6 pb-16 pt-12">
+      <div className="mx-auto flex min-h-screen w-full max-w-none flex-col gap-8 sm:gap-16 px-4 sm:px-6 pb-16 pt-12">
         <section className="flex flex-col items-center gap-10">
           <div className="space-y-6 text-center">
             <h1 className="text-4xl font-black uppercase leading-tight tracking-tight text-black sm:text-5xl lg:text-6xl text-center">
@@ -99,7 +99,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="w-full rounded-3xl border border-black/5 bg-white/80 px-6 py-10 shadow-xl shadow-black/10 backdrop-blur">
+        <section className="w-full rounded-3xl border border-black/5 bg-white/80 px-4 sm:px-6 py-10 shadow-xl shadow-black/10 backdrop-blur">
           <div className="mx-auto flex w-full max-w-full flex-col gap-8 text-center">
             <div className="space-y-2">
               <p className="text-sm font-semibold uppercase tracking-wide text-zinc-600">

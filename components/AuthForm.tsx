@@ -177,7 +177,7 @@ export function AuthForm() {
   return (
     <div className="w-full max-w-xl space-y-6">
       <div className="space-y-2">
-        <h1 className="text-4xl font-extrabold text-black">{heroTitle}</h1>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-black">{heroTitle}</h1>
         <p className="text-sm text-black">{heroSubtitle}</p>
       </div>
 
@@ -270,7 +270,7 @@ export function AuthForm() {
             </div>
           ) : null}
 
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm gap-2">
             <button
               type="button"
               onClick={() => {
@@ -322,7 +322,7 @@ export function AuthForm() {
             />
           </div>
 
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between text-sm gap-2">
             <button
               type="button"
               onClick={() => {

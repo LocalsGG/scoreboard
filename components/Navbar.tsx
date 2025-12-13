@@ -23,7 +23,7 @@ export async function Navbar() {
         />
         <span className="leading-none">
           Scoreboard
-          <span className="block text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500">
+          <span className="hidden sm:block text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500">
             Live overlays
           </span>
         </span>
