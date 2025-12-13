@@ -7,6 +7,6 @@ export const HERO_SCOREBOARD_IMAGES = [
   `${supabasePublicImageBase}/scoreboard3.svg`,
 ];
 
-export const SCOREBOARD_OVERLAY_IMAGE = `${supabasePublicImageBase}/scoreboard.svg`;
+export const SCOREBOARD_OVERLAY_IMAGE = `${supabasePublicImageBase}/scoreboard1.svg`;
 
 export const TOURNAMENT_EXAMPLE_IMAGE = `${supabasePublicImageBase}/tournamentexample.png`;

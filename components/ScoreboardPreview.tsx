@@ -224,22 +224,6 @@ export function ScoreboardPreview({
           {state.bScore}
         </text>
 
-        <text
-          x="720"
-          y="525"
-          fontFamily="Inter, system-ui, -apple-system, sans-serif"
-          fontSize="5"
-          fill="#f8fafc"
-
-          strokeWidth="3"
-          fontWeight="700"
-          textAnchor="middle"
-          letterSpacing="0.08em"
-          paintOrder="stroke fill"
-          filter={`url(#${gradientId}-text-shadow)`}
-        >
-          {formattedUpdatedAt ? `Updated ${formattedUpdatedAt}` : "Waiting for updates"}
-        </text>
     </svg>
   );
 }

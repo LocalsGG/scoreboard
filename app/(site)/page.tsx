@@ -99,7 +99,7 @@ export default async function Home() {
           </Link>
         </div>
       <section className="w-screen max-w-none -mx-6 sm:-mx-12">
-        <div className="w-full bg-white px-6 py-12 sm:px-10">
+        <div className="w-full bg-transparent px-6 py-12 sm:px-10">
           <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 text-center">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wide text-zinc-600">
@@ -116,7 +116,7 @@ export default async function Home() {
               {OBS_OVERLAY_EXAMPLES.map((card, index) => (
                 <div
                   key={card.title}
-                  className="flex h-full flex-col gap-4 rounded-3xl border border-black/10 bg-white p-6 shadow-sm"
+                  className="flex h-full flex-col gap-4 rounded-3xl border border-black/10 bg-transparent p-6 shadow-sm"
                 >
                   <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-black">
                     <Image
@@ -135,8 +135,8 @@ export default async function Home() {
                   </div>
                 </div>
               ))}
-              <div className="flex h-full flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-black/20 bg-white p-6 text-center shadow-sm">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-black/10 bg-white text-3xl font-bold text-black">
+              <div className="flex h-full flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-black/20 bg-transparent p-6 text-center shadow-sm">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-black/10 bg-transparent text-3xl font-bold text-black">
                   +
                 </div>
                 <p className="text-base font-semibold text-black">

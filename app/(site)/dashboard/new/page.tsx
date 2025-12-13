@@ -77,23 +77,16 @@ export default async function NewScoreboardPage() {
   return (
     <div className="flex min-h-full justify-center px-6 py-16 font-sans">
       <main className="w-full max-w-5xl space-y-10 animate-fade-in">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black">
-              Create
-            </p>
-            <h1 className="text-4xl font-extrabold text-black">
-              Create a new scoreboard
-            </h1>
-            <p className="text-sm text-black">
-              Pick a template to set up your board. We&apos;ll handle the rest.
-            </p>
-          </div>
+        <div className="flex justify-start">
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center rounded-lg border border-black/20 px-4 py-2 text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 opacity-70 hover:opacity-100 active:scale-95"
+            aria-label="Back to dashboard"
           >
-            Back to dashboard
+            <span aria-hidden="true" className="text-lg leading-none">
+              &larr;
+            </span>
+            <span>Back to dashboard</span>
           </Link>
         </div>
 
