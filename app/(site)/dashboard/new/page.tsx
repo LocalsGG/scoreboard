@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -9,19 +10,31 @@ export const dynamic = "force-dynamic";
 type Template = {
   slug: string;
   name: string;
-  description: string;
+  icon: string;
 };
 
-const esportsTemplates: Template[] = [
+const nextIcon = "/nextjs-icon.svg";
+
+const gameTemplates: Template[] = [
   {
     slug: "melee",
     name: "Super Smash Bros. Melee",
-    description: "Track sets, stocks, and rivalries from the GameCube classic.",
+    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/melee-icon.svg",
   },
   {
     slug: "ultimate",
     name: "Super Smash Bros. Ultimate",
-    description: "Follow tournaments, pools, and friendlies across fighters.",
+    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/ultimate-icon.svg",
+  },
+  {
+    slug: "guilty-gear-strive",
+    name: "Guilty Gear Strive",
+    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/guilty-icon.svg",
+  },
+  {
+    slug: "generic",
+    name: "Generic",
+    icon: nextIcon,
   },
 ];
 
@@ -91,35 +104,26 @@ export default async function NewScoreboardPage() {
         </div>
 
         <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-9 shadow-sm animate-rise">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black">
-                Esports
-              </p>
-              <p className="text-lg font-semibold text-black">
-                Choose a Smash title
-              </p>
-            </div>
-          </div>
-
           <div className="grid gap-4 sm:grid-cols-2">
-            {esportsTemplates.map((template) => (
+            {gameTemplates.map((template) => (
               <form key={template.slug} action={createBoard} className="h-full">
                 <input type="hidden" name="name" value={template.name} />
                 <button
                   type="submit"
                   className="group flex h-full w-full flex-col justify-between rounded-xl border border-zinc-200 bg-white p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
                 >
-                  <div className="space-y-2">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-black">
-                      Esports
-                    </p>
+                  <div className="flex items-center gap-4">
+                    <Image
+                      src={template.icon}
+                      alt={`${template.name} icon`}
+                      width={32}
+                      height={32}
+                      className="h-8 w-8"
+                      unoptimized
+                    />
                     <h3 className="text-lg font-semibold text-black">
                       {template.name}
                     </h3>
-                    <p className="text-sm text-black">
-                      {template.description}
-                    </p>
                   </div>
                   <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-black transition group-hover:translate-x-0.5">
                     Start with this
