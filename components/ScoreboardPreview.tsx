@@ -130,6 +130,7 @@ export function ScoreboardPreview({
       role="img"
       aria-label={`Preview of ${scoreboardTitle}`}
       style={{ aspectRatio: "1440 / 810", background: "transparent" }}
+      pointerEvents="none"
     >
         <defs>
           <filter id={`${gradientId}-text-shadow`} x="-15%" y="-15%" width="130%" height="140%">
