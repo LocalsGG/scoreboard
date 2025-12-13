@@ -1,15 +1,18 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { formatDate } from "@/lib/dates";
+import { getGameIcon, getGameName } from "@/lib/assets";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { DeleteBoardButton } from "@/components/DeleteBoardButton";
 
 export const dynamic = "force-dynamic";
 
 type ScoreboardRow = {
   id: string;
   name: string | null;
-  created_at: string | null;
+  updated_at: string | null;
   owner_id: string | null;
 };
 
@@ -53,9 +56,9 @@ export default async function DashboardPage() {
 
   const { data: boards, error } = await supabase
     .from("scoreboards")
-    .select("id, name, created_at, owner_id")
+    .select("id, name, updated_at, owner_id")
     .eq("owner_id", session.user.id)
-    .order("created_at", { ascending: false })
+    .order("updated_at", { ascending: false })
     .returns<ScoreboardRow[]>();
 
   const boardList = Array.isArray(boards) ? boards : [];
@@ -63,16 +66,25 @@ export default async function DashboardPage() {
   const createTile = (
     <li
       key="create-tile"
-      className="flex h-full flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-black/20 bg-white/80 p-5 text-center shadow-sm shadow-black/5"
+      className="flex items-center justify-between gap-4 rounded-2xl border border-dashed border-black/20 bg-white/80 p-4 shadow-sm shadow-black/5 transition-transform duration-150 ease-out hover:-translate-y-0.5"
     >
       <Link
         href="/dashboard/new"
         aria-label="Create a new board"
-        className="flex h-16 w-16 items-center justify-center rounded-full border border-black/20 bg-white text-3xl text-black transition-all duration-150 hover:-translate-y-0.5 hover:bg-zinc-100 active:scale-95"
+        className="flex items-center gap-3 min-w-0 flex-1"
       >
-        <span aria-hidden="true">+</span>
+        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-dashed border-black/30 bg-white text-lg text-black">
+          <span aria-hidden="true">+</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
+            New
+          </p>
+          <p className="text-base font-semibold text-black">
+            Create new scoreboard
+          </p>
+        </div>
       </Link>
-      <p className="text-xs text-black">Create new scoreboard.</p>
     </li>
   );
 
@@ -93,50 +105,58 @@ export default async function DashboardPage() {
               {hasBoards
                 ? boardList.map((board) => {
                     const label = board.name || "Untitled board";
-                    const createdLabel = formatDate(board.created_at);
+                    const gameName = getGameName(board.name);
+                    const updatedLabel = formatDate(board.updated_at);
                     const viewHref = `/scoreboard/${board.id}`;
 
                     return (
                       <li
                         key={board.id}
-                        className="flex h-full flex-col justify-between gap-3 rounded-2xl border border-black/8 bg-white/80 p-5 shadow-sm shadow-black/5 transition-transform duration-150 ease-out hover:-translate-y-0.5"
+                        className="flex items-center justify-between gap-4 rounded-2xl border border-black/8 bg-white/80 p-4 shadow-sm shadow-black/5 transition-transform duration-150 ease-out hover:-translate-y-0.5"
                       >
-                        <div className="space-y-1">
-                          <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">
-                            Board
-                          </p>
-                          <h2 className="text-base font-semibold text-black">
-                            <Link
-                              href={viewHref}
-                              className="transition-colors duration-150 hover:text-zinc-700"
-                            >
-                              {label}
-                            </Link>
-                          </h2>
-                          {createdLabel ? (
-                            <p className="text-xs text-black">
-                              Created {createdLabel}
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <Image
+                            src={getGameIcon(board.name)}
+                            alt={`${label} icon`}
+                            width={24}
+                            height={24}
+                            className="h-6 w-6 flex-shrink-0"
+                            unoptimized
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 truncate">
+                              {gameName}
+                            </p>
+                            <h2 className="text-base font-semibold text-black truncate">
+                              <Link
+                                href={viewHref}
+                                className="transition-colors duration-150 hover:text-zinc-700"
+                              >
+                                {label}
+                              </Link>
+                            </h2>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          {updatedLabel ? (
+                            <p className="text-xs text-zinc-500 whitespace-nowrap">
+                              {updatedLabel}
                             </p>
                           ) : null}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
                           <Link
                             href={viewHref}
                             target="_blank"
                             rel="noreferrer"
                             aria-label={`Open ${label} in a new tab`}
-                            className="flex h-8 w-8 items-center justify-center rounded-full border border-black/15 bg-white text-xl text-black shadow-sm shadow-black/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/30 hover:bg-white active:scale-95"
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-black/15 bg-white text-xl text-black shadow-sm shadow-black/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/30 hover:bg-white active:scale-95 flex-shrink-0"
                           >
                             ↗
                           </Link>
-                          <form action={deleteBoard.bind(null, board.id)}>
-                            <button
-                              type="submit"
-                              className="rounded-full px-3 py-1 text-xs font-semibold text-red-600 transition-all duration-150 hover:-translate-y-0.5 hover:bg-red-50 active:scale-95"
-                            >
-                              Delete
-                            </button>
-                          </form>
+                          <DeleteBoardButton
+                            boardId={board.id}
+                            boardName={board.name}
+                            deleteAction={deleteBoard}
+                          />
                         </div>
                       </li>
                     );

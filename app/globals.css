@@ -31,6 +31,15 @@ body {
   letter-spacing: -0.01em;
 }
 
+button:not(:disabled),
+a {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 html.share-overlay,
 body.share-overlay {
   background: transparent !important;

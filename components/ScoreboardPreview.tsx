@@ -119,9 +119,9 @@ export function ScoreboardPreview({
   const aLead = state.aScore > state.bScore;
   const bLead = state.bScore > state.aScore;
 
-  const scoreboardTitle = formatLabel(state.name, "SUPER SMASH!", 24);
-  const aLabel = formatLabel(state.aSide, "ASHRAF", 16);
-  const bLabel = formatLabel(state.bSide, "TARIQ", 16);
+  const scoreboardTitle = formatLabel(state.name, "SCOREBOARD", 24);
+  const aLabel = formatLabel(state.aSide, "A", 16);
+  const bLabel = formatLabel(state.bSide, "B", 16);
 
   return (
     <svg

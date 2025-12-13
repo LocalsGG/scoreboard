@@ -55,7 +55,7 @@ export function ScoreAdjuster({ boardId, column, initialValue }: Props) {
           type="button"
           onClick={() => adjust(-1)}
           disabled={saving}
-          className="rounded-md border border-black/20 px-3 py-1 text-xs uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer rounded-md border border-black/20 px-3 py-1 text-xs uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
         >
           -1
         </button>
@@ -64,7 +64,7 @@ export function ScoreAdjuster({ boardId, column, initialValue }: Props) {
           type="button"
           onClick={() => adjust(1)}
           disabled={saving}
-          className="rounded-md border border-black/20 px-3 py-1 text-xs uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer rounded-md border border-black/20 px-3 py-1 text-xs uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
         >
           +1
         </button>

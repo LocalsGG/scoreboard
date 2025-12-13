@@ -51,7 +51,7 @@ async function createBoard(formData: FormData) {
   }
 
   const rawName = (formData.get("name") as string | null) ?? "";
-  const name = rawName.trim() || "Untitled board";
+  const name = rawName.trim() || "Generic Scoreboard";
   const shareToken = randomUUID().replace(/-/g, "");
 
   const { data, error } = await supabase
@@ -113,7 +113,7 @@ export default async function NewScoreboardPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             {gameTemplates.map((template) => (
               <form key={template.slug} action={createBoard} className="h-full">
-                <input type="hidden" name="name" value={template.name} />
+                <input type="hidden" name="name" value={`${template.name} Scoreboard`} />
                 <button
                   type="submit"
                   className="group flex h-full w-full flex-col justify-between rounded-xl border border-zinc-200 bg-white p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] cursor-pointer"

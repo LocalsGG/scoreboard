@@ -184,13 +184,13 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                 <CopyButton
                   value={shareUrl}
                   label="Copy"
-                  className="rounded-md border border-black/20 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                  className="cursor-pointer rounded-md border border-black/20 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
                 />
                 <a
                   href={shareUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 justify-center rounded-md border border-black/20 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                  className="cursor-pointer inline-flex items-center gap-1.5 justify-center rounded-md border border-black/20 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
                   aria-label="Open link in new tab"
                 >
                   <span>Open</span>
@@ -209,15 +209,6 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                     />
                   </svg>
                 </a>
-                <form action={generateShareToken}>
-                  <input type="hidden" name="boardId" value={board.id} />
-                  <button
-                    type="submit"
-                    className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                  >
-                    {board.share_token ? "Regenerate" : "Generate"}
-                  </button>
-                </form>
               </div>
             </div>
           ) : (
