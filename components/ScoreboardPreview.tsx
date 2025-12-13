@@ -129,7 +129,7 @@ export function ScoreboardPreview({
       className="h-auto w-full drop-shadow-xl transition-transform duration-300 ease-out hover:scale-[1.01]"
       role="img"
       aria-label={`Preview of ${scoreboardTitle}`}
-      style={{ aspectRatio: "1440 / 810", background: "transparent" }}
+      style={{ aspectRatio: "1440 / 810", background: "transparent", pointerEvents: "none" }}
     >
         <defs>
           <filter id={`${gradientId}-text-shadow`} x="-15%" y="-15%" width="130%" height="140%">
@@ -143,6 +143,7 @@ export function ScoreboardPreview({
           width="1440"
           height="810"
           preserveAspectRatio="xMidYMid meet"
+          style={{ pointerEvents: "none" }}
         />
 
         <text
