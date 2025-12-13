@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Next.js icon">
+  <rect width="96" height="96" rx="16" fill="none" />
+  <path
+    d="M11 27.4 42.4 66.5h-6.3l-29-39.1v48H0V15c0-15 17-21 28-7l42 51-6 7-30-37H11z"
+    fill="#000"
+  />
+  <path
+    d="M92 57.5V15c0-15-17-21-28-7L22 59h6.3l30-37 27 34H92z"
+    fill="#000"
+  />
+</svg>

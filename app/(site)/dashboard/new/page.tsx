@@ -34,7 +34,7 @@ const gameTemplates: Template[] = [
   {
     slug: "generic",
     name: "Generic",
-    icon: nextIcon,
+    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/logo.svg",
   },
 ];
 
@@ -104,13 +104,19 @@ export default async function NewScoreboardPage() {
         </div>
 
         <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-9 shadow-sm animate-rise">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-semibold text-black">Choose a Game</h2>
+            <p className="text-sm text-zinc-600">
+              Choose the game you want to make a scoreboard for. If your game isn't listed, just pick the generic option.
+            </p>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {gameTemplates.map((template) => (
               <form key={template.slug} action={createBoard} className="h-full">
                 <input type="hidden" name="name" value={template.name} />
                 <button
                   type="submit"
-                  className="group flex h-full w-full flex-col justify-between rounded-xl border border-zinc-200 bg-white p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
+                  className="group flex h-full w-full flex-col justify-between rounded-xl border border-zinc-200 bg-white p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] cursor-pointer"
                 >
                   <div className="flex items-center gap-4">
                     <Image

@@ -80,6 +80,9 @@ export default async function DashboardPage() {
     <div className="flex min-h-full justify-center px-6 py-16 font-sans">
       <main className="w-full max-w-6xl space-y-8 animate-fade-in">
         <section className="space-y-6 rounded-3xl border border-black/5 bg-white/80 p-9 shadow-[0_22px_65px_rgba(12,18,36,0.12)] backdrop-blur animate-rise">
+          <header>
+            <h1 className="text-3xl font-semibold text-black">Your Scoreboards</h1>
+          </header>
           {error ? (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
               <p className="font-semibold">Couldn&apos;t load boards</p>
@@ -91,7 +94,6 @@ export default async function DashboardPage() {
                 ? boardList.map((board) => {
                     const label = board.name || "Untitled board";
                     const createdLabel = formatDate(board.created_at);
-                    const shortId = board.id ? `${board.id.slice(0, 8)}…` : "Unknown";
                     const viewHref = `/scoreboard/${board.id}`;
 
                     return (
@@ -118,14 +120,14 @@ export default async function DashboardPage() {
                           ) : null}
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-black/5 px-3 py-1 text-xs font-medium text-black">
-                            {shortId}
-                          </span>
                           <Link
                             href={viewHref}
-                            className="rounded-full border border-black/15 bg-white px-3 py-1 text-xs font-semibold text-black shadow-sm shadow-black/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/30 hover:bg-white active:scale-95"
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`Open ${label} in a new tab`}
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-black/15 bg-white text-xl text-black shadow-sm shadow-black/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/30 hover:bg-white active:scale-95"
                           >
-                            Open
+                            ↗
                           </Link>
                           <form action={deleteBoard.bind(null, board.id)}>
                             <button
@@ -136,11 +138,6 @@ export default async function DashboardPage() {
                             </button>
                           </form>
                         </div>
-                        {board.owner_id ? (
-                          <p className="text-xs text-black">
-                            Owner: {board.owner_id}
-                          </p>
-                        ) : null}
                       </li>
                     );
                   })
