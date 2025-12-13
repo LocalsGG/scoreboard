@@ -148,7 +148,7 @@ export function ScoreboardPreview({
 
         <text
           x="720"
-          y="270"
+          y="310"
           fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
           fontSize="72"
           fill="#f8fafc"
@@ -156,7 +156,7 @@ export function ScoreboardPreview({
           strokeWidth="8"
           fontWeight="800"
           textAnchor="middle"
-          letterSpacing="3"
+          letterSpacing="8"
           paintOrder="stroke fill"
           filter={`url(#${gradientId}-text-shadow)`}
         >
