@@ -130,7 +130,6 @@ export function ScoreboardPreview({
       role="img"
       aria-label={`Preview of ${scoreboardTitle}`}
       style={{ aspectRatio: "1440 / 810", background: "transparent" }}
-      pointerEvents="none"
     >
         <defs>
           <filter id={`${gradientId}-text-shadow`} x="-15%" y="-15%" width="130%" height="140%">
@@ -165,7 +164,7 @@ export function ScoreboardPreview({
 
         <text
           x="100"
-          y="410"
+          y="450"
           fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
           fontSize="60"
           fill="#f8fafc"
@@ -180,8 +179,8 @@ export function ScoreboardPreview({
           {aLabel}
         </text>
         <text
-          x="1300"
-          y="410"
+          x="1200"
+          y="450"
           fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
           fontSize="60"
           fill="#f8fafc"
@@ -198,7 +197,7 @@ export function ScoreboardPreview({
 
         <text
           x="540"
-          y="425"
+          y="465"
           fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
           fontSize="110"
           fill={aLead ? "#ffffff" : "#f2f2f2"}
@@ -212,7 +211,7 @@ export function ScoreboardPreview({
         </text>
         <text
           x="910"
-          y="425"
+          y="465"
           fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
           fontSize="110"
           fill={bLead ? "#ffffff" : "#f2f2f2"}
