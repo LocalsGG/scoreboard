@@ -50,12 +50,12 @@ export function ScoreAdjuster({ boardId, column, initialValue }: Props) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between rounded-lg bg-zinc-900/5 px-3 py-2 text-sm font-semibold text-black dark:bg-white/10 dark:text-white">
+      <div className="flex items-center justify-between rounded-lg border border-black/20 bg-white px-3 py-2 text-sm font-semibold text-black">
         <button
           type="button"
           onClick={() => adjust(-1)}
           disabled={saving}
-          className="rounded-md border border-zinc-300 px-3 py-1 text-xs uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-zinc-400 hover:bg-white active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-white dark:hover:border-zinc-600 dark:hover:bg-zinc-900/70"
+          className="rounded-md border border-black/20 px-3 py-1 text-xs uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
         >
           -1
         </button>
@@ -64,14 +64,14 @@ export function ScoreAdjuster({ boardId, column, initialValue }: Props) {
           type="button"
           onClick={() => adjust(1)}
           disabled={saving}
-          className="rounded-md border border-zinc-300 px-3 py-1 text-xs uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-zinc-400 hover:bg-white active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-white dark:hover:border-zinc-600 dark:hover:bg-zinc-900/70"
+          className="rounded-md border border-black/20 px-3 py-1 text-xs uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
         >
           +1
         </button>
       </div>
-      <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 text-xs text-black">
         {saving ? <span>Saving…</span> : <span>Saved</span>}
-        {error ? <span className="text-red-600 dark:text-red-300">({error})</span> : null}
+        {error ? <span className="text-red-600">({error})</span> : null}
       </div>
     </div>
   );

@@ -163,22 +163,22 @@ export function AuthForm() {
       label: 'Continue with Google',
       icon: '/google.svg',
       className:
-        'border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-transparent dark:text-white dark:hover:bg-zinc-900/60',
+        'border border-black/10 bg-white text-black hover:bg-zinc-50',
     },
     {
       id: 'discord',
       label: 'Continue with Discord',
       icon: '/discord.svg',
-      className: 'text-white shadow hover:brightness-110 dark:text-white',
-      style: { backgroundColor: '#5865F2' },
+      className:
+        'border border-black/10 bg-white text-black hover:bg-zinc-50',
     },
   ]
 
   return (
     <div className="w-full max-w-xl space-y-6">
       <div className="space-y-2">
-        <h1 className="text-4xl font-extrabold text-black dark:text-white">{heroTitle}</h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">{heroSubtitle}</p>
+        <h1 className="text-4xl font-extrabold text-black">{heroTitle}</h1>
+        <p className="text-sm text-black">{heroSubtitle}</p>
       </div>
 
       <div className="space-y-3">
@@ -202,10 +202,10 @@ export function AuthForm() {
           <div
             className={`rounded-lg px-4 py-3 text-sm font-medium ${
               oauthStatus.type === 'success'
-                ? 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-200'
+                ? 'bg-green-50 text-green-700'
                 : oauthStatus.type === 'error'
-                ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-200'
-                : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200'
+                ? 'bg-red-50 text-red-700'
+                : 'bg-zinc-100 text-black'
             }`}
           >
             {oauthStatus.message}
@@ -213,10 +213,10 @@ export function AuthForm() {
         )}
       </div>
 
-      <div className="flex items-center gap-4 text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">
-        <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+      <div className="flex items-center gap-4 text-xs font-semibold uppercase text-black">
+        <span className="h-px flex-1 bg-black" />
         Or email
-        <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+        <span className="h-px flex-1 bg-black" />
       </div>
 
       {view === 'form' ? (
@@ -228,9 +228,9 @@ export function AuthForm() {
           }}
         >
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Email</label>
+            <label className="block text-sm font-medium text-black">Email</label>
             <input
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-all duration-150 placeholder:text-zinc-400 hover:-translate-y-0.5 hover:border-zinc-400 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99] dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder:text-zinc-500 dark:hover:border-zinc-600 dark:focus:border-white dark:focus:shadow-[0_0_0_3px_rgba(255,255,255,0.12)]"
+              className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -241,9 +241,9 @@ export function AuthForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Password</label>
+            <label className="block text-sm font-medium text-black">Password</label>
             <input
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-all duration-150 placeholder:text-zinc-400 hover:-translate-y-0.5 hover:border-zinc-400 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99] dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder:text-zinc-500 dark:hover:border-zinc-600 dark:focus:border-white dark:focus:shadow-[0_0_0_3px_rgba(255,255,255,0.12)]"
+              className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -255,11 +255,11 @@ export function AuthForm() {
 
           {mode === 'signup' ? (
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label className="block text-sm font-medium text-black">
                 Confirm password
               </label>
               <input
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-all duration-150 placeholder:text-zinc-400 hover:-translate-y-0.5 hover:border-zinc-400 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99] dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder:text-zinc-500 dark:hover:border-zinc-600 dark:focus:border-white dark:focus:shadow-[0_0_0_3px_rgba(255,255,255,0.12)]"
+                className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -277,7 +277,7 @@ export function AuthForm() {
                 setMode(mode === 'signin' ? 'signup' : 'signin')
                 setStatus({ type: 'idle' })
               }}
-              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95 dark:text-white"
+              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95"
             >
               {toggleCopy} {toggleAction}
             </button>
@@ -287,7 +287,7 @@ export function AuthForm() {
                 setView('reset')
                 setResetStatus({ type: 'idle' })
               }}
-              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95 dark:text-white"
+              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95"
             >
               Forgot password?
             </button>
@@ -296,7 +296,7 @@ export function AuthForm() {
           <button
             type="submit"
             disabled={status.type === 'loading'}
-            className="flex w-full items-center justify-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            className="flex w-full items-center justify-center rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {status.type === 'loading' ? 'Working...' : cta}
           </button>
@@ -310,9 +310,9 @@ export function AuthForm() {
           }}
         >
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Email</label>
+            <label className="block text-sm font-medium text-black">Email</label>
             <input
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 transition-all duration-150 placeholder:text-zinc-400 hover:-translate-y-0.5 hover:border-zinc-400 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99] dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder:text-zinc-500 dark:hover:border-zinc-600 dark:focus:border-white dark:focus:shadow-[0_0_0_3px_rgba(255,255,255,0.12)]"
+              className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -329,14 +329,14 @@ export function AuthForm() {
                 setView('form')
                 setResetStatus({ type: 'idle' })
               }}
-              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95 dark:text-white"
+              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95"
             >
               Back to sign in
             </button>
             <button
               type="submit"
               disabled={resetStatus.type === 'loading'}
-              className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {resetStatus.type === 'loading' ? 'Sending...' : 'Send reset email'}
             </button>
@@ -348,10 +348,10 @@ export function AuthForm() {
         <div
           className={`rounded-lg px-4 py-3 text-sm font-medium ${
             status.type === 'success'
-              ? 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-200'
+              ? 'bg-green-50 text-green-700'
               : status.type === 'error'
-              ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-200'
-              : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200'
+              ? 'bg-red-50 text-red-700'
+              : 'bg-zinc-100 text-black'
           }`}
         >
           {status.message}
@@ -362,10 +362,10 @@ export function AuthForm() {
         <div
           className={`rounded-lg px-4 py-3 text-sm font-medium ${
             resetStatus.type === 'success'
-              ? 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-200'
+              ? 'bg-green-50 text-green-700'
               : resetStatus.type === 'error'
-              ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-200'
-              : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200'
+              ? 'bg-red-50 text-red-700'
+              : 'bg-zinc-100 text-black'
           }`}
         >
           {resetStatus.message}

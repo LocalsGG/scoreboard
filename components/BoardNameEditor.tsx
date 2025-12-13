@@ -79,11 +79,11 @@ export function BoardNameEditor({
           broadcastLocal(e.target.value);
         }}
         placeholder={placeholder}
-        className={`w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-black outline-none transition-all duration-150 placeholder:text-zinc-400 hover:-translate-y-0.5 hover:border-zinc-400 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] active:scale-[0.99] dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:hover:border-zinc-600 dark:focus:border-white dark:focus:shadow-[0_0_0_3px_rgba(255,255,255,0.12)] ${inputAlignment}`}
+        className={`w-full rounded-lg border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none transition-all duration-150 placeholder:text-black/50 hover:-translate-y-0.5 hover:border-black/40 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] active:scale-[0.99] ${inputAlignment}`}
       />
-      <div className={`flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 ${helperAlignment}`}>
+      <div className={`flex items-center gap-2 text-xs text-black ${helperAlignment}`}>
         {saving ? <span>Saving…</span> : <span>Saved</span>}
-        {error ? <span className="text-red-600 dark:text-red-300">({error})</span> : null}
+        {error ? <span className="text-red-600">({error})</span> : null}
       </div>
     </div>
   );

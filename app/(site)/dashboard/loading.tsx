@@ -12,10 +12,10 @@ export default function DashboardLoading() {
           <Skeleton className="h-10 w-32" />
         </div>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200/80 bg-white/70 p-9 shadow-sm animate-rise dark:border-zinc-800 dark:bg-zinc-950/60">
+        <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-9 shadow-sm animate-rise">
           <div className="space-y-4">
             {[0, 1, 2].map((item) => (
-              <div key={item} className="grid gap-4 rounded-xl border border-dashed border-zinc-200/80 bg-white/70 p-4 dark:border-zinc-800 dark:bg-zinc-950/60">
+              <div key={item} className="grid gap-4 rounded-xl border border-dashed border-black/20 bg-white p-4">
                 <SkeletonTextRow />
                 <div className="flex flex-wrap items-center gap-2">
                   <Skeleton className="h-7 w-20" />

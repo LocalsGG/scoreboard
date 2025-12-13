@@ -79,7 +79,7 @@ export function NavActions({ email }: NavActionsProps) {
     return (
       <Link
         href="/auth"
-        className="text-base font-semibold text-black transition-transform duration-150 hover:-translate-y-0.5 hover:text-zinc-700 active:scale-95 dark:text-white dark:hover:text-zinc-200"
+        className="text-base font-semibold text-black transition-transform duration-150 hover:-translate-y-0.5 hover:text-zinc-700 active:scale-95"
       >
         Sign Up / Sign In
       </Link>
@@ -93,17 +93,17 @@ export function NavActions({ email }: NavActionsProps) {
         onClick={() => setMenuOpen((open) => !open)}
         aria-expanded={menuOpen}
         aria-haspopup="menu"
-        className="flex items-center text-base font-semibold text-black transition-transform duration-150 hover:-translate-y-0.5 hover:text-zinc-700 active:scale-95 dark:text-white dark:hover:text-zinc-200"
+        className="flex items-center text-base font-semibold text-black transition-transform duration-150 hover:-translate-y-0.5 hover:text-zinc-700 active:scale-95"
       >
         <span className="max-w-[180px] truncate">{sessionEmail}</span>
       </button>
 
       {menuOpen ? (
-        <div className="absolute right-0 top-full z-20 mt-2 w-44 rounded-xl border border-zinc-200 bg-white py-2 shadow-lg ring-1 ring-black/5 animate-rise dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="absolute right-0 top-full z-20 mt-2 w-44 rounded-xl border border-zinc-200 bg-white py-2 shadow-lg ring-1 ring-black/5 animate-rise">
           <Link
             href="/account"
             onClick={() => setMenuOpen(false)}
-            className="block px-3 py-2 text-sm font-semibold text-black transition-colors duration-150 hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-800/80"
+            className="block px-3 py-2 text-sm font-semibold text-black transition-colors duration-150 hover:bg-zinc-100"
           >
             Account
           </Link>
@@ -111,12 +111,12 @@ export function NavActions({ email }: NavActionsProps) {
             type="button"
             onClick={handleSignOut}
             disabled={loading}
-            className="flex w-full items-center px-3 py-2 text-left text-sm font-semibold text-black transition-colors duration-150 hover:bg-zinc-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 dark:text-white dark:hover:bg-zinc-800/80"
+            className="flex w-full items-center px-3 py-2 text-left text-sm font-semibold text-black transition-colors duration-150 hover:bg-zinc-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? 'Signing out…' : 'Log out'}
           </button>
           {error ? (
-            <span className="block px-3 pt-1 text-xs font-medium text-red-600 dark:text-red-300">
+            <span className="block px-3 pt-1 text-xs font-medium text-red-600">
               {error}
             </span>
           ) : null}

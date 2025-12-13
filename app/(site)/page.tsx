@@ -54,9 +54,9 @@ export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-start gap-8 px-6 pb-12 pt-10 text-center font-sans">
         <div className="flex w-full max-w-3xl flex-col items-center gap-2">
-          <h1 className="text-4xl font-black uppercase tracking-tight text-black dark:text-white sm:text-5xl">
+          <h1 className="text-4xl font-black uppercase tracking-tight text-black sm:text-5xl">
             Keep every stream's score in sync anywhere
-            <span className="mt-2 block text-base font-semibold normal-case tracking-normal text-zinc-700 dark:text-zinc-200 sm:text-lg">
+            <span className="mt-2 block text-base font-semibold normal-case tracking-normal text-zinc-700 sm:text-lg">
               Scoreboard overlay and sharing that just works
             </span>
           </h1>
@@ -87,28 +87,28 @@ export default async function Home() {
           </div>
         </div>
         <div className="flex w-full max-w-3xl flex-col items-center gap-3">
-          <p className="max-w-3xl text-lg text-zinc-800 dark:text-zinc-200 sm:text-xl">
+          <p className="max-w-3xl text-lg text-black sm:text-xl">
             Share a live scoreboard link so family and fans can follow the game in real time. Use it on a stream, a TV,
             or just phones on the sideline. No installs, runs from your browser.
           </p>
           <Link
             href="/auth"
-            className="inline-flex w-full max-w-sm items-center justify-center rounded-xl bg-black px-7 py-3.5 text-base font-semibold uppercase tracking-wide text-white transition hover:-translate-y-0.5 hover:bg-zinc-900 dark:bg-white dark:text-black"
+            className="inline-flex w-full max-w-sm items-center justify-center rounded-xl bg-black px-7 py-3.5 text-base font-semibold uppercase tracking-wide text-white transition hover:-translate-y-0.5 hover:bg-zinc-900"
           >
             Create a Scoreboard for Free
           </Link>
         </div>
       <section className="w-screen max-w-none -mx-6 sm:-mx-12">
-        <div className="w-full bg-zinc-100 px-6 py-12 dark:bg-zinc-900/40 sm:px-10">
+        <div className="w-full bg-white px-6 py-12 sm:px-10">
           <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 text-center">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
+              <p className="text-sm font-semibold uppercase tracking-wide text-zinc-600">
                 Live overlay preview
               </p>
-              <h2 className="mt-2 text-3xl font-black text-black dark:text-white">
+              <h2 className="mt-2 text-3xl font-black text-black">
                 Drop Scoreboard.to straight into OBS or Streamlabs
               </h2>
-              <p className="mt-3 text-base text-zinc-700 dark:text-zinc-200">
+              <p className="mt-3 text-base text-zinc-700">
                 Every overlay is a single browser source so you can drag, resize, and brand it just like any other scene.
               </p>
             </div>
@@ -116,7 +116,7 @@ export default async function Home() {
               {OBS_OVERLAY_EXAMPLES.map((card, index) => (
                 <div
                   key={card.title}
-                  className="flex h-full flex-col gap-4 rounded-3xl border border-black/10 bg-white/90 p-6 shadow-sm backdrop-blur dark:border-white/10 dark:bg-zinc-900/80"
+                  className="flex h-full flex-col gap-4 rounded-3xl border border-black/10 bg-white p-6 shadow-sm"
                 >
                   <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-black">
                     <Image
@@ -130,23 +130,23 @@ export default async function Home() {
                     />
                   </div>
                   <div>
-                    <p className="text-base font-semibold text-black dark:text-white">{card.title}</p>
-                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{card.description}</p>
+                    <p className="text-base font-semibold text-black">{card.title}</p>
+                    <p className="mt-1 text-sm text-zinc-600">{card.description}</p>
                   </div>
                 </div>
               ))}
-              <div className="flex h-full flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-black/20 bg-white/70 p-6 text-center shadow-sm backdrop-blur dark:border-white/20 dark:bg-zinc-900/60">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-black/10 bg-white text-3xl font-bold text-black dark:border-white/10 dark:bg-zinc-800 dark:text-white">
+              <div className="flex h-full flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-black/20 bg-white p-6 text-center shadow-sm">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-black/10 bg-white text-3xl font-bold text-black">
                   +
                 </div>
-                <p className="text-base font-semibold text-black dark:text-white">
+                <p className="text-base font-semibold text-black">
                   Let us know what games you&apos;d like us to support!
                 </p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                <p className="text-sm text-zinc-600">
                   Send us an email{" "}
                   <a
                     href="mailto:contact@locals.gg"
-                    className="font-semibold text-black underline hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300"
+                    className="font-semibold text-black underline hover:text-zinc-700"
                   >
                     contact@locals.gg
                   </a>{" "}

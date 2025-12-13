@@ -79,31 +79,31 @@ export default async function NewScoreboardPage() {
       <main className="w-full max-w-5xl space-y-10 animate-fade-in">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-black">
               Create
             </p>
-            <h1 className="text-4xl font-extrabold text-black dark:text-white">
+            <h1 className="text-4xl font-extrabold text-black">
               Create a new scoreboard
             </h1>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-black">
               Pick a template to set up your board. We&apos;ll handle the rest.
             </p>
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-zinc-400 hover:bg-white active:scale-95 dark:border-zinc-700 dark:text-white dark:hover:border-zinc-600 dark:hover:bg-zinc-900/70"
+            className="inline-flex items-center justify-center rounded-lg border border-black/20 px-4 py-2 text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
           >
             Back to dashboard
           </Link>
         </div>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200/80 bg-white/70 p-9 shadow-sm animate-rise dark:border-zinc-800 dark:bg-zinc-950/60">
+        <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-9 shadow-sm animate-rise">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black">
                 Esports
               </p>
-              <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              <p className="text-lg font-semibold text-black">
                 Choose a Smash title
               </p>
             </div>
@@ -115,20 +115,20 @@ export default async function NewScoreboardPage() {
                 <input type="hidden" name="name" value={template.name} />
                 <button
                   type="submit"
-                  className="group flex h-full w-full flex-col justify-between rounded-xl border border-zinc-200/80 bg-white/70 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] dark:border-zinc-800 dark:bg-zinc-950/60"
+                  className="group flex h-full w-full flex-col justify-between rounded-xl border border-zinc-200 bg-white p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
                 >
                   <div className="space-y-2">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-black">
                       Esports
                     </p>
-                    <h3 className="text-lg font-semibold text-black dark:text-white">
+                    <h3 className="text-lg font-semibold text-black">
                       {template.name}
                     </h3>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <p className="text-sm text-black">
                       {template.description}
                     </p>
                   </div>
-                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-black transition group-hover:translate-x-0.5 dark:text-white">
+                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-black transition group-hover:translate-x-0.5">
                     Start with this
                     <span aria-hidden>→</span>
                   </span>

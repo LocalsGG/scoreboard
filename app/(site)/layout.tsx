@@ -10,22 +10,22 @@ export default function SiteLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+  }>) {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-b border-zinc-200/70 bg-white/65 px-6 py-4 text-sm font-semibold dark:border-zinc-800/70 dark:bg-zinc-950/60">
+      <header className="border-b border-zinc-200 px-6 py-4 text-sm font-semibold bg-white">
         <div className="mx-auto w-full max-w-6xl">
           <Navbar />
         </div>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="border-t border-zinc-200/70 bg-white/65 px-6 py-6 text-sm text-zinc-600 dark:border-zinc-800/70 dark:bg-zinc-950/60 dark:text-zinc-400">
+      <footer className="border-t border-zinc-200 bg-white px-6 py-6 text-sm text-zinc-600">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-1 text-center">
-          <span className="text-xs font-semibold tracking-[0.3em] text-black dark:text-white">
+          <span className="text-xs font-semibold tracking-[0.3em] text-black">
             LOCALS.GG
           </span>
-          <span className="text-black dark:text-white">© 2025 LOCALS.GG</span>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <span className="text-black">© 2025 LOCALS.GG</span>
+          <p className="text-sm text-zinc-600">
             Modern tools for real-world gaming events and communities.
           </p>
         </div>

@@ -14,7 +14,7 @@ export async function Navbar() {
     <nav className="flex w-full items-center justify-between py-3 text-sm font-semibold">
       <Link
         href="/"
-        className="text-base font-extrabold tracking-tight text-black transition hover:text-zinc-700 dark:text-white dark:hover:text-zinc-200"
+        className="text-base font-extrabold tracking-tight text-black transition hover:text-zinc-700"
       >
         Scoreboard
       </Link>

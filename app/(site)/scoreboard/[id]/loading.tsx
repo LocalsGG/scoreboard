@@ -16,15 +16,15 @@ export default function ScoreboardLoading() {
           </div>
         </div>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200/80 bg-white/70 p-8 shadow-sm animate-rise dark:border-zinc-800 dark:bg-zinc-950/60">
-          <div className="aspect-[1440/810] w-full overflow-hidden rounded-xl border border-zinc-200/80 bg-zinc-100/80 dark:border-zinc-800 dark:bg-zinc-900/70">
+        <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm animate-rise">
+          <div className="aspect-[1440/810] w-full overflow-hidden rounded-xl border border-zinc-200 bg-white">
             <div className="flex h-full items-center justify-center">
               <Skeleton className="h-[60%] w-[70%]" />
             </div>
           </div>
         </section>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200/80 bg-white/70 p-8 shadow-sm animate-rise dark:border-zinc-800 dark:bg-zinc-950/60">
+        <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm animate-rise">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-4 w-24" />
@@ -33,7 +33,7 @@ export default function ScoreboardLoading() {
             {[0, 1, 2].map((item) => (
               <div
                 key={item}
-                className="space-y-4 rounded-xl border border-zinc-200/80 bg-white/80 p-5 dark:border-zinc-800 dark:bg-zinc-950/60"
+                className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5"
               >
                 <Skeleton className="h-3 w-20" />
                 <Skeleton className="h-10 w-full" />
@@ -46,12 +46,12 @@ export default function ScoreboardLoading() {
           </div>
         </section>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200/80 bg-white/70 p-8 shadow-sm animate-rise dark:border-zinc-800 dark:bg-zinc-950/60">
+        <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm animate-rise">
           <div className="grid gap-4 sm:grid-cols-2">
             {[0, 1].map((item) => (
               <div
                 key={item}
-                className="space-y-3 rounded-xl border border-zinc-200/80 bg-white/80 p-4 dark:border-zinc-800 dark:bg-zinc-950/60"
+                className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4"
               >
                 <SkeletonTextRow />
                 <Skeleton className="h-8 w-full" />
