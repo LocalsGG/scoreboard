@@ -21,7 +21,7 @@ export interface User {
 // Auth related types
 export type AuthMode = 'signin' | 'signup';
 export type AuthView = 'form' | 'reset';
-export type OAuthProvider = 'google' | 'discord' | 'anonymous';
+export type OAuthProvider = 'google' | 'anonymous';
 
 export interface AuthStatus {
   type: 'idle' | 'loading' | 'success' | 'error';

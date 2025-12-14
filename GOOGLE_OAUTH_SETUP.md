@@ -205,7 +205,7 @@ Once Google OAuth is working:
 - Test the full authentication flow
 - Verify users can create scoreboards
 - Check that anonymous users can convert to Google accounts
-- Consider adding more OAuth providers (Discord is already set up in your code)
+- Consider adding more OAuth providers if needed
 
 ---
 

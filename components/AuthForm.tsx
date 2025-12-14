@@ -152,7 +152,7 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
     }
     
     console.log('[AuthForm] OAuth button clicked:', { provider })
-    setOauthStatus({ type: 'loading', message: `Redirecting to ${provider === 'google' ? 'Google' : 'Discord'}...` })
+    setOauthStatus({ type: 'loading', message: 'Redirecting to Google...' })
     setOauthLoading(provider)
     
     // For PKCE flow, redirect to the callback route which will handle code exchange
@@ -187,7 +187,6 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
 
     console.log('[AuthForm] OAuth redirect initiated:', { 
       data,
-      redirectTo,
       url: data?.url || 'No URL returned',
       fullUrl: data?.url ? new URL(data.url).href : 'No URL',
     })
@@ -230,13 +229,6 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
       id: 'google',
       label: 'Continue with Google',
       icon: '/google.svg',
-      className:
-        'border border-black/10 bg-white text-black hover:bg-zinc-50',
-    },
-    {
-      id: 'discord',
-      label: 'Continue with Discord',
-      icon: '/discord.svg',
       className:
         'border border-black/10 bg-white text-black hover:bg-zinc-50',
     },
