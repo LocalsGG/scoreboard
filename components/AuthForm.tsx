@@ -151,23 +151,56 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
       return
     }
     
+    console.log('[AuthForm] OAuth button clicked:', { provider })
     setOauthStatus({ type: 'loading', message: `Redirecting to ${provider === 'google' ? 'Google' : 'Discord'}...` })
     setOauthLoading(provider)
-    const redirectTo =
+    
+    // For PKCE flow, redirect to the callback route which will handle code exchange
+    const callbackUrl =
+      typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
+    const finalRedirect = 
       typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    console.log('[AuthForm] Starting OAuth flow:', {
       provider,
-      options: redirectTo ? { redirectTo } : undefined,
+      callbackUrl,
+      finalRedirect,
+      currentUrl: typeof window !== 'undefined' ? window.location.href : 'N/A',
+    })
+
+    const { error, data } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: callbackUrl ? { 
+        redirectTo: callbackUrl,
+        queryParams: finalRedirect ? {
+          next: finalRedirect,
+        } : undefined,
+      } : undefined,
     })
 
     if (error) {
+      console.error('[AuthForm] OAuth error:', error)
       setOauthStatus({ type: 'error', message: error.message })
       setOauthLoading(null)
       return
     }
 
-    setOauthStatus({ type: 'success', message: 'Redirecting...' })
+    console.log('[AuthForm] OAuth redirect initiated:', { 
+      data,
+      redirectTo,
+      url: data?.url || 'No URL returned',
+      fullUrl: data?.url ? new URL(data.url).href : 'No URL',
+    })
+    
+    // If Supabase returns a URL, it means we need to redirect manually
+    // Otherwise, Supabase handles it automatically
+    if (data?.url) {
+      console.log('[AuthForm] Redirecting to:', data.url)
+      window.location.href = data.url
+    } else {
+      console.log('[AuthForm] Supabase will handle redirect automatically')
+      setOauthStatus({ type: 'success', message: 'Redirecting...' })
+    }
   }
 
   async function handleAnonymous() {

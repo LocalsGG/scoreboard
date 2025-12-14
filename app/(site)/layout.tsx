@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
+import { OAuthCallbackHandler } from "@/components/OAuthCallbackHandler";
 
 export const metadata: Metadata = {
   title: "Scoreboard",
@@ -13,6 +14,7 @@ export default function SiteLayout({
   }>) {
   return (
     <div className="flex min-h-screen flex-col">
+      <OAuthCallbackHandler />
       <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 px-6 py-4 text-sm font-semibold backdrop-blur">
         <div className="mx-auto w-full max-w-6xl">
           <Navbar />

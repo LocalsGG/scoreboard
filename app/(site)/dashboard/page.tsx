@@ -41,13 +41,25 @@ const deleteBoard = async (boardId: string) => {
 
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
+  
+  // Get the session - code exchange is handled by the callback route
   const {
     data: { session },
+    error: sessionError,
   } = await supabase.auth.getSession();
+
+  console.log('[DashboardPage] Session check:', {
+    hasSession: !!session,
+    hasEmail: !!session?.user?.email,
+    email: session?.user?.email || null,
+    userId: session?.user?.id || null,
+    error: sessionError?.message || null,
+  });
 
   // Allow anonymous users to access the dashboard
   const userId = session?.user?.id;
   if (!userId) {
+    console.log('[DashboardPage] No userId, redirecting to auth');
     redirect("/auth");
   }
 
