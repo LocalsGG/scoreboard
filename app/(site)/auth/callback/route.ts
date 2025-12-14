@@ -51,3 +51,4 @@ export async function GET(request: Request) {
   console.warn('[AuthCallback] No code provided in callback')
   return NextResponse.redirect(`${origin}/auth?error=no_code`)
 }
+

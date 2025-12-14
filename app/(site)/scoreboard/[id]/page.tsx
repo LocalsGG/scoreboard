@@ -7,8 +7,10 @@ import { BoardNameEditor } from "@/components/BoardNameEditor";
 import { ScoreAdjuster } from "@/components/ScoreAdjuster";
 import { SideNameEditor } from "@/components/SideNameEditor";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
+import { ScoreboardStyleSelector } from "@/components/ScoreboardStyleSelector";
 import { ensureShareToken, regenerateShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import type { ElementPositions } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,8 @@ type Scoreboard = {
   a_score: number | null;
   b_score: number | null;
   updated_at: string | null;
+  scoreboard_style: string | null;
+  element_positions: ElementPositions | null;
 };
 
 type LoadScoreboardResult = {
@@ -59,12 +63,42 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
     user.email ||
     "you";
 
-  const { data: board, error: boardError } = await supabase
-    .from("scoreboards")
-    .select("id, name, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at")
-    .eq(isUuid ? "id" : "share_token", boardId)
-    .eq("owner_id", user.id)
-    .maybeSingle<Scoreboard>();
+  // Select all columns, but handle element_positions gracefully if it doesn't exist
+  let board: Scoreboard | null = null;
+  let boardError: Error | null = null;
+  
+  try {
+    const result = await supabase
+      .from("scoreboards")
+      .select("id, name, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions")
+      .eq(isUuid ? "id" : "share_token", boardId)
+      .eq("owner_id", user.id)
+      .maybeSingle<Scoreboard>();
+    
+    if (result.error) {
+      // If error is about missing column, try without it
+      if (result.error.message?.includes("element_positions") || result.error.message?.includes("column")) {
+        const resultWithoutPos = await supabase
+          .from("scoreboards")
+          .select("id, name, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style")
+          .eq(isUuid ? "id" : "share_token", boardId)
+          .eq("owner_id", user.id)
+          .maybeSingle<Omit<Scoreboard, "element_positions"> & { element_positions?: null }>();
+        
+        if (resultWithoutPos.error) {
+          boardError = new Error(resultWithoutPos.error.message);
+        } else {
+          board = { ...resultWithoutPos.data, element_positions: null } as Scoreboard;
+        }
+      } else {
+        boardError = new Error(result.error.message);
+      }
+    } else {
+      board = result.data;
+    }
+  } catch (err) {
+    boardError = err instanceof Error ? err : new Error("Unknown error");
+  }
 
   if (boardError) {
     throw new Error(boardError.message);
@@ -166,7 +200,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
   return (
     <div className="relative flex min-h-full justify-center px-6 py-16 font-sans">
       <main className="relative w-full max-w-6xl space-y-10 animate-fade-in">
-        <div className="flex items-center gap-3">
+        <div className="relative z-10 flex items-center gap-3">
           <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white px-3 py-1.5 text-xs font-semibold text-black shadow-sm shadow-black/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/30 hover:bg-white active:scale-95"
@@ -230,7 +264,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
           )}
         </div>
 
-        <div className="-my-40">
+        <div className="relative z-0 -my-40">
           <ScoreboardPreview
             boardId={board.id}
             initialName={board.name}
@@ -239,6 +273,8 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
             initialAScore={board.a_score}
             initialBScore={board.b_score}
             initialUpdatedAt={board.updated_at}
+            initialStyle={board.scoreboard_style}
+            initialPositions={board.element_positions}
           />
         </div>
 
@@ -276,6 +312,9 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
               />
               <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} />
             </div>
+          </div>
+          <div className="mt-6 rounded-2xl border border-black/8 bg-white/80 p-5 shadow-sm shadow-black/5">
+            <ScoreboardStyleSelector boardId={board.id} initialStyle={board.scoreboard_style} />
           </div>
         </section>
       </main>

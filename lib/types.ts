@@ -1,5 +1,13 @@
 // Common types used throughout the application
 
+export interface ElementPositions {
+  title: { x: number; y: number };
+  a_side: { x: number; y: number };
+  b_side: { x: number; y: number };
+  a_score: { x: number; y: number };
+  b_score: { x: number; y: number };
+}
+
 export interface ScoreboardRow {
   id: string;
   name: string | null;
@@ -11,6 +19,8 @@ export interface ScoreboardRow {
   b_side: string | null;
   a_score: number | null;
   b_score: number | null;
+  scoreboard_style: string | null;
+  element_positions: ElementPositions | null;
 }
 
 export interface User {
@@ -37,5 +47,8 @@ export interface ScoreboardPreviewProps {
   initialAScore: number | null;
   initialBScore: number | null;
   initialUpdatedAt: string | null;
+  initialStyle?: string | null;
+  initialPositions?: ElementPositions | null;
+  readOnly?: boolean;
 }
 

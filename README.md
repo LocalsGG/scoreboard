@@ -45,7 +45,8 @@ create table if not exists public.scoreboards (
   a_side text not null default 'A',
   b_side text not null default 'B',
   a_score int not null default 0,
-  b_score int not null default 0
+  b_score int not null default 0,
+  scoreboard_style text
 );
 ```
 
