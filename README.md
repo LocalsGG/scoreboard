@@ -5,7 +5,7 @@ A minimal Next.js app that tests a Supabase connection by reading from a single 
 ## Quick start
 
 1) Install deps (uses pnpm by default): `pnpm install`
-2) Copy `.env-sample` to `.env.local` and fill in your Supabase project URL + anon key.
+2) Create `.env.local` and fill in your Supabase credentials (see Environment section below).
 3) Configure Supabase (table, policy, optional seed) with the SQL below.
 4) Run the app: `pnpm dev` then open http://localhost:3000.
 
@@ -14,13 +14,18 @@ Key pages:
 - `/auth` sign in/sign up + forgot password
 - `/dashboard` authenticated view (redirects to `/auth` if signed out)
 
-## Required environment
+## Environment Variables
 
-Set these in `.env.local` (never commit this file):
+Create a `.env.local` file in the root directory (this file is gitignored) with the following variables:
 
-```
+```bash
+# Required: Supabase Configuration
+# Get these from your Supabase project dashboard at https://supabase.com/dashboard
 NEXT_PUBLIC_SUPABASE_URL=your-project-url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+
+# Optional: Splash image padding (for fine-tuning the hero image position)
+NEXT_PUBLIC_SPLASH_IMAGE_PADDING_TOP=0px
 ```
 
 You can find both under Supabase Dashboard → Project Settings → API → API Keys (use **Publishable key**, not secret).

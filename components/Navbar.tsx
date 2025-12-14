@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { NavActions } from "./NavActions";
@@ -16,9 +17,11 @@ export async function Navbar() {
         href="/"
         className="group flex items-center gap-3 rounded-full px-2 text-base font-extrabold tracking-tight text-black transition hover:text-zinc-700"
       >
-        <img
+        <Image
           src="https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/logo.svg"
           alt="Scoreboard logo"
+          width={40}
+          height={40}
           className="h-10 w-10 transition-transform duration-150 group-hover:scale-105"
         />
         <span className="leading-none">

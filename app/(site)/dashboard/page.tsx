@@ -6,15 +6,9 @@ import { formatDate } from "@/lib/dates";
 import { getGameIcon, getGameName } from "@/lib/assets";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { DeleteBoardButton } from "@/components/DeleteBoardButton";
+import type { ScoreboardRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
-
-type ScoreboardRow = {
-  id: string;
-  name: string | null;
-  updated_at: string | null;
-  owner_id: string | null;
-};
 
 const deleteBoard = async (boardId: string) => {
   "use server";
@@ -37,7 +31,6 @@ const deleteBoard = async (boardId: string) => {
     .eq("owner_id", session.user.id);
 
   if (error) {
-    console.error("Failed to delete board", error.message);
     throw new Error(error.message);
   }
 

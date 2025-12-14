@@ -38,7 +38,6 @@ export function ScoreAdjuster({ boardId, column, initialValue }: Props) {
       .eq("id", boardId);
 
     if (updateError) {
-      console.error("Failed to update score", updateError.message);
       setError(updateError.message);
       setValue(previous);
       broadcastLocal(previous);

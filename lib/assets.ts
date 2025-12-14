@@ -1,15 +1,39 @@
-const supabasePublicImageBase =
+const SUPABASE_PUBLIC_IMAGE_BASE =
   "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images";
 
 export const HERO_SCOREBOARD_IMAGES = [
-  `${supabasePublicImageBase}/scoreboard1.svg`,
-  `${supabasePublicImageBase}/scoreboard2.svg`,
-  `${supabasePublicImageBase}/scoreboard3.svg`,
+  `${SUPABASE_PUBLIC_IMAGE_BASE}/scoreboard1.svg`,
+  `${SUPABASE_PUBLIC_IMAGE_BASE}/scoreboard2.svg`,
+  `${SUPABASE_PUBLIC_IMAGE_BASE}/scoreboard3.svg`,
 ];
 
-export const SCOREBOARD_OVERLAY_IMAGE = `${supabasePublicImageBase}/scoreboard1.svg`;
+export const SCOREBOARD_OVERLAY_IMAGE = `${SUPABASE_PUBLIC_IMAGE_BASE}/scoreboard1.svg`;
 
-export const TOURNAMENT_EXAMPLE_IMAGE = `${supabasePublicImageBase}/tournamentexample.png`;
+export const TOURNAMENT_EXAMPLE_IMAGE = `${SUPABASE_PUBLIC_IMAGE_BASE}/tournamentexample.png`;
+
+// Game configuration mapping
+const GAME_CONFIGS = {
+  melee: {
+    displayName: "Super Smash Bros. Melee",
+    icon: "melee-icon.svg",
+    keywords: ["melee"],
+  },
+  ultimate: {
+    displayName: "Super Smash Bros. Ultimate",
+    icon: "ultimate-icon.svg",
+    keywords: ["ultimate"],
+  },
+  "guilty-gear": {
+    displayName: "Guilty Gear Strive",
+    icon: "guilty-icon.svg",
+    keywords: ["guilty gear", "strive"],
+  },
+  generic: {
+    displayName: "Generic",
+    icon: "logo.svg",
+    keywords: ["generic"],
+  },
+} as const;
 
 /**
  * Gets the game name from the board name.
@@ -17,22 +41,15 @@ export const TOURNAMENT_EXAMPLE_IMAGE = `${supabasePublicImageBase}/tournamentex
  */
 export function getGameName(boardName: string | null): string {
   if (!boardName) {
-    return "Generic";
+    return GAME_CONFIGS.generic.displayName;
   }
 
   const name = boardName.toLowerCase();
 
-  if (name.includes("melee")) {
-    return "Super Smash Bros. Melee";
-  }
-  if (name.includes("ultimate")) {
-    return "Super Smash Bros. Ultimate";
-  }
-  if (name.includes("guilty gear") || name.includes("strive")) {
-    return "Guilty Gear Strive";
-  }
-  if (name.includes("generic")) {
-    return "Generic";
+  for (const [, config] of Object.entries(GAME_CONFIGS)) {
+    if (config.keywords.some(keyword => name.includes(keyword))) {
+      return config.displayName;
+    }
   }
 
   // Default fallback - return the board name itself
@@ -45,24 +62,17 @@ export function getGameName(boardName: string | null): string {
  */
 export function getGameIcon(boardName: string | null): string {
   if (!boardName) {
-    return `${supabasePublicImageBase}/logo.svg`;
+    return `${SUPABASE_PUBLIC_IMAGE_BASE}/${GAME_CONFIGS.generic.icon}`;
   }
 
   const name = boardName.toLowerCase();
 
-  if (name.includes("melee")) {
-    return `${supabasePublicImageBase}/melee-icon.svg`;
-  }
-  if (name.includes("ultimate")) {
-    return `${supabasePublicImageBase}/ultimate-icon.svg`;
-  }
-  if (name.includes("guilty gear") || name.includes("strive")) {
-    return `${supabasePublicImageBase}/guilty-icon.svg`;
-  }
-  if (name.includes("generic")) {
-    return `${supabasePublicImageBase}/logo.svg`;
+  for (const [, config] of Object.entries(GAME_CONFIGS)) {
+    if (config.keywords.some(keyword => name.includes(keyword))) {
+      return `${SUPABASE_PUBLIC_IMAGE_BASE}/${config.icon}`;
+    }
   }
 
   // Default fallback
-  return `${supabasePublicImageBase}/logo.svg`;
+  return `${SUPABASE_PUBLIC_IMAGE_BASE}/${GAME_CONFIGS.generic.icon}`;
 }

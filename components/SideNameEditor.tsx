@@ -45,7 +45,6 @@ export function SideNameEditor({ boardId, initialValue, column, placeholder }: P
         .eq("id", boardId);
 
       if (updateError) {
-        console.error("Failed to update side", updateError.message);
         setError(updateError.message);
       } else {
         setError(null);

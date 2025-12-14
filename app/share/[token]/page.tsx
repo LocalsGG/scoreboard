@@ -29,7 +29,6 @@ async function loadSharedBoard(token: string) {
     .maybeSingle<SharedBoard>();
 
   if (boardError) {
-    console.error("Failed to load shared scoreboard", boardError.message);
     throw new Error(boardError.message);
   }
 

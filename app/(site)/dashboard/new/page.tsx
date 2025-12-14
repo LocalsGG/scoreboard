@@ -13,8 +13,6 @@ type Template = {
   icon: string;
 };
 
-const nextIcon = "/nextjs-icon.svg";
-
 const gameTemplates: Template[] = [
   {
     slug: "melee",
@@ -65,7 +63,6 @@ async function createBoard(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error) {
-    console.error("Failed to create board", error.message);
     throw new Error(error.message);
   }
 
@@ -107,7 +104,7 @@ export default async function NewScoreboardPage() {
           <div className="space-y-2">
             <h2 className="text-3xl font-semibold text-black">Choose a Game</h2>
             <p className="text-sm text-zinc-600">
-              Choose the game you want to make a scoreboard for. If your game isn't listed, just pick the generic option.
+              Choose the game you want to make a scoreboard for. If your game isn&apos;t listed, just pick the generic option.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">

@@ -50,7 +50,6 @@ export function BoardNameEditor({
         .eq("id", boardId);
 
       if (updateError) {
-        console.error("Failed to update name", updateError.message);
         setError(updateError.message);
       } else {
         setError(null);

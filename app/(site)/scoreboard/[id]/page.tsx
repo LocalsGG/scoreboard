@@ -66,7 +66,6 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
     .maybeSingle<Scoreboard>();
 
   if (boardError) {
-    console.error("Failed to load scoreboard", boardError.message);
     throw new Error(boardError.message);
   }
 
@@ -117,7 +116,7 @@ async function generateShareToken(formData: FormData) {
 
 export default async function ScoreboardPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
-  const { board, ownerName } = await loadScoreboard(id);
+  const { board } = await loadScoreboard(id);
 
   if (!board) {
     return (

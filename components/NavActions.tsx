@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-type NavActionsProps = {
+interface NavActionsProps {
   email: string | null
 }
 

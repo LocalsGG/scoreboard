@@ -4,15 +4,11 @@ import Image from 'next/image'
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import type { AuthMode, AuthView, OAuthProvider, AuthStatus } from '@/lib/types'
 
-type Mode = 'signin' | 'signup'
-type View = 'form' | 'reset'
-type OAuthProvider = 'google' | 'discord'
-
-interface Status {
-  type: 'idle' | 'loading' | 'success' | 'error'
-  message?: string
-}
+type Mode = AuthMode
+type View = AuthView
+type Status = AuthStatus
 
 export function AuthForm() {
   const supabase = useMemo(() => createClient(), [])

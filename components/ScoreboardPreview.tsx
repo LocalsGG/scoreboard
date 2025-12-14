@@ -2,18 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { SCOREBOARD_OVERLAY_IMAGE } from "@/lib/assets";
-import { formatDateTime } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/client";
+import type { ScoreboardPreviewProps } from "@/lib/types";
 
-type Props = {
-  boardId: string;
-  initialName: string | null;
-  initialASide: string | null;
-  initialBSide: string | null;
-  initialAScore: number | null;
-  initialBScore: number | null;
-  initialUpdatedAt: string | null;
-};
+type Props = ScoreboardPreviewProps;
 
 type PreviewState = {
   name: string | null;
@@ -115,7 +107,6 @@ export function ScoreboardPreview({
     return trimmed.length > maxLength ? `${trimmed.slice(0, maxLength - 1)}...` : trimmed;
   };
 
-  const formattedUpdatedAt = formatDateTime(state.updatedAt);
   const aLead = state.aScore > state.bScore;
   const bLead = state.bScore > state.aScore;
 

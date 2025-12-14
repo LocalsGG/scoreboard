@@ -10,6 +10,13 @@ import 'server-only'
  * which resolves the critical '...get is not a function' TypeError.
  */
 export async function createServerSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+
+  if (!url || !key) {
+    throw new Error('Missing Supabase environment variables. Please check your .env.local file.')
+  }
+
   const cookieStore = await cookies()
 
   const normalizeCookieOptions = (options?: CookieOptions) => {
@@ -21,10 +28,7 @@ export async function createServerSupabaseClient() {
     return { ...rest, sameSite: normalizedSameSite } satisfies CookieOptions
   }
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
+  return createServerClient(url, key, {
       cookies: {
         getAll: () => cookieStore.getAll().map(({ name, value }) => ({ name, value })),
         setAll: (cookiesToSet) => {
