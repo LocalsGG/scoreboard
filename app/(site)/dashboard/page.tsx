@@ -18,8 +18,10 @@ const deleteBoard = async (boardId: string) => {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) {
-    redirect("/auth");
+  // Allow anonymous users to delete their boards
+  const userId = session?.user?.id;
+  if (!userId) {
+    throw new Error("You must be signed in to delete boards");
   }
 
   if (!boardId) return;
@@ -28,7 +30,7 @@ const deleteBoard = async (boardId: string) => {
     .from("scoreboards")
     .delete()
     .eq("id", boardId)
-    .eq("owner_id", session.user.id);
+    .eq("owner_id", userId);
 
   if (error) {
     throw new Error(error.message);
@@ -43,14 +45,16 @@ export default async function DashboardPage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) {
+  // Allow anonymous users to access the dashboard
+  const userId = session?.user?.id;
+  if (!userId) {
     redirect("/auth");
   }
 
   const { data: boards, error } = await supabase
     .from("scoreboards")
     .select("id, name, updated_at, owner_id")
-    .eq("owner_id", session.user.id)
+    .eq("owner_id", userId)
     .order("updated_at", { ascending: false })
     .returns<ScoreboardRow[]>();
 

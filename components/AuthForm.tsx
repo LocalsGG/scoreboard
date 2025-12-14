@@ -10,7 +10,11 @@ type Mode = AuthMode
 type View = AuthView
 type Status = AuthStatus
 
-export function AuthForm() {
+interface AuthFormProps {
+  isConverting?: boolean
+}
+
+export function AuthForm({ isConverting = false }: AuthFormProps) {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -23,37 +27,51 @@ export function AuthForm() {
   const [resetStatus, setResetStatus] = useState<Status>({ type: 'idle' })
   const [oauthStatus, setOauthStatus] = useState<Status>({ type: 'idle' })
   const [oauthLoading, setOauthLoading] = useState<OAuthProvider | null>(null)
-  const heroTitle =
-    view === 'reset' ? 'Reset password' : mode === 'signin' ? 'Welcome back' : "Let's get started"
-  const heroSubtitle =
-    view === 'reset'
-      ? 'Send a reset link to your email and follow the instructions.'
-      : 'Sign in with your email and password. Switch modes or reset below.'
+  const heroTitle = isConverting
+    ? 'Convert to Account'
+    : view === 'reset'
+    ? 'Reset password'
+    : mode === 'signin'
+    ? 'Welcome back'
+    : "Let's get started"
+  const heroSubtitle = isConverting
+    ? 'Sign in to save your scoreboards permanently. Your existing data will be preserved.'
+    : view === 'reset'
+    ? 'Send a reset link to your email and follow the instructions.'
+    : 'Sign in with your email and password. Switch modes or reset below.'
 
   useEffect(() => {
     let isMounted = true
     supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return
+      // Check for any session (including anonymous)
+      const hasSession = !!data.session
+      const isAnonymous = hasSession && !data.session?.user?.email
       setUserEmail(data.session?.user?.email ?? null)
+      // Don't redirect if converting (anonymous user converting to authenticated)
+      if (hasSession && !isAnonymous && !isConverting) {
+        router.replace('/dashboard')
+      }
     })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      const hasSession = !!session
+      const isAnonymous = hasSession && !session?.user?.email
       setUserEmail(session?.user?.email ?? null)
+      // Don't redirect if converting (anonymous user converting to authenticated)
+      // Only redirect if user now has an email (conversion successful)
+      if (hasSession && session.user.email) {
+        router.replace('/dashboard')
+      }
     })
 
     return () => {
       isMounted = false
       subscription.unsubscribe()
     }
-  }, [supabase])
-
-  useEffect(() => {
-    if (userEmail) {
-      router.replace('/dashboard')
-    }
-  }, [userEmail, router])
+  }, [supabase, router, isConverting])
 
   async function handleSubmit() {
     if (view !== 'form') return
@@ -128,6 +146,11 @@ export function AuthForm() {
   const toggleAction = mode === 'signin' ? 'Create one' : 'Sign in'
 
   async function handleOAuth(provider: OAuthProvider) {
+    // Anonymous is not an OAuth provider
+    if (provider === 'anonymous') {
+      return
+    }
+    
     setOauthStatus({ type: 'loading', message: `Redirecting to ${provider === 'google' ? 'Google' : 'Discord'}...` })
     setOauthLoading(provider)
     const redirectTo =
@@ -145,6 +168,22 @@ export function AuthForm() {
     }
 
     setOauthStatus({ type: 'success', message: 'Redirecting...' })
+  }
+
+  async function handleAnonymous() {
+    setOauthStatus({ type: 'loading', message: 'Signing in anonymously...' })
+    setOauthLoading('anonymous' as OAuthProvider)
+
+    const { error } = await supabase.auth.signInAnonymously()
+
+    if (error) {
+      setOauthStatus({ type: 'error', message: error.message })
+      setOauthLoading(null)
+      return
+    }
+
+    setOauthStatus({ type: 'success', message: 'Signed in as guest!' })
+    router.push('/dashboard')
   }
 
   const oauthProviders: Array<{
@@ -175,6 +214,13 @@ export function AuthForm() {
       <div className="space-y-2">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-black">{heroTitle}</h1>
         <p className="text-sm text-black">{heroSubtitle}</p>
+        {isConverting && (
+          <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 mt-3">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> Your current scoreboards will be linked to your new account automatically.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -194,6 +240,20 @@ export function AuthForm() {
             {provider.label}
           </button>
         ))}
+        {!isConverting && (
+          <button
+            type="button"
+            onClick={() => {
+              if (oauthLoading) return
+              void handleAnonymous()
+            }}
+            disabled={Boolean(oauthLoading)}
+            className="flex w-full items-center justify-center gap-3 rounded-md border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-black transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-50 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span className="text-lg">👤</span>
+            Continue as Guest
+          </button>
+        )}
         {oauthStatus.type !== 'idle' && oauthStatus.message && (
           <div
             className={`rounded-lg px-4 py-3 text-sm font-medium ${

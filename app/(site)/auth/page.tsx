@@ -1,25 +1,36 @@
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/AuthForm";
+import { OAuthCallbackHandler } from "@/components/OAuthCallbackHandler";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function AuthPage() {
+export default async function AuthPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ convert?: string }>;
+}) {
   const supabase = await createServerSupabaseClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Signed-in users should land on the dashboard instead of seeing auth UI.
-  if (session) {
+  const params = await searchParams;
+  const isConverting = params.convert === 'true';
+
+  // Allow anonymous users to access auth page for conversion
+  // Redirect authenticated (non-anonymous) users to dashboard
+  // This handles OAuth callbacks - if user is authenticated, redirect to dashboard
+  if (session && session.user.email && !isConverting) {
     redirect("/dashboard");
   }
 
   return (
     <div className="relative flex min-h-full items-center justify-center px-4 sm:px-6 py-12 font-sans">
+      <OAuthCallbackHandler />
       <main className="relative z-10 w-full max-w-sm animate-fade-in">
         <section className="rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm animate-rise">
-          <AuthForm />
+          <AuthForm isConverting={isConverting} />
         </section>
       </main>
     </div>

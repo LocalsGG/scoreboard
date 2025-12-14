@@ -18,18 +18,30 @@ export function NavActions({ email }: NavActionsProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
+  const [isAnonymous, setIsAnonymous] = useState(false)
+
   useEffect(() => {
     let isMounted = true
 
     supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return
-      setSessionEmail(data.session?.user?.email ?? null)
+      // Show email if available, otherwise show "Guest" for anonymous users
+      const email = data.session?.user?.email ?? null
+      const hasSession = !!data.session
+      const anonymous = hasSession && !email
+      setIsAnonymous(anonymous)
+      setSessionEmail(email || (hasSession ? 'Guest' : null))
     })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSessionEmail(session?.user?.email ?? null)
+      // Show email if available, otherwise show "Guest" for anonymous users
+      const email = session?.user?.email ?? null
+      const hasSession = !!session
+      const anonymous = hasSession && !email
+      setIsAnonymous(anonymous)
+      setSessionEmail(email || (hasSession ? 'Guest' : null))
       router.refresh()
     })
     return () => {
@@ -62,6 +74,26 @@ export function NavActions({ email }: NavActionsProps) {
   async function handleSignOut() {
     setLoading(true)
     setError(null)
+
+    // If anonymous user, delete all their scoreboards before signing out
+    if (isAnonymous) {
+      const { data: { session } } = await supabase.auth.getSession()
+      const userId = session?.user?.id
+
+      if (userId) {
+        const { error: deleteError } = await supabase
+          .from('scoreboards')
+          .delete()
+          .eq('owner_id', userId)
+
+        if (deleteError) {
+          setError(deleteError.message)
+          setLoading(false)
+          return
+        }
+      }
+    }
+
     const { error } = await supabase.auth.signOut()
     if (error) {
       setError(error.message)
@@ -99,14 +131,33 @@ export function NavActions({ email }: NavActionsProps) {
       </button>
 
       {menuOpen ? (
-        <div className="absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border border-black/10 bg-white/90 py-2 shadow-xl shadow-black/10 ring-1 ring-black/5 backdrop-blur animate-rise">
-          <Link
-            href="/account"
-            onClick={() => setMenuOpen(false)}
-            className="block px-3 py-2 text-sm font-semibold text-black transition-colors duration-150 hover:bg-zinc-100/80"
-          >
-            Account
-          </Link>
+        <div className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-black/10 bg-white/90 py-2 shadow-xl shadow-black/10 ring-1 ring-black/5 backdrop-blur animate-rise">
+          {isAnonymous ? (
+            <>
+              <div className="px-3 py-2 border-b border-black/5">
+                <p className="text-xs font-semibold text-zinc-600 mb-1">Guest Account</p>
+                <p className="text-xs text-zinc-500">
+                  Sign in to save your scoreboards permanently
+                </p>
+              </div>
+              <Link
+                href="/auth?convert=true"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-blue-600 transition-colors duration-150 hover:bg-blue-50/80"
+              >
+                <span>💾</span>
+                Save your scoreboards
+              </Link>
+            </>
+          ) : (
+            <Link
+              href="/account"
+              onClick={() => setMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold text-black transition-colors duration-150 hover:bg-zinc-100/80"
+            >
+              Account
+            </Link>
+          )}
           <button
             type="button"
             onClick={handleSignOut}

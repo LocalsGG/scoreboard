@@ -47,8 +47,9 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   }
   const user = userData.user;
 
+  // Allow anonymous users to access scoreboards
   if (!user) {
-    redirect("/auth");
+    throw new Error("You must be signed in to access scoreboards");
   }
 
   const metadata = (user.user_metadata ?? {}) as Record<string, unknown>;
@@ -104,8 +105,9 @@ async function generateShareToken(formData: FormData) {
 
   const user = userData.user;
 
+  // Allow anonymous users to generate share tokens
   if (!user) {
-    redirect("/auth");
+    throw new Error("You must be signed in to generate share tokens");
   }
 
   const newToken = await regenerateShareToken({ supabase, boardId, ownerId: user.id });

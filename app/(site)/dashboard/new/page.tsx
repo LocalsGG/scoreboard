@@ -44,8 +44,10 @@ async function createBoard(formData: FormData) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) {
-    redirect("/auth");
+  // Allow anonymous users to create boards
+  const userId = session?.user?.id;
+  if (!userId) {
+    throw new Error("You must be signed in to create boards");
   }
 
   const rawName = (formData.get("name") as string | null) ?? "";
@@ -56,7 +58,7 @@ async function createBoard(formData: FormData) {
     .from("scoreboards")
     .insert({
       name,
-      owner_id: session.user.id,
+      owner_id: userId,
       share_token: shareToken,
     })
     .select("id")
@@ -80,7 +82,9 @@ export default async function NewScoreboardPage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) {
+  // Allow anonymous users to create boards
+  const userId = session?.user?.id;
+  if (!userId) {
     redirect("/auth");
   }
 

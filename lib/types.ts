@@ -21,7 +21,7 @@ export interface User {
 // Auth related types
 export type AuthMode = 'signin' | 'signup';
 export type AuthView = 'form' | 'reset';
-export type OAuthProvider = 'google' | 'discord';
+export type OAuthProvider = 'google' | 'discord' | 'anonymous';
 
 export interface AuthStatus {
   type: 'idle' | 'loading' | 'success' | 'error';
@@ -38,3 +38,4 @@ export interface ScoreboardPreviewProps {
   initialBScore: number | null;
   initialUpdatedAt: string | null;
 }
+

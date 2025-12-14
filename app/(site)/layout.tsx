@@ -21,9 +21,6 @@ export default function SiteLayout({
       <main className="flex-1">{children}</main>
       <footer className="border-t border-black/5 bg-white/80 px-6 py-8 text-sm text-zinc-700 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 text-center">
-          <span className="rounded-full border border-black/10 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-black">
-            LOCALS.GG
-          </span>
           <span className="text-black">© 2025 LOCALS.GG</span>
           <p className="text-sm text-zinc-600">
             Modern tools for real-world gaming events and communities.
