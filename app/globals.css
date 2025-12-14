@@ -69,7 +69,6 @@ body.share-overlay {
   width: 100vw;
   position: relative;
   left: 50%;
-  right: 50%;
   margin-left: -50vw;
   margin-right: -50vw;
   min-height: clamp(157.5px, 50.625vw, 337.5px);

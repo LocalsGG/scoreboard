@@ -52,8 +52,8 @@ export function getGameName(boardName: string | null): string {
     }
   }
 
-  // Default fallback - return the board name itself
-  return boardName;
+  // Default fallback - return generic display name
+  return GAME_CONFIGS.generic.displayName;
 }
 
 /**
