@@ -54,7 +54,7 @@ export async function getScoreboardsWithOwner(
     .from("scoreboards")
     .select(`
       *,
-      owner:users!scoreboards_owner_id_fkey (
+      owner:profiles!scoreboards_owner_id_fkey (
         id,
         email,
         subscription_status,

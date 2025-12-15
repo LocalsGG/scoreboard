@@ -6,7 +6,7 @@ export async function getUserData(
   userId: string
 ): Promise<User | null> {
   const { data, error } = await supabase
-    .from("users")
+    .from("profiles")
     .select("*")
     .eq("id", userId)
     .maybeSingle();
@@ -40,7 +40,7 @@ export async function ensureUserExists(
   const rpcErrorMsg = rpcResult.error.message || '';
   if (rpcErrorMsg.includes("function") && rpcErrorMsg.includes("does not exist")) {
     const { error: insertError } = await supabase
-      .from("users")
+      .from("profiles")
       .insert({
         id: userId,
         email: email || "",
@@ -66,7 +66,7 @@ export async function updateSubscriptionStatus(
   status: "base" | "standard" | "pro" | "lifetime"
 ): Promise<{ success: boolean; error?: string }> {
   const { error } = await supabase
-    .from("users")
+    .from("profiles")
     .update({ subscription_status: status, updated_at: new Date().toISOString() })
     .eq("id", userId);
 

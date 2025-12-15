@@ -130,6 +130,19 @@ using (share_token is not null);
 
 If the table already exists, add the policies above. The app filters by `owner_id` for mutations, and shared links rely on the `share_token` to allow read-only access.
 
+### Subscriptions table
+
+Run the SQL migration file `supabase/migrations/create_subscriptions_table.sql` in the Supabase SQL editor to create the subscriptions table for managing Stripe subscriptions. This table includes:
+
+- User subscription tracking with Stripe customer and subscription IDs
+- Subscription status and plan type
+- Period tracking (start/end dates)
+- Automatic `updated_at` timestamp updates
+- Row Level Security policies ensuring users can only access their own subscriptions
+- Indexes for efficient lookups by user_id and Stripe IDs
+
+The migration file includes all necessary indexes, RLS policies, and triggers.
+
 ## Email/password auth
 
 1) Ensure `.env.local` has your publishable key + URL.

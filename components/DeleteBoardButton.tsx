@@ -16,31 +16,26 @@ export function DeleteBoardButton({ boardId, boardName, deleteAction }: Props) {
   useEffect(() => {
     if (!showConfirm) return;
 
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setShowConfirm(false);
       }
     };
 
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
-        setShowConfirm(false);
-      }
-    };
-
     document.addEventListener("keydown", handleEscape);
-    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
+      document.body.style.overflow = originalOverflow;
       document.removeEventListener("keydown", handleEscape);
-      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showConfirm]);
 
   const handleDelete = () => {
     startTransition(async () => {
       await deleteAction(boardId);
-      setShowConfirm(false);
     });
   };
 
@@ -58,7 +53,14 @@ export function DeleteBoardButton({ boardId, boardName, deleteAction }: Props) {
       </button>
 
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          onClick={(e) => {
+            if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
+              setShowConfirm(false);
+            }
+          }}
+        >
           <div
             ref={dialogRef}
             className="w-full max-w-md rounded-2xl border border-black/10 bg-white/95 p-6 shadow-[0_22px_65px_rgba(12,18,36,0.12)] backdrop-blur animate-rise"

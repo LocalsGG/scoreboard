@@ -18,7 +18,7 @@ export default async function AccountPage() {
   const user = session.user;
   const isAnonymous = !user.email;
   
-  // Fetch user data from public.users table (includes subscription status)
+  // Fetch user data from public.profiles table (includes subscription status)
   const userData = !isAnonymous ? await getUserData(supabase, user.id) : null;
   const subscriptionStatus = userData?.subscription_status || 'base';
 

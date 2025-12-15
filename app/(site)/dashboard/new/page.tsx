@@ -51,8 +51,8 @@ async function createBoard(formData: FormData) {
     throw new Error("You must be signed in to create boards");
   }
 
-  // Ensure user exists in public.users table before creating scoreboard
-  // This handles cases where the user exists in auth.users but not in public.users
+  // Ensure user exists in public.profiles table before creating scoreboard
+  // This handles cases where the user exists in auth.users but not in public.profiles
   const userEmail = session?.user?.email || null;
   const isAnonymous = !userEmail;
   const userCheck = await ensureUserExists(supabase, userId, userEmail);
