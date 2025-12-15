@@ -27,3 +27,4 @@ else
   echo ""
   echo "Or install Supabase CLI: https://supabase.com/docs/guides/cli"
 fi
+

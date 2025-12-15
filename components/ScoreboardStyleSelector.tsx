@@ -122,3 +122,4 @@ export function ScoreboardStyleSelector({ boardId, initialStyle }: Props) {
     </div>
   );
 }
+
