@@ -110,7 +110,7 @@ export function PricingPageClient() {
               <span className="text-base text-zinc-300">/ month</span>
             </div>
             <p className="text-sm text-zinc-300">
-              {isAnnual ? 'Billed annually' : 'Billed monthly, cancel anytime'}
+              {isAnnual ? 'Billed annually • Save 50%' : 'Billed monthly, cancel anytime'}
             </p>
           </div>
           <p className="text-sm text-zinc-300 mb-2">
@@ -155,7 +155,7 @@ export function PricingPageClient() {
               <span className="text-base text-zinc-600">/ month</span>
             </div>
             <p className="text-sm text-zinc-600">
-              {isAnnual ? 'Billed annually' : 'Billed monthly, cancel anytime'}
+              {isAnnual ? 'Billed annually • Save 50%' : 'Billed monthly, cancel anytime'}
             </p>
           </div>
           <p className="text-sm text-zinc-600 mb-2">

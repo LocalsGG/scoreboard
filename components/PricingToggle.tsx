@@ -72,9 +72,6 @@ export function PricingToggle({ onToggle, onLifetimeClick }: PricingToggleProps)
             }`}
           >
             Annual
-            {selectedOption === 'annual' && (
-              <span className="ml-1 sm:ml-1.5 text-[10px] sm:text-xs font-bold opacity-90">Save 50%</span>
-            )}
           </button>
           <button
             type="button"
