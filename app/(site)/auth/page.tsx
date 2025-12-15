@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export default async function AuthPage({
   searchParams,
 }: {
-  searchParams: Promise<{ convert?: string }>;
+  searchParams: Promise<{ convert?: string; redirect?: string; plan?: string; isAnnual?: string }>;
 }) {
   const supabase = await createServerSupabaseClient();
   const {
@@ -16,8 +16,11 @@ export default async function AuthPage({
 
   const params = await searchParams;
   const isConverting = params.convert === 'true';
+  const redirectTo = params.redirect;
+  const plan = params.plan;
+  const isAnnual = params.isAnnual === 'true';
 
-  if (session?.user?.email && !isConverting) {
+  if (session?.user?.email && !isConverting && !redirectTo) {
     redirect("/dashboard");
   }
 
@@ -25,7 +28,12 @@ export default async function AuthPage({
     <div className="relative flex min-h-full items-center justify-center px-4 sm:px-6 py-12 font-sans">
       <main className="relative z-10 w-full max-w-sm animate-fade-in">
         <section className="rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm animate-rise">
-          <AuthForm isConverting={isConverting} />
+          <AuthForm 
+            isConverting={isConverting} 
+            redirectTo={redirectTo}
+            plan={plan}
+            isAnnual={isAnnual}
+          />
         </section>
       </main>
     </div>

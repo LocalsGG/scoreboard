@@ -11,7 +11,7 @@ import { ResetPositionsButton } from "@/components/ResetPositionsButton";
 import { ensureShareToken, regenerateShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getBaseUrlFromRequest } from "@/lib/urls";
-import { getUserData } from "@/lib/users";
+import { getUserSubscription } from "@/lib/users";
 import type { ElementPositions } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -60,8 +60,8 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   }
   const user = userData.user;
 
-  // Allow anonymous users to access scoreboards
-  if (!user) {
+  // Require authenticated user with email
+  if (!user || !user.email) {
     redirect("/auth");
   }
 
@@ -73,9 +73,9 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
     "you";
 
   // Fetch user subscription status
-  const userSubscriptionData = await getUserData(supabase, user.id);
-  const subscriptionStatus = userSubscriptionData?.subscription_status;
-  const hasPaidSubscription = subscriptionStatus === "pro" || subscriptionStatus === "standard" || subscriptionStatus === "lifetime";
+  const subscription = await getUserSubscription(supabase, user.id);
+  const planType = subscription?.plan_type || "base";
+  const hasPaidSubscription = planType === "pro" || planType === "standard" || planType === "lifetime";
 
   // Select all columns, but handle element_positions gracefully if it doesn't exist
   let board: Scoreboard | null = null;
@@ -158,15 +158,15 @@ async function generateShareToken(formData: FormData) {
 
   const user = userData.user;
 
-  // Allow anonymous users to generate share tokens
-  if (!user) {
+  // Require authenticated user with email
+  if (!user || !user.email) {
     throw new Error("You must be signed in to generate share tokens");
   }
 
   // Check subscription status before allowing share token generation
-  const userDataRecord = await getUserData(supabase, user.id);
-  const subscriptionStatus = userDataRecord?.subscription_status;
-  const hasPaidSubscription = subscriptionStatus === "pro" || subscriptionStatus === "standard" || subscriptionStatus === "lifetime";
+  const subscription = await getUserSubscription(supabase, user.id);
+  const planType = subscription?.plan_type || "base";
+  const hasPaidSubscription = planType === "pro" || planType === "standard" || planType === "lifetime";
 
   if (!hasPaidSubscription) {
     redirect("/pricing");

@@ -1,12 +1,64 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { PricingToggle } from '@/components/PricingToggle'
 
 export function PricingPageClient() {
+  const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
   const [isAnnual, setIsAnnual] = useState(false)
   const [isLifetimeExpanded, setIsLifetimeExpanded] = useState(false)
+  const [loading, setLoading] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+
+  // Check authentication status
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsAuthenticated(!!session?.user)
+    }
+    checkAuth()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session?.user)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabase])
+
+
+  // Check for checkout redirect after OAuth (when coming from callback)
+  useEffect(() => {
+    if (isAuthenticated === null) return // Wait for auth check to complete
+
+    const params = new URLSearchParams(window.location.search)
+    const shouldCheckout = params.get('checkout') === 'true'
+    const plan = params.get('plan') as 'standard' | 'pro' | 'lifetime' | null
+    const isAnnualParam = params.get('isAnnual') === 'true'
+
+    if (shouldCheckout && plan && isAuthenticated) {
+      // Set annual toggle if needed
+      if (isAnnualParam && plan !== 'lifetime') {
+        setIsAnnual(true)
+      }
+      
+      // Clean up URL params first
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('checkout')
+      newUrl.searchParams.delete('plan')
+      newUrl.searchParams.delete('isAnnual')
+      window.history.replaceState({}, '', newUrl.toString())
+
+      // Trigger checkout
+      handleCheckout(plan)
+    }
+  }, [isAuthenticated])
 
   // Check for lifetime hash on mount and when hash changes
   useEffect(() => {
@@ -33,6 +85,77 @@ export function PricingPageClient() {
   const standardPrice = isAnnual ? 10 : 20
   const proPrice = isAnnual ? 20 : 40
 
+  // Get price IDs from environment variables
+  const getPriceId = (plan: 'standard' | 'pro' | 'lifetime') => {
+    if (plan === 'lifetime') {
+      return process.env.NEXT_PUBLIC_STRIPE_PRICE_LIFETIME
+    }
+    if (plan === 'standard') {
+      return isAnnual 
+        ? process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL
+        : process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_MONTHLY
+    }
+    if (plan === 'pro') {
+      return isAnnual
+        ? process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL
+        : process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY
+    }
+    return null
+  }
+
+  const handleCheckout = async (plan: 'standard' | 'pro' | 'lifetime') => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      // Store the plan and pricing info in URL params for redirect after auth
+      const params = new URLSearchParams({
+        plan,
+        ...(plan !== 'lifetime' && { isAnnual: isAnnual.toString() }),
+      })
+      router.push(`/auth?redirect=pricing&${params.toString()}`)
+      return
+    }
+
+    const priceId = getPriceId(plan)
+    
+    if (!priceId) {
+      setError('Price configuration error. Please contact support.')
+      return
+    }
+
+    setLoading(plan)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId,
+          isAnnual: plan !== 'lifetime' ? isAnnual : false,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session')
+      }
+
+      if (data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url
+      } else {
+        throw new Error('No checkout URL received')
+      }
+    } catch (err) {
+      console.error('Checkout error:', err)
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      setLoading(null)
+    }
+  }
+
   return (
     <>
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 sm:gap-8 lg:gap-12 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-32 sm:pb-40 lg:pb-48">
@@ -53,6 +176,11 @@ export function PricingPageClient() {
             setIsLifetimeExpanded(true)
           }}
         />
+        {error && (
+          <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm max-w-md">
+            {error}
+          </div>
+        )}
       </section>
 
 
@@ -138,12 +266,13 @@ export function PricingPageClient() {
               <span className="text-white">Invite team members to collaborate</span>
             </li>
           </ul>
-          <Link
-            href="/auth"
-            className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-black transition-colors hover:bg-zinc-100"
+          <button
+            onClick={() => handleCheckout('pro')}
+            disabled={loading === 'pro'}
+            className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-black transition-colors hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Get Started
-          </Link>
+            {loading === 'pro' ? 'Loading...' : 'Get Started'}
+          </button>
         </div>
 
         {/* Standard Tier */}
@@ -183,12 +312,13 @@ export function PricingPageClient() {
               <span className="text-zinc-700">Invite team members to collaborate</span>
             </li>
           </ul>
-          <Link
-            href="/auth"
-            className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-black px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+          <button
+            onClick={() => handleCheckout('standard')}
+            disabled={loading === 'standard'}
+            className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-black px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Get Started
-          </Link>
+            {loading === 'standard' ? 'Loading...' : 'Get Started'}
+          </button>
         </div>
 
         {/* Enterprise Tier */}
@@ -429,13 +559,16 @@ export function PricingPageClient() {
                   </ul>
                 </div>
                 <div className="w-full md:w-auto">
-                  <Link
-                    href="/auth"
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-orange-500 px-6 sm:px-8 py-3 sm:py-4 text-base font-semibold text-white transition-colors hover:bg-orange-600 w-full md:w-auto"
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleCheckout('lifetime')
+                    }}
+                    disabled={loading === 'lifetime'}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-orange-500 px-6 sm:px-8 py-3 sm:py-4 text-base font-semibold text-white transition-colors hover:bg-orange-600 w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Claim Lifetime Deal
-                  </Link>
+                    {loading === 'lifetime' ? 'Loading...' : 'Claim Lifetime Deal'}
+                  </button>
                 </div>
               </div>
             </div>

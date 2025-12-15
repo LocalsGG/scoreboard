@@ -26,7 +26,6 @@ export interface ScoreboardRow {
 export interface User {
   id: string;
   email: string | null;
-  subscription_status: 'base' | 'standard' | 'pro' | 'lifetime' | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -34,7 +33,7 @@ export interface User {
 // Auth related types
 export type AuthMode = 'signin' | 'signup';
 export type AuthView = 'form' | 'reset';
-export type OAuthProvider = 'google' | 'anonymous';
+export type OAuthProvider = 'google';
 
 export interface AuthStatus {
   type: 'idle' | 'loading' | 'success' | 'error';

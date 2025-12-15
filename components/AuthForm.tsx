@@ -12,9 +12,12 @@ type Status = AuthStatus
 
 interface AuthFormProps {
   isConverting?: boolean
+  redirectTo?: string
+  plan?: string
+  isAnnual?: boolean
 }
 
-export function AuthForm({ isConverting = false }: AuthFormProps) {
+export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: AuthFormProps) {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -46,16 +49,27 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
       const hasSession = !!data.session
       const isAnonymous = hasSession && !data.session?.user?.email
       if (hasSession && !isAnonymous && !isConverting) {
-        router.replace('/dashboard')
+        if (redirectTo === 'pricing' && plan && (plan === 'standard' || plan === 'pro' || plan === 'lifetime')) {
+          // Redirect back to pricing with plan info to trigger checkout
+          const params = new URLSearchParams({ plan, ...(plan !== 'lifetime' && isAnnual && { isAnnual: 'true' }) })
+          router.replace(`/pricing?checkout=true&${params.toString()}`)
+        } else {
+          router.replace('/dashboard')
+        }
       }
     })
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const hasSession = !!session
       if (hasSession && session?.user?.email) {
-        router.replace('/dashboard')
+        if (redirectTo === 'pricing' && plan && (plan === 'standard' || plan === 'pro' || plan === 'lifetime')) {
+          // Trigger checkout directly after authentication
+          await triggerCheckout(plan, isAnnual || false)
+        } else {
+          router.replace('/dashboard')
+        }
       }
     })
 
@@ -63,7 +77,7 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
       isMounted = false
       subscription.unsubscribe()
     }
-  }, [supabase, router, isConverting])
+  }, [supabase, router, isConverting, redirectTo, plan, isAnnual])
 
   async function handleSubmit() {
     if (view !== 'form') return
@@ -102,7 +116,65 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
     }
 
     setStatus({ type: 'success', message: 'Signed in.' })
-    router.push('/dashboard')
+    
+    // If redirecting to checkout, trigger checkout directly
+    if (redirectTo === 'pricing' && plan && (plan === 'standard' || plan === 'pro' || plan === 'lifetime')) {
+      await triggerCheckout(plan, isAnnual || false)
+    } else {
+      router.push('/dashboard')
+    }
+  }
+
+  async function triggerCheckout(plan: 'standard' | 'pro' | 'lifetime', isAnnualPlan: boolean) {
+    setStatus({ type: 'loading', message: 'Preparing checkout...' })
+    
+    // Get price ID based on plan
+    let priceId: string | null = null
+    if (plan === 'lifetime') {
+      priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_LIFETIME || null
+    } else if (plan === 'standard') {
+      priceId = isAnnualPlan
+        ? (process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL || null)
+        : (process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_MONTHLY || null)
+    } else if (plan === 'pro') {
+      priceId = isAnnualPlan
+        ? (process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL || null)
+        : (process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY || null)
+    }
+
+    if (!priceId) {
+      setStatus({ type: 'error', message: 'Price configuration error. Please contact support.' })
+      return
+    }
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId,
+          isAnnual: plan !== 'lifetime' ? isAnnualPlan : false,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session')
+      }
+
+      if (data.url) {
+        // Redirect directly to Stripe Checkout
+        window.location.href = data.url
+      } else {
+        throw new Error('No checkout URL received')
+      }
+    } catch (err) {
+      console.error('Checkout error:', err)
+      setStatus({ type: 'error', message: err instanceof Error ? err.message : 'Something went wrong. Please try again.' })
+    }
   }
 
   async function handleReset() {
@@ -138,17 +210,22 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
   const toggleAction = mode === 'signin' ? 'Create one' : 'Sign in'
 
   async function handleOAuth(provider: OAuthProvider) {
-    if (provider === 'anonymous') {
-      return
-    }
-
     setOauthStatus({ type: 'loading', message: 'Redirecting to Google...' })
     setOauthLoading(provider)
 
     const callbackUrl =
       typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
-    const finalRedirect = 
-      typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined
+    
+    // Build redirect params if we need to go to checkout
+    let finalRedirect = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined
+    if (redirectTo === 'pricing' && plan) {
+      const params = new URLSearchParams({
+        redirect: 'pricing',
+        plan,
+        ...(plan !== 'lifetime' && isAnnual && { isAnnual: 'true' }),
+      })
+      finalRedirect = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback?${params.toString()}` : undefined
+    }
 
     const { error, data } = await supabase.auth.signInWithOAuth({
       provider,
@@ -173,21 +250,6 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
     }
   }
 
-  async function handleAnonymous() {
-    setOauthStatus({ type: 'loading', message: 'Signing in anonymously...' })
-    setOauthLoading('anonymous' as OAuthProvider)
-
-    const { error } = await supabase.auth.signInAnonymously()
-
-    if (error) {
-      setOauthStatus({ type: 'error', message: error.message || 'An error occurred' })
-      setOauthLoading(null)
-      return
-    }
-
-    setOauthStatus({ type: 'success', message: 'Signed in as guest!' })
-    router.push('/dashboard')
-  }
 
   const oauthProviders: Array<{
     id: OAuthProvider
@@ -236,20 +298,6 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
             {provider.label}
           </button>
         ))}
-        {!isConverting && (
-          <button
-            type="button"
-            onClick={() => {
-              if (oauthLoading) return
-              void handleAnonymous()
-            }}
-            disabled={Boolean(oauthLoading)}
-            className="flex w-full items-center justify-center gap-3 rounded-md border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-black transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-50 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <span className="text-lg">👤</span>
-            Continue as Guest
-          </button>
-        )}
         {oauthStatus.type !== 'idle' && oauthStatus.message && (
           <div
             className={`rounded-lg px-4 py-3 text-sm font-medium ${

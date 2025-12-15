@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getUserData } from "@/lib/users";
+import { getUserSubscription } from "@/lib/users";
 import { NavActions } from "./NavActions";
 
 export async function Navbar() {
@@ -14,24 +14,25 @@ export async function Navbar() {
   const isGuest = !!session && !email;
   const isAuthenticated = !!session && !!email;
   
-  // Get subscription status - only for authenticated (non-guest) users
-  let subscriptionStatus: "base" | "standard" | "pro" | "lifetime" | null = null;
-  if (isAuthenticated && session?.user?.id) {
-    const userData = await getUserData(supabase, session.user.id);
-    const status = userData?.subscription_status;
-    if (status === "lifetime") {
-      subscriptionStatus = "lifetime";
-    } else if (status === "pro") {
-      subscriptionStatus = "pro";
-    } else if (status === "standard") {
-      subscriptionStatus = "standard";
-    } else {
-      // Authenticated but not paid - show base badge
-      subscriptionStatus = "base";
-    }
+  // Get plan type for any signed-in user.
+  // - Guests (anonymous) always show "Guest"
+  // - Authenticated users read from subscriptions table; fallback "base"
+  let planType: "base" | "standard" | "pro" | "lifetime" | null = null;
+  if (isGuest) {
+    planType = "base";
+  } else if (session?.user?.id) {
+    const subscription = await getUserSubscription(supabase, session.user.id);
+    planType = subscription?.plan_type || "base";
   }
 
-  const badgeLabels: Record<"base" | "standard" | "pro" | "lifetime", string> = {
+  const badgeLabelsShort: Record<"base" | "standard" | "pro" | "lifetime", string> = {
+    base: "Base",
+    standard: "Standard",
+    pro: "Pro",
+    lifetime: "Lifetime",
+  };
+
+  const badgeLabelsLong: Record<"base" | "standard" | "pro" | "lifetime", string> = {
     base: "Base",
     standard: "Standard",
     pro: "Pro",
@@ -66,14 +67,15 @@ export async function Navbar() {
         </span>
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Subscription Badge - only show for authenticated (non-guest) users */}
-        {isAuthenticated && subscriptionStatus !== null && (
+        {/* Plan badge - visible for signed-in users (including base) */}
+        {session && planType ? (
           <span
-            className={`hidden sm:inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${badgeStyles[subscriptionStatus]}`}
+            className={`inline-flex items-center rounded-full border px-2 py-1 text-[11px] font-semibold ${badgeStyles[planType]}`}
           >
-            {badgeLabels[subscriptionStatus]}
+            <span className="sm:hidden">{badgeLabelsShort[planType]}</span>
+            <span className="hidden sm:inline">{badgeLabelsLong[planType]}</span>
           </span>
-        )}
+        ) : null}
         {/* Navigation Links - visible on all screens */}
         <Link
           href="/pricing"

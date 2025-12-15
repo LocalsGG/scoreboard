@@ -37,6 +37,11 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${baseUrl}/auth?error=${encodeURIComponent(error)}`)
   }
   
+  // Check if we have checkout redirect params
+  const redirect = searchParams.get('redirect')
+  const plan = searchParams.get('plan')
+  const isAnnual = searchParams.get('isAnnual')
+  
   let next = searchParams.get('next') ?? '/dashboard'
   if (!next.startsWith('/')) {
     next = '/dashboard'
@@ -49,6 +54,15 @@ export async function GET(request: Request) {
     if (exchangeError) {
       const errorMsg = exchangeError.message || 'Unknown error'
       return NextResponse.redirect(`${baseUrl}/auth?error=${encodeURIComponent(errorMsg)}`)
+    }
+    
+    // If we have checkout params, redirect to a checkout trigger page
+    if (redirect === 'pricing' && plan) {
+      const params = new URLSearchParams({
+        plan,
+        ...(plan !== 'lifetime' && isAnnual && { isAnnual }),
+      })
+      return NextResponse.redirect(`${baseUrl}/pricing?checkout=true&${params.toString()}`)
     }
     
     return NextResponse.redirect(`${baseUrl}${next}`)

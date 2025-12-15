@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getUserData } from "@/lib/users";
+import { getUserSubscription } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +18,9 @@ export default async function AccountPage() {
   const user = session.user;
   const isAnonymous = !user.email;
   
-  // Fetch user data from public.profiles table (includes subscription status)
-  const userData = !isAnonymous ? await getUserData(supabase, user.id) : null;
-  const subscriptionStatus = userData?.subscription_status || 'base';
+  // Fetch user subscription from subscriptions table
+  const subscription = !isAnonymous ? await getUserSubscription(supabase, user.id) : null;
+  const planType = subscription?.plan_type || 'base';
 
   return (
     <div className="flex min-h-full justify-center px-6 py-14 font-sans">
@@ -60,7 +60,7 @@ export default async function AccountPage() {
                     Subscription
                   </p>
                   <p className="text-base font-semibold text-black dark:text-white capitalize">
-                    {subscriptionStatus}
+                    {planType}
                   </p>
                 </div>
               )}

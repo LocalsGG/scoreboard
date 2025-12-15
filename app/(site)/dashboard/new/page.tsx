@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "crypto";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { ensureUserExists, getUserData, getBoardLimit } from "@/lib/users";
+import { ensureUserExists, getUserSubscription, getBoardLimit } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
@@ -45,25 +45,23 @@ async function createBoard(formData: FormData) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Allow anonymous users to create boards
   const userId = session?.user?.id;
-  if (!userId) {
+  const userEmail = session?.user?.email;
+  if (!userId || !userEmail) {
     throw new Error("You must be signed in to create boards");
   }
 
   // Ensure user exists in public.profiles table before creating scoreboard
   // This handles cases where the user exists in auth.users but not in public.profiles
-  const userEmail = session?.user?.email || null;
-  const isAnonymous = !userEmail;
   const userCheck = await ensureUserExists(supabase, userId, userEmail);
   if (!userCheck.success) {
     throw new Error(`Failed to ensure user exists: ${userCheck.error}`);
   }
 
   // Check board limit before creating
-  const userData = !isAnonymous ? await getUserData(supabase, userId) : null;
-  const subscriptionStatus = userData?.subscription_status || "base";
-  const boardLimit = getBoardLimit(subscriptionStatus);
+  const subscription = await getUserSubscription(supabase, userId);
+  const planType = subscription?.plan_type || "base";
+  const boardLimit = getBoardLimit(planType);
   
   // Count existing boards
   const { count, error: countError } = await supabase
@@ -112,9 +110,9 @@ export default async function NewScoreboardPage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Allow anonymous users to create boards
   const userId = session?.user?.id;
-  if (!userId) {
+  const userEmail = session?.user?.email;
+  if (!userId || !userEmail) {
     redirect("/auth");
   }
 

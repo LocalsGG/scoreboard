@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { formatDate } from "@/lib/dates";
 import { getGameIcon, getGameName } from "@/lib/assets";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getUserData, getBoardLimit } from "@/lib/users";
+import { getUserData, getUserSubscription, getBoardLimit } from "@/lib/users";
+import { syncSubscriptionFromCheckoutSessionId } from "@/lib/billing";
 import { DeleteBoardButton } from "@/components/DeleteBoardButton";
 import type { ScoreboardRow } from "@/lib/types";
 
@@ -40,7 +41,11 @@ const deleteBoard = async (boardId: string) => {
   revalidatePath("/dashboard");
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ checkout?: string; session_id?: string }>;
+}) {
   const supabase = await createServerSupabaseClient();
   
   // Get the session - code exchange is handled by the callback route
@@ -49,8 +54,16 @@ export default async function DashboardPage() {
   } = await supabase.auth.getSession();
 
   const userId = session?.user?.id;
-  if (!userId) {
+  const userEmail = session?.user?.email;
+  if (!userId || !userEmail) {
     redirect("/auth");
+  }
+
+  const params = await searchParams;
+  const checkoutStatus = params?.checkout;
+  const checkoutSessionId = params?.session_id;
+  if (checkoutStatus === "success" && checkoutSessionId) {
+    await syncSubscriptionFromCheckoutSessionId({ userId, checkoutSessionId });
   }
 
   const result = await supabase
@@ -64,10 +77,9 @@ export default async function DashboardPage() {
   const hasBoards = boardList.length > 0;
   
   // Get user subscription status and board limit
-  const isAnonymous = !session?.user?.email;
-  const userData = !isAnonymous ? await getUserData(supabase, userId) : null;
-  const subscriptionStatus = userData?.subscription_status || "base";
-  const boardLimit = getBoardLimit(subscriptionStatus);
+  const subscription = await getUserSubscription(supabase, userId);
+  const planType = subscription?.plan_type || "base";
+  const boardLimit = getBoardLimit(planType);
   const currentBoardCount = boardList.length;
   const canCreateMore = currentBoardCount < boardLimit;
   

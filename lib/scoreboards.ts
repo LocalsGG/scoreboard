@@ -57,7 +57,6 @@ export async function getScoreboardsWithOwner(
       owner:profiles!scoreboards_owner_id_fkey (
         id,
         email,
-        subscription_status,
         created_at,
         updated_at
       )
