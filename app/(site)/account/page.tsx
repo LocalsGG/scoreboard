@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getUserData } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,10 @@ export default async function AccountPage() {
 
   const user = session.user;
   const isAnonymous = !user.email;
+  
+  // Fetch user data from public.users table (includes subscription status)
+  const userData = !isAnonymous ? await getUserData(supabase, user.id) : null;
+  const subscriptionStatus = userData?.subscription_status || 'base';
 
   return (
     <div className="flex min-h-full justify-center px-6 py-14 font-sans">
@@ -49,6 +54,16 @@ export default async function AccountPage() {
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   You&apos;re signed in as a guest. Create an account to save your scoreboards permanently.
                 </p>
+              )}
+              {!isAnonymous && (
+                <div className="space-y-1 pt-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+                    Subscription
+                  </p>
+                  <p className="text-base font-semibold text-black dark:text-white capitalize">
+                    {subscriptionStatus}
+                  </p>
+                </div>
               )}
             </div>
             {!isAnonymous && (
