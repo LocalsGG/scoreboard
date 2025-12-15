@@ -22,7 +22,6 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [mode, setMode] = useState<Mode>('signin')
   const [status, setStatus] = useState<Status>({ type: 'idle' })
-  const [userEmail, setUserEmail] = useState<string | null>(null)
   const [view, setView] = useState<View>('form')
   const [resetStatus, setResetStatus] = useState<Status>({ type: 'idle' })
   const [oauthStatus, setOauthStatus] = useState<Status>({ type: 'idle' })
@@ -42,13 +41,10 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
 
   useEffect(() => {
     let isMounted = true
-    supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return
-      // Check for any session (including anonymous)
       const hasSession = !!data.session
       const isAnonymous = hasSession && !data.session?.user?.email
-      setUserEmail(data.session?.user?.email ?? null)
-      // Don't redirect if converting (anonymous user converting to authenticated)
       if (hasSession && !isAnonymous && !isConverting) {
         router.replace('/dashboard')
       }
@@ -58,11 +54,7 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       const hasSession = !!session
-      const isAnonymous = hasSession && !session?.user?.email
-      setUserEmail(session?.user?.email ?? null)
-      // Don't redirect if converting (anonymous user converting to authenticated)
-      // Only redirect if user now has an email (conversion successful)
-      if (hasSession && session.user.email) {
+      if (hasSession && session?.user?.email) {
         router.replace('/dashboard')
       }
     })
@@ -92,7 +84,7 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
       })
 
       if (error) {
-        setStatus({ type: 'error', message: error.message })
+        setStatus({ type: 'error', message: error.message || 'An error occurred' })
         return
       }
       setStatus({ type: 'success', message: 'Check your email to confirm.' })
@@ -105,7 +97,7 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
     })
 
     if (error) {
-      setStatus({ type: 'error', message: error.message })
+      setStatus({ type: 'error', message: error.message || 'An error occurred' })
       return
     }
 
@@ -130,7 +122,7 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
     })
 
     if (error) {
-      setResetStatus({ type: 'error', message: error.message })
+      setResetStatus({ type: 'error', message: error.message || 'An error occurred' })
       return
     }
 
@@ -146,27 +138,17 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
   const toggleAction = mode === 'signin' ? 'Create one' : 'Sign in'
 
   async function handleOAuth(provider: OAuthProvider) {
-    // Anonymous is not an OAuth provider
     if (provider === 'anonymous') {
       return
     }
-    
-    console.log('[AuthForm] OAuth button clicked:', { provider })
+
     setOauthStatus({ type: 'loading', message: 'Redirecting to Google...' })
     setOauthLoading(provider)
-    
-    // For PKCE flow, redirect to the callback route which will handle code exchange
+
     const callbackUrl =
       typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined
     const finalRedirect = 
       typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined
-
-    console.log('[AuthForm] Starting OAuth flow:', {
-      provider,
-      callbackUrl,
-      finalRedirect,
-      currentUrl: typeof window !== 'undefined' ? window.location.href : 'N/A',
-    })
 
     const { error, data } = await supabase.auth.signInWithOAuth({
       provider,
@@ -179,25 +161,14 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
     })
 
     if (error) {
-      console.error('[AuthForm] OAuth error:', error)
-      setOauthStatus({ type: 'error', message: error.message })
+      setOauthStatus({ type: 'error', message: error.message || 'An error occurred' })
       setOauthLoading(null)
       return
     }
 
-    console.log('[AuthForm] OAuth redirect initiated:', { 
-      data,
-      url: data?.url || 'No URL returned',
-      fullUrl: data?.url ? new URL(data.url).href : 'No URL',
-    })
-    
-    // If Supabase returns a URL, it means we need to redirect manually
-    // Otherwise, Supabase handles it automatically
     if (data?.url) {
-      console.log('[AuthForm] Redirecting to:', data.url)
-      window.location.href = data.url
+      window.location.assign(data.url)
     } else {
-      console.log('[AuthForm] Supabase will handle redirect automatically')
       setOauthStatus({ type: 'success', message: 'Redirecting...' })
     }
   }
@@ -209,7 +180,7 @@ export function AuthForm({ isConverting = false }: AuthFormProps) {
     const { error } = await supabase.auth.signInAnonymously()
 
     if (error) {
-      setOauthStatus({ type: 'error', message: error.message })
+      setOauthStatus({ type: 'error', message: error.message || 'An error occurred' })
       setOauthLoading(null)
       return
     }

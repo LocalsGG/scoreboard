@@ -5,10 +5,9 @@ import Link from 'next/link'
 
 interface MobileMenuProps {
   email: string | null
-  isGuest?: boolean
 }
 
-export function MobileMenu({ email, isGuest = false }: MobileMenuProps) {
+export function MobileMenu({ email }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 

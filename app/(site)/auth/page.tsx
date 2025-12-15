@@ -12,31 +12,13 @@ export default async function AuthPage({
   const supabase = await createServerSupabaseClient();
   const {
     data: { session },
-    error: sessionError,
   } = await supabase.auth.getSession();
 
   const params = await searchParams;
   const isConverting = params.convert === 'true';
 
-  // Log server-side session check
-  console.log('[AuthPage] Server-side session check:', {
-    hasSession: !!session,
-    hasEmail: !!session?.user?.email,
-    email: session?.user?.email || null,
-    userId: session?.user?.id || null,
-    isAnonymous: session?.user && !session?.user?.email,
-    isConverting,
-    error: sessionError?.message || null,
-  });
-
-  // Allow anonymous users to access auth page for conversion
-  // Redirect authenticated (non-anonymous) users to dashboard
-  // This handles OAuth callbacks - if user is authenticated, redirect to dashboard
-  if (session && session.user.email && !isConverting) {
-    console.log('[AuthPage] Redirecting to dashboard (server-side)');
+  if (session?.user?.email && !isConverting) {
     redirect("/dashboard");
-  } else {
-    console.log('[AuthPage] Not redirecting - showing auth form');
   }
 
   return (

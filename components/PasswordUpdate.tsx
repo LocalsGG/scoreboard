@@ -17,7 +17,7 @@ export function PasswordUpdate() {
   // Ensure we have a session (from the magic link) before allowing password change.
   useEffect(() => {
     let isMounted = true
-    supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return
       setSessionReady(!!data.session)
     })
@@ -47,7 +47,7 @@ export function PasswordUpdate() {
     setStatus({ type: 'loading' })
     const { error } = await supabase.auth.updateUser({ password })
     if (error) {
-      setStatus({ type: 'error', message: error.message })
+      setStatus({ type: 'error', message: error.message || 'An error occurred' })
       return
     }
     setStatus({ type: 'success', message: 'Password updated. You can now sign in with the new password.' })

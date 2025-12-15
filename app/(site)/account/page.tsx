@@ -11,8 +11,7 @@ export default async function AccountPage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Allow anonymous users to access account page
-  if (!session) {
+  if (!session?.user) {
     redirect("/auth");
   }
 

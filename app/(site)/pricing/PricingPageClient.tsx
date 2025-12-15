@@ -30,8 +30,6 @@ export function PricingPageClient() {
   const lifetimeSold = 0 // This could be fetched from your backend
   const lifetimeRemaining = lifetimeAvailable - lifetimeSold
 
-  // Calculate annual prices (50% off)
-  const basePrice = 0
   const standardPrice = isAnnual ? 10 : 20
   const proPrice = isAnnual ? 20 : 40
 

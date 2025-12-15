@@ -4,7 +4,7 @@ import { OAuthCallbackHandler } from "@/components/OAuthCallbackHandler";
 
 export const metadata: Metadata = {
   title: "Scoreboard",
-  description: "Simple Supabase-powered scoreboards and dashboards.",
+  description: "Simple scoreboards and dashboards.",
 };
 
 export default function SiteLayout({

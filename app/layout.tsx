@@ -3,9 +3,9 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Scoreboard",
-  description: "Simple Supabase-powered scoreboards and dashboards.",
+  description: "Simple scoreboards and dashboards.",
   icons: {
-    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/favicon.ico",
+    icon: "/favicon.ico",
   },
 };
 

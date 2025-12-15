@@ -3,12 +3,6 @@ import type { CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import 'server-only'
 
-/**
- * Creates a secure, authenticated Supabase client for Server Components and Server Actions.
- * It reads the user's session from the request cookies to enable RLS checks.
- * * We call 'cookies()' directly inside the accessor methods to preserve context,
- * which resolves the critical '...get is not a function' TypeError.
- */
 export async function createServerSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY

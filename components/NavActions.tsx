@@ -23,7 +23,7 @@ export function NavActions({ email }: NavActionsProps) {
   useEffect(() => {
     let isMounted = true
 
-    supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return
       // Show email if available, otherwise show "Guest" for anonymous users
       const email = data.session?.user?.email ?? null
@@ -96,7 +96,7 @@ export function NavActions({ email }: NavActionsProps) {
 
     const { error } = await supabase.auth.signOut()
     if (error) {
-      setError(error.message)
+      setError(error.message || 'An error occurred')
       setLoading(false)
       return
     }

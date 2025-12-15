@@ -46,10 +46,6 @@ export async function regenerateShareToken(params: ShareTokenParams) {
   return saveShareToken(params);
 }
 
-/**
- * Fetches scoreboards with owner information (email, subscription_status)
- * Uses the owner_id foreign key relationship to join with users table
- */
 export async function getScoreboardsWithOwner(
   supabase: Supabase,
   userId: string

@@ -52,12 +52,11 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   
   // Handle authentication errors - if user doesn't exist, redirect to auth
   if (userError) {
-    // If the user from the JWT doesn't exist, the session is invalid
-    if (userError.message.includes('does not exist') || userError.message.includes('JWT')) {
-      console.warn('[loadScoreboard] Invalid session - user does not exist, redirecting to auth');
+    const errorMsg = userError.message || '';
+    if (errorMsg.includes('does not exist') || errorMsg.includes('JWT')) {
       redirect("/auth");
     }
-    throw new Error(userError.message);
+    throw new Error(errorMsg);
   }
   const user = userData.user;
 
@@ -91,8 +90,8 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
       .maybeSingle<Scoreboard>();
     
     if (result.error) {
-      // If error is about missing column, try without it
-      if (result.error.message?.includes("element_positions") || result.error.message?.includes("column")) {
+      const errorMsg = result.error.message || '';
+      if (errorMsg.includes("element_positions") || errorMsg.includes("column")) {
         const resultWithoutPos = await supabase
           .from("scoreboards")
           .select("id, name, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style")
@@ -101,12 +100,12 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
           .maybeSingle<Omit<Scoreboard, "element_positions"> & { element_positions?: null }>();
         
         if (resultWithoutPos.error) {
-          boardError = new Error(resultWithoutPos.error.message);
+          boardError = new Error(resultWithoutPos.error.message || 'Unknown error');
         } else {
           board = { ...resultWithoutPos.data, element_positions: null } as Scoreboard;
         }
       } else {
-        boardError = new Error(result.error.message);
+        boardError = new Error(errorMsg);
       }
     } else {
       board = result.data;
@@ -150,12 +149,11 @@ async function generateShareToken(formData: FormData) {
 
   // Handle authentication errors - if user doesn't exist, redirect to auth
   if (userError) {
-    // If the user from the JWT doesn't exist, the session is invalid
-    if (userError.message.includes('does not exist') || userError.message.includes('JWT')) {
-      console.warn('[generateShareToken] Invalid session - user does not exist');
+    const errorMsg = userError.message || '';
+    if (errorMsg.includes('does not exist') || errorMsg.includes('JWT')) {
       throw new Error("Your session is invalid. Please sign in again.");
     }
-    throw new Error(userError.message);
+    throw new Error(errorMsg);
   }
 
   const user = userData.user;

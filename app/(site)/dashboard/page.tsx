@@ -46,32 +46,21 @@ export default async function DashboardPage() {
   // Get the session - code exchange is handled by the callback route
   const {
     data: { session },
-    error: sessionError,
   } = await supabase.auth.getSession();
 
-  console.log('[DashboardPage] Session check:', {
-    hasSession: !!session,
-    hasEmail: !!session?.user?.email,
-    email: session?.user?.email || null,
-    userId: session?.user?.id || null,
-    error: sessionError?.message || null,
-  });
-
-  // Allow anonymous users to access the dashboard
   const userId = session?.user?.id;
   if (!userId) {
-    console.log('[DashboardPage] No userId, redirecting to auth');
     redirect("/auth");
   }
 
-  const { data: boards, error } = await supabase
+  const result = await supabase
     .from("scoreboards")
     .select("id, name, updated_at, owner_id")
     .eq("owner_id", userId)
-    .order("updated_at", { ascending: false })
-    .returns<ScoreboardRow[]>();
+    .order("updated_at", { ascending: false });
 
-  const boardList = Array.isArray(boards) ? boards : [];
+  const { data: boards, error } = result as { data: ScoreboardRow[] | null; error: { message?: string } | null };
+  const boardList: ScoreboardRow[] = (boards && Array.isArray(boards)) ? boards : [];
   const hasBoards = boardList.length > 0;
   
   // Get user subscription status and board limit
@@ -145,7 +134,7 @@ export default async function DashboardPage() {
             {error ? (
               <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                 <p className="font-semibold">Couldn&apos;t load boards</p>
-                <p className="mt-1">{error.message}</p>
+                <p className="mt-1">{error.message || 'Unknown error'}</p>
               </div>
             ) : (
               <ul className="grid gap-3 sm:gap-4 text-sm sm:grid-cols-1 md:grid-cols-2">

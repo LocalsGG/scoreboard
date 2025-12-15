@@ -91,34 +91,14 @@ export function ScoreboardPreview({
       }
 
       saveTimeoutRef.current = setTimeout(async () => {
-        const { error, data } = await supabase
+        const { error } = await supabase
           .from("scoreboards")
           .update({ element_positions: newPositions })
           .eq("id", boardId)
           .select();
 
         if (error) {
-          // Check if error is about missing column
-          const errorMessage = error.message || String(error);
-          const isColumnMissing = 
-            errorMessage.includes("element_positions") ||
-            errorMessage.includes("column") ||
-            errorMessage.includes("does not exist");
-          
-          if (isColumnMissing) {
-            console.warn(
-              "element_positions column not found. Please run the migration:\n" +
-              "Run the SQL in MIGRATION_add_element_positions.sql in your Supabase SQL Editor"
-            );
-          } else {
-            console.error("Error saving positions:", {
-              message: error.message,
-              details: error.details,
-              hint: error.hint,
-              code: error.code,
-              fullError: error,
-            });
-          }
+          return;
         }
       }, DEBOUNCE_MS);
     },
