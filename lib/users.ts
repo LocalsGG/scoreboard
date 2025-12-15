@@ -13,14 +13,14 @@ export async function getUserData(
     .from("users")
     .select("*")
     .eq("id", userId)
-    .single();
+    .maybeSingle(); // Use maybeSingle() instead of single() to handle missing records gracefully
 
   if (error) {
     console.error("Error fetching user data:", error);
     return null;
   }
 
-  return data as User;
+  return data as User | null;
 }
 
 /**
