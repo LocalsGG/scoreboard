@@ -94,7 +94,6 @@ export function ScoreboardStyleSelector({ boardId, initialStyle }: Props) {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <span className="text-xs font-semibold text-black">{option.label}</span>
               {isSelected && (
                 <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-black text-white">
                   <svg

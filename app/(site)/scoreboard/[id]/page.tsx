@@ -7,6 +7,7 @@ import { ScoreAdjuster } from "@/components/ScoreAdjuster";
 import { SideNameEditor } from "@/components/SideNameEditor";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
 import { ScoreboardStyleSelector } from "@/components/ScoreboardStyleSelector";
+import { ResetPositionsButton } from "@/components/ResetPositionsButton";
 import { ensureShareToken, regenerateShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getBaseUrlFromRequest } from "@/lib/urls";
@@ -303,6 +304,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                 Scoreboard name
               </p>
               <BoardNameEditor boardId={board.id} initialName={board.name} align="center" />
+              <ResetPositionsButton boardId={board.id} />
             </div>
 
             <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 shadow-sm shadow-black/5">

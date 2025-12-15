@@ -200,6 +200,13 @@ export function ScoreboardPreview({
     initialPositions,
   ]);
 
+  // Reset positions to default
+  const resetPositions = useCallback(() => {
+    if (readOnly) return;
+    setPositions(DEFAULT_POSITIONS);
+    savePositions(DEFAULT_POSITIONS);
+  }, [readOnly, savePositions]);
+
   useEffect(() => {
     if (!boardId) return;
 
@@ -244,20 +251,26 @@ export function ScoreboardPreview({
       }
     };
 
+    const handleResetPositions = () => {
+      resetPositions();
+    };
+
     const handleScoreA = handleScore("aScore");
     const handleScoreB = handleScore("bScore");
 
     window.addEventListener(`board-name-local-${boardId}`, handleBoardName);
     window.addEventListener(`score-local-${boardId}-a_score`, handleScoreA);
     window.addEventListener(`score-local-${boardId}-b_score`, handleScoreB);
+    window.addEventListener(`reset-positions-${boardId}`, handleResetPositions);
 
     return () => {
       supabase.removeChannel(channel);
       window.removeEventListener(`board-name-local-${boardId}`, handleBoardName);
       window.removeEventListener(`score-local-${boardId}-a_score`, handleScoreA);
       window.removeEventListener(`score-local-${boardId}-b_score`, handleScoreB);
+      window.removeEventListener(`reset-positions-${boardId}`, handleResetPositions);
     };
-  }, [boardId, supabase]);
+  }, [boardId, supabase, resetPositions]);
 
   useEffect(() => {
     return () => {
@@ -287,7 +300,7 @@ export function ScoreboardPreview({
       <svg
         ref={svgRef}
         viewBox="0 135 1440 540"
-        className="h-auto w-full drop-shadow-xl transition-transform duration-300 ease-out hover:scale-[1.01] border-2 border-black/20 rounded-lg"
+        className="h-auto w-full drop-shadow-xl transition-transform duration-300 ease-out hover:scale-[1.01] rounded-lg"
         role="img"
         aria-label={`Preview of ${scoreboardTitle}`}
         style={{ aspectRatio: "1440 / 540", background: "transparent" }}
