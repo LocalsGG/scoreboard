@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+
+type PricingOption = 'monthly' | 'annual' | 'lifetime'
 
 interface PricingToggleProps {
   onToggle: (isAnnual: boolean) => void
@@ -9,57 +10,85 @@ interface PricingToggleProps {
 }
 
 export function PricingToggle({ onToggle, onLifetimeClick }: PricingToggleProps) {
-  const [isAnnual, setIsAnnual] = useState(false)
+  const [selectedOption, setSelectedOption] = useState<PricingOption>('monthly')
 
-  function handleToggle(value: boolean) {
-    setIsAnnual(value)
-    onToggle(value)
-  }
-
-  function handleLifetimeClick(e: React.MouseEvent<HTMLAnchorElement>) {
-    e.preventDefault()
-    if (onLifetimeClick) {
-      onLifetimeClick()
+  function handleOptionSelect(option: PricingOption) {
+    setSelectedOption(option)
+    
+    if (option === 'lifetime') {
+      if (onLifetimeClick) {
+        onLifetimeClick()
+      } else {
+        window.location.hash = '#lifetime'
+      }
     } else {
-      // Fallback to hash navigation
-      window.location.hash = '#lifetime'
+      onToggle(option === 'annual')
     }
   }
 
+  const getSliderPosition = () => {
+    switch (selectedOption) {
+      case 'monthly':
+        return 'translate-x-0'
+      case 'annual':
+        return 'translate-x-[100%]'
+      case 'lifetime':
+        return 'translate-x-[200%]'
+    }
+  }
+
+  const getSliderColor = () => {
+    return selectedOption === 'lifetime' ? 'bg-orange-500' : 'bg-black'
+  }
+
   return (
-    <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
-      <button
-        type="button"
-        onClick={() => handleToggle(false)}
-        className={`px-5 py-2.5 text-sm font-semibold rounded-md transition-all ${
-          !isAnnual
-            ? 'bg-black text-white shadow-lg'
-            : 'bg-white text-black border border-black/10 hover:bg-black/5'
-        }`}
-      >
-        Monthly
-      </button>
-      <button
-        type="button"
-        onClick={() => handleToggle(true)}
-        className={`px-5 py-2.5 text-sm font-semibold rounded-md transition-all ${
-          isAnnual
-            ? 'bg-black text-white shadow-lg'
-            : 'bg-white text-black border border-black/10 hover:bg-black/5'
-        }`}
-      >
-        Annual subscription
-        {isAnnual && (
-          <span className="ml-2 text-xs font-bold opacity-90">Save 50%</span>
-        )}
-      </button>
-      <Link
-        href="#lifetime"
-        onClick={handleLifetimeClick}
-        className="px-5 py-2.5 text-sm font-semibold rounded-md transition-all bg-orange-500 text-white hover:bg-orange-600 shadow-lg"
-      >
-        Lifetime Deal
-      </Link>
+    <div className="flex items-center justify-center mb-8">
+      <div className="relative inline-flex bg-white border-2 border-black rounded-full p-1.5">
+        {/* Sliding indicator */}
+        <div
+          className={`absolute top-1.5 bottom-1.5 w-[calc(33.333%-0.5rem)] ${getSliderColor()} rounded-full transition-all duration-300 ease-out ${getSliderPosition()}`}
+        />
+        
+        {/* Options */}
+        <div className="relative flex items-center">
+          <button
+            type="button"
+            onClick={() => handleOptionSelect('monthly')}
+            className={`relative z-10 px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
+              selectedOption === 'monthly'
+                ? 'text-white'
+                : 'text-black hover:text-zinc-600'
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOptionSelect('annual')}
+            className={`relative z-10 px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
+              selectedOption === 'annual'
+                ? 'text-white'
+                : 'text-black hover:text-zinc-600'
+            }`}
+          >
+            Annual
+            {selectedOption === 'annual' && (
+              <span className="ml-1 sm:ml-1.5 text-[10px] sm:text-xs font-bold opacity-90">Save 50%</span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOptionSelect('lifetime')}
+            className={`relative z-10 px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
+              selectedOption === 'lifetime'
+                ? 'text-white'
+                : 'text-black hover:text-zinc-600'
+            }`}
+          >
+            Lifetime
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

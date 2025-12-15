@@ -12,17 +12,21 @@ export async function Navbar() {
 
   const email = session?.user?.email ?? null;
   const isGuest = !!session && !email;
+  const isAuthenticated = !!session && !!email;
   
-  // Get subscription status - guest users are always "base"
-  let subscriptionStatus: "base" | "standard" | "pro" | "lifetime" = "base";
-  if (session?.user?.id && !isGuest) {
+  // Get subscription status - only for authenticated (non-guest) users
+  let subscriptionStatus: "base" | "standard" | "pro" | "lifetime" | null = null;
+  if (isAuthenticated && session?.user?.id) {
     const userData = await getUserData(supabase, session.user.id);
     const status = userData?.subscription_status;
-    if (status === "pro" || status === "lifetime") {
-      subscriptionStatus = status === "lifetime" ? "lifetime" : "pro";
+    if (status === "lifetime") {
+      subscriptionStatus = "lifetime";
+    } else if (status === "pro") {
+      subscriptionStatus = "pro";
     } else if (status === "standard") {
       subscriptionStatus = "standard";
     } else {
+      // Authenticated but not paid - show base badge
       subscriptionStatus = "base";
     }
   }
@@ -31,7 +35,7 @@ export async function Navbar() {
     base: "Base",
     standard: "Standard",
     pro: "Pro",
-    lifetime: "Lifetime",
+    lifetime: "Lifetime Deal",
   };
 
   const badgeStyles: Record<"base" | "standard" | "pro" | "lifetime", string> = {
@@ -62,8 +66,8 @@ export async function Navbar() {
         </span>
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Subscription Badge */}
-        {session && (
+        {/* Subscription Badge - only show for authenticated (non-guest) users */}
+        {isAuthenticated && subscriptionStatus !== null && (
           <span
             className={`hidden sm:inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${badgeStyles[subscriptionStatus]}`}
           >
