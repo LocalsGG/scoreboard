@@ -73,7 +73,7 @@ export function PricingPageClient() {
           <ul className="flex flex-col gap-4 text-base">
             <li className="flex items-start gap-3">
               <span className="text-green-600 font-bold mt-0.5">✓</span>
-              <span className="text-zinc-700">Create up to 2 scoreboards</span>
+              <span className="text-zinc-700">Create up to 1 board</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-green-600 font-bold mt-0.5">✓</span>
@@ -206,7 +206,7 @@ export function PricingPageClient() {
           </div>
           <div className="grid grid-cols-5 gap-4 p-4 border-b border-zinc-200">
             <div className="font-medium text-zinc-700">Scoreboards</div>
-            <div className="text-center text-zinc-600">2</div>
+            <div className="text-center text-zinc-600">1</div>
             <div className="text-center text-zinc-600">20</div>
             <div className="text-center text-zinc-600">200</div>
             <div className="text-center text-zinc-600">200</div>

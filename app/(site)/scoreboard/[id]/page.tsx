@@ -217,6 +217,12 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
       ? `${baseUrl}${sharePath}`
       : sharePath
     : null;
+  const controlsSharePath = board.share_token ? `/share-controls/${board.share_token}` : null;
+  const controlsShareUrl = controlsSharePath
+    ? baseUrl
+      ? `${baseUrl}${controlsSharePath}`
+      : controlsSharePath
+    : null;
 
   return (
     <div className="relative flex min-h-full justify-center px-4 sm:px-6 py-6 sm:py-8 lg:py-12 font-sans">
@@ -224,11 +230,10 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
         <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center sm:justify-start gap-2 rounded-full border border-black/15 bg-white px-3 py-1.5 text-xs font-semibold text-black shadow-sm shadow-black/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/30 hover:bg-white active:scale-95 whitespace-nowrap"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-black hover:text-zinc-700 transition-colors"
           >
             <span aria-hidden="true">←</span>
-            <span className="hidden sm:inline">Back to dashboard</span>
-            <span className="sm:hidden">Back</span>
+            <span>Back to dashboard</span>
           </Link>
           {shareUrl ? (
             hasPaidSubscription ? (
@@ -270,49 +275,60 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                     </a>
                   </div>
                 </div>
-                <a
-                  href={shareUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                >
-                  Share Scorekeeping
-                </a>
+                {controlsShareUrl && (
+                  <CopyButton
+                    value={controlsShareUrl}
+                    label="Share Scorekeeping"
+                    className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                  />
+                )}
               </div>
             ) : (
               <div className="flex flex-col sm:flex-row flex-1 gap-2">
-                <Link
-                  href="/pricing"
-                  className="cursor-pointer inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                >
-                  Copy
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="cursor-pointer inline-flex items-center gap-1 justify-center rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                >
-                  <span className="hidden sm:inline">Go Live</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                    stroke="currentColor"
-                    className="h-3 w-3 sm:h-4 sm:w-4"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                <div className="relative flex-1 min-w-0">
+                  <input
+                    readOnly
+                    value={shareUrl}
+                    className="w-full truncate rounded-xl border border-black/15 bg-white px-3 py-2 pr-24 sm:pr-32 md:pr-80 text-xs sm:text-sm font-semibold text-black shadow-inner shadow-black/5"
+                  />
+                  <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+                    <CopyButton
+                      value={shareUrl}
+                      label="Copy"
+                      className="cursor-pointer rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
                     />
-                  </svg>
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                >
-                  Share Scorekeeping
-                </Link>
+                    <a
+                      href={shareUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cursor-pointer inline-flex items-center gap-1 justify-center rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                      aria-label="Open link in new tab"
+                    >
+                      <span className="hidden sm:inline">Go Live</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="h-3 w-3 sm:h-4 sm:w-4"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                        />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+                {controlsShareUrl && (
+                  <CopyButton
+                    value={controlsShareUrl}
+                    label="Share Scorekeeping"
+                    className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                  />
+                )}
               </div>
             )
           ) : (

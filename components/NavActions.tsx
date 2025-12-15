@@ -111,9 +111,10 @@ export function NavActions({ email }: NavActionsProps) {
     return (
       <Link
         href="/auth"
-        className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-black via-black to-zinc-800 px-4 py-2 text-base font-semibold text-white shadow-lg shadow-black/15 transition-transform duration-150 hover:-translate-y-0.5 active:scale-95"
+        className="inline-flex items-center gap-1.5 sm:gap-2 rounded-md bg-gradient-to-r from-black via-black to-zinc-800 px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base font-semibold text-white shadow-lg shadow-black/15 transition-transform duration-150 hover:-translate-y-0.5 active:scale-95"
       >
-        Sign up / Sign in
+        <span className="hidden sm:inline">Sign up / Sign in</span>
+        <span className="sm:hidden">Sign in</span>
       </Link>
     )
   }
@@ -125,9 +126,9 @@ export function NavActions({ email }: NavActionsProps) {
         onClick={() => setMenuOpen((open) => !open)}
         aria-expanded={menuOpen}
         aria-haspopup="menu"
-        className="flex items-center rounded-full border border-black/10 bg-white/80 px-3 py-1.5 text-base font-semibold text-black shadow-sm shadow-black/5 transition-transform duration-150 hover:-translate-y-0.5 hover:text-zinc-700 active:scale-95"
+        className="flex items-center rounded-full border border-black/10 bg-white/80 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-base font-semibold text-black shadow-sm shadow-black/5 transition-transform duration-150 hover:-translate-y-0.5 hover:text-zinc-700 active:scale-95"
       >
-        <span className="max-w-[180px] truncate">{sessionEmail}</span>
+        <span className="max-w-[100px] sm:max-w-[180px] truncate">{sessionEmail}</span>
       </button>
 
       {menuOpen ? (
