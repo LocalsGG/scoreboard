@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { priceId, isAnnual } = body
+    const { priceId } = body
 
     if (!priceId) {
       return NextResponse.json(
@@ -87,6 +87,10 @@ export async function POST(request: Request) {
     }
 
     const baseUrl = await getBaseUrl(request)
+
+    const rawCheckoutRequestId =
+      request.headers.get('x-checkout-request-id') ||
+      (typeof body?.checkoutRequestId === 'string' ? body.checkoutRequestId : null)
 
     // Create or retrieve Stripe customer
     let customerId: string | undefined
@@ -141,18 +145,29 @@ export async function POST(request: Request) {
       ],
       success_url: `${baseUrl}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing?checkout=cancelled`,
+      client_reference_id: rawCheckoutRequestId || undefined,
       metadata: {
         supabase_user_id: session.user.id,
         subscription_status: subscriptionStatus,
         price_id: priceId,
+        checkout_request_id: rawCheckoutRequestId || undefined,
       },
       subscription_data: priceId !== process.env.STRIPE_PRICE_LIFETIME ? {
         metadata: {
           supabase_user_id: session.user.id,
           subscription_status: subscriptionStatus,
           price_id: priceId,
+          checkout_request_id: rawCheckoutRequestId || undefined,
         },
       } : undefined,
+    }, {
+      // Guarantees we don't create multiple checkout sessions for the same "click"
+      // (retries, double-submits, StrictMode dev effects, etc.)
+      idempotencyKey: (() => {
+        if (rawCheckoutRequestId) return `checkout:${rawCheckoutRequestId}`
+        const timeBucket = Math.floor(Date.now() / (5 * 60 * 1000)) // 5-min bucket
+        return `checkout:fallback:${session.user.id}:${priceId}:${timeBucket}`
+      })(),
     })
 
     return NextResponse.json({ url: checkoutSession.url })

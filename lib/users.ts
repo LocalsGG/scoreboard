@@ -150,6 +150,108 @@ export async function updateSubscriptionStatus(
     subscriptionData.cancel_at_period_end = cancelAtPeriodEnd;
   }
 
+  // One-time payments (lifetime) do not have a stripe_subscription_id.
+  // Make this path idempotent: repeated webhook deliveries / redirect syncs should not create new rows.
+  if (!stripeSubscriptionId && planType === 'lifetime') {
+    const { data: existingLifetime, error: existingError } = await supabase
+      .from("subscriptions")
+      .select("id, status, stripe_customer_id, stripe_price_id")
+      .eq("user_id", userId)
+      .eq("plan_type", "lifetime")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingError) {
+      return { success: false, error: existingError.message || 'Unknown error' };
+    }
+
+    const matchesCustomer =
+      !stripeCustomerId || existingLifetime?.stripe_customer_id === stripeCustomerId;
+    const matchesPrice = !stripePriceId || existingLifetime?.stripe_price_id === stripePriceId;
+
+    // If we already have an active lifetime row for this user, just update it (idempotent).
+    if (existingLifetime && existingLifetime.status === 'active' && matchesCustomer && matchesPrice) {
+      const { error } = await supabase
+        .from("subscriptions")
+        .update(subscriptionData)
+        .eq("id", existingLifetime.id);
+
+      if (error) {
+        return { success: false, error: error.message || 'Unknown error' };
+      }
+
+      return { success: true };
+    }
+
+    // Deactivate any existing active subscriptions (standard/pro/etc.) before activating lifetime.
+    const { error: deactivateError } = await supabase
+      .from("subscriptions")
+      .update({
+        status: "inactive",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId)
+      .eq("status", "active");
+
+    if (deactivateError) {
+      return { success: false, error: deactivateError.message || 'Unknown error' };
+    }
+
+    // Reuse an existing lifetime row if present; otherwise insert once.
+    if (existingLifetime) {
+      const { error } = await supabase
+        .from("subscriptions")
+        .update(subscriptionData)
+        .eq("id", existingLifetime.id);
+
+      if (error) {
+        return { success: false, error: error.message || 'Unknown error' };
+      }
+
+      return { success: true };
+    }
+
+    const { error } = await supabase
+      .from("subscriptions")
+      .insert(subscriptionData);
+
+    if (error) {
+      // If a DB uniqueness constraint exists (recommended), a concurrent insert can race here.
+      // Treat that as idempotent: fetch the existing row and update it.
+      if ((error as { code?: string } | null)?.code === "23505") {
+        const { data: racedLifetime, error: racedError } = await supabase
+          .from("subscriptions")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("plan_type", "lifetime")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (racedError) {
+          return { success: false, error: racedError.message || 'Unknown error' };
+        }
+
+        if (racedLifetime?.id) {
+          const { error: updateError } = await supabase
+            .from("subscriptions")
+            .update(subscriptionData)
+            .eq("id", racedLifetime.id);
+
+          if (updateError) {
+            return { success: false, error: updateError.message || 'Unknown error' };
+          }
+
+          return { success: true };
+        }
+      }
+      return { success: false, error: error.message || 'Unknown error' };
+    }
+
+    return { success: true };
+  }
+
   // First, deactivate any existing active subscriptions
   await supabase
     .from("subscriptions")
@@ -187,11 +289,38 @@ export async function updateSubscriptionStatus(
         .insert(subscriptionData);
 
       if (error) {
+        // If stripe_subscription_id is unique (recommended), a concurrent insert can race here.
+        // Treat it as idempotent: re-fetch by stripe_subscription_id and update.
+        if ((error as { code?: string } | null)?.code === "23505") {
+          const { data: raced, error: racedError } = await supabase
+            .from("subscriptions")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("stripe_subscription_id", stripeSubscriptionId)
+            .maybeSingle();
+
+          if (racedError) {
+            return { success: false, error: racedError.message || 'Unknown error' };
+          }
+
+          if (raced?.id) {
+            const { error: updateError } = await supabase
+              .from("subscriptions")
+              .update(subscriptionData)
+              .eq("id", raced.id);
+
+            if (updateError) {
+              return { success: false, error: updateError.message || 'Unknown error' };
+            }
+
+            return { success: true };
+          }
+        }
         return { success: false, error: error.message || 'Unknown error' };
       }
     }
   } else {
-    // For one-time payments (lifetime) without subscription ID, just insert
+    // For one-time payments (other) without subscription ID, just insert
     const { error } = await supabase
       .from("subscriptions")
       .insert(subscriptionData);

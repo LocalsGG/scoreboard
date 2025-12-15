@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,8 @@ export function PricingPageClient() {
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const hasAutoCheckoutFiredRef = useRef(false)
+  const isCheckoutInFlightRef = useRef(false)
 
   // Check authentication status
   useEffect(() => {
@@ -42,7 +44,9 @@ export function PricingPageClient() {
     const plan = params.get('plan') as 'standard' | 'pro' | 'lifetime' | null
     const isAnnualParam = params.get('isAnnual') === 'true'
 
+    if (hasAutoCheckoutFiredRef.current) return
     if (shouldCheckout && plan && isAuthenticated) {
+      hasAutoCheckoutFiredRef.current = true
       // Set annual toggle if needed
       if (isAnnualParam && plan !== 'lifetime') {
         setIsAnnual(true)
@@ -104,6 +108,9 @@ export function PricingPageClient() {
   }
 
   const handleCheckout = async (plan: 'standard' | 'pro' | 'lifetime') => {
+    if (isCheckoutInFlightRef.current) return
+    if (loading) return
+
     // Check if user is authenticated
     if (!isAuthenticated) {
       // Store the plan and pricing info in URL params for redirect after auth
@@ -122,18 +129,25 @@ export function PricingPageClient() {
       return
     }
 
+    isCheckoutInFlightRef.current = true
     setLoading(plan)
     setError(null)
 
     try {
+      const checkoutRequestId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-checkout-request-id': checkoutRequestId,
         },
         body: JSON.stringify({
           priceId,
           isAnnual: plan !== 'lifetime' ? isAnnual : false,
+          checkoutRequestId,
         }),
       })
 
@@ -153,6 +167,7 @@ export function PricingPageClient() {
       console.error('Checkout error:', err)
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
       setLoading(null)
+      isCheckoutInFlightRef.current = false
     }
   }
 

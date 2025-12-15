@@ -17,6 +17,20 @@ interface AuthFormProps {
   isAnnual?: boolean
 }
 
+function getPricingCheckoutRedirectUrl(params: {
+  plan: 'standard' | 'pro' | 'lifetime'
+  isAnnual?: boolean
+}): string {
+  const searchParams = new URLSearchParams({
+    checkout: 'true',
+    plan: params.plan,
+  })
+  if (params.plan !== 'lifetime' && params.isAnnual) {
+    searchParams.set('isAnnual', 'true')
+  }
+  return `/pricing?${searchParams.toString()}`
+}
+
 export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: AuthFormProps) {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
@@ -65,8 +79,8 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
       const hasSession = !!session
       if (hasSession && session?.user?.email) {
         if (redirectTo === 'pricing' && plan && (plan === 'standard' || plan === 'pro' || plan === 'lifetime')) {
-          // Trigger checkout directly after authentication
-          await triggerCheckout(plan, isAnnual || false)
+          // Redirect back to pricing to trigger checkout (single-source)
+          router.replace(getPricingCheckoutRedirectUrl({ plan, isAnnual }))
         } else {
           router.replace('/dashboard')
         }
@@ -117,63 +131,11 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
 
     setStatus({ type: 'success', message: 'Signed in.' })
     
-    // If redirecting to checkout, trigger checkout directly
+    // If redirecting to checkout, redirect back to pricing (single-source)
     if (redirectTo === 'pricing' && plan && (plan === 'standard' || plan === 'pro' || plan === 'lifetime')) {
-      await triggerCheckout(plan, isAnnual || false)
+      router.replace(getPricingCheckoutRedirectUrl({ plan, isAnnual }))
     } else {
       router.push('/dashboard')
-    }
-  }
-
-  async function triggerCheckout(plan: 'standard' | 'pro' | 'lifetime', isAnnualPlan: boolean) {
-    setStatus({ type: 'loading', message: 'Preparing checkout...' })
-    
-    // Get price ID based on plan
-    let priceId: string | null = null
-    if (plan === 'lifetime') {
-      priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_LIFETIME || null
-    } else if (plan === 'standard') {
-      priceId = isAnnualPlan
-        ? (process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL || null)
-        : (process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_MONTHLY || null)
-    } else if (plan === 'pro') {
-      priceId = isAnnualPlan
-        ? (process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL || null)
-        : (process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY || null)
-    }
-
-    if (!priceId) {
-      setStatus({ type: 'error', message: 'Price configuration error. Please contact support.' })
-      return
-    }
-
-    try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId,
-          isAnnual: plan !== 'lifetime' ? isAnnualPlan : false,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session')
-      }
-
-      if (data.url) {
-        // Redirect directly to Stripe Checkout
-        window.location.href = data.url
-      } else {
-        throw new Error('No checkout URL received')
-      }
-    } catch (err) {
-      console.error('Checkout error:', err)
-      setStatus({ type: 'error', message: err instanceof Error ? err.message : 'Something went wrong. Please try again.' })
     }
   }
 
