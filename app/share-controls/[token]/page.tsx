@@ -3,7 +3,6 @@ import { ScoreboardPreview } from "@/components/ScoreboardPreview";
 import { BoardNameEditor } from "@/components/BoardNameEditor";
 import { ScoreAdjuster } from "@/components/ScoreAdjuster";
 import { SideNameEditor } from "@/components/SideNameEditor";
-import { ScoreboardStyleSelector } from "@/components/ScoreboardStyleSelector";
 import { ResetPositionsButton } from "@/components/ResetPositionsButton";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ElementPositions } from "@/lib/types";
@@ -132,9 +131,6 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
               />
               <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} />
             </div>
-          </div>
-          <div className="mt-4 sm:mt-6 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 shadow-sm shadow-black/5">
-            <ScoreboardStyleSelector boardId={board.id} initialStyle={board.scoreboard_style} />
           </div>
         </section>
       </main>

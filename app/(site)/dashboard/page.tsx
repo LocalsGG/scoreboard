@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { formatDate } from "@/lib/dates";
 import { getGameIcon, getGameName } from "@/lib/assets";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getUserData, getBoardLimit } from "@/lib/users";
 import { DeleteBoardButton } from "@/components/DeleteBoardButton";
 import type { ScoreboardRow } from "@/lib/types";
 
@@ -72,6 +73,15 @@ export default async function DashboardPage() {
 
   const boardList = Array.isArray(boards) ? boards : [];
   const hasBoards = boardList.length > 0;
+  
+  // Get user subscription status and board limit
+  const isAnonymous = !session?.user?.email;
+  const userData = !isAnonymous ? await getUserData(supabase, userId) : null;
+  const subscriptionStatus = userData?.subscription_status || "base";
+  const boardLimit = getBoardLimit(subscriptionStatus);
+  const currentBoardCount = boardList.length;
+  const canCreateMore = currentBoardCount < boardLimit;
+  
   const createTile = (
     <li
       key="create-tile"
@@ -102,9 +112,36 @@ export default async function DashboardPage() {
       <main className="flex-1 flex justify-center px-4 py-8 sm:px-6 sm:py-12 md:py-16 font-sans">
         <div className="w-full max-w-6xl space-y-6 sm:space-y-8 animate-fade-in">
           <section className="space-y-4 sm:space-y-6 rounded-2xl sm:rounded-3xl border border-black/5 bg-white/80 p-6 sm:p-8 md:p-9 shadow-[0_22px_65px_rgba(12,18,36,0.12)] backdrop-blur animate-rise">
-            <header>
+            <header className="flex items-center justify-between gap-4">
               <h1 className="text-2xl sm:text-3xl font-semibold text-black">Your Scoreboards</h1>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-semibold text-zinc-600">
+                  {currentBoardCount}/{boardLimit}
+                </span>
+                {!canCreateMore && (
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-transform duration-150 hover:-translate-y-0.5 active:scale-95"
+                  >
+                    <span>Upgrade</span>
+                    <span>→</span>
+                  </Link>
+                )}
+              </div>
             </header>
+            {!canCreateMore && (
+              <div className="rounded-xl border border-orange-200 bg-orange-50/80 p-4 text-sm">
+                <p className="font-semibold text-orange-900">
+                  You&apos;ve reached your board limit ({boardLimit} board{boardLimit !== 1 ? 's' : ''})
+                </p>
+                <p className="mt-1 text-orange-700">
+                  <Link href="/pricing" className="font-semibold underline hover:text-orange-900">
+                    Upgrade your plan
+                  </Link>{" "}
+                  to create more scoreboards.
+                </p>
+              </div>
+            )}
             {error ? (
               <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                 <p className="font-semibold">Couldn&apos;t load boards</p>
@@ -172,7 +209,7 @@ export default async function DashboardPage() {
                       );
                     })
                   : null}
-                {createTile}
+                {canCreateMore ? createTile : null}
               </ul>
             )}
           </section>

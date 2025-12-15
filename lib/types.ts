@@ -26,7 +26,7 @@ export interface ScoreboardRow {
 export interface User {
   id: string;
   email: string | null;
-  subscription_status: 'base' | 'pro' | 'enterprise' | null;
+  subscription_status: 'base' | 'standard' | 'pro' | 'lifetime' | null;
   created_at?: string | null;
   updated_at?: string | null;
 }

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getUserData } from "@/lib/users";
 import { NavActions } from "./NavActions";
 
 export async function Navbar() {
@@ -11,6 +12,34 @@ export async function Navbar() {
 
   const email = session?.user?.email ?? null;
   const isGuest = !!session && !email;
+  
+  // Get subscription status - guest users are always "base"
+  let subscriptionStatus: "base" | "standard" | "pro" | "lifetime" = "base";
+  if (session?.user?.id && !isGuest) {
+    const userData = await getUserData(supabase, session.user.id);
+    const status = userData?.subscription_status;
+    if (status === "pro" || status === "lifetime") {
+      subscriptionStatus = status === "lifetime" ? "lifetime" : "pro";
+    } else if (status === "standard") {
+      subscriptionStatus = "standard";
+    } else {
+      subscriptionStatus = "base";
+    }
+  }
+
+  const badgeLabels: Record<"base" | "standard" | "pro" | "lifetime", string> = {
+    base: "Base",
+    standard: "Standard",
+    pro: "Pro",
+    lifetime: "Lifetime",
+  };
+
+  const badgeStyles: Record<"base" | "standard" | "pro" | "lifetime", string> = {
+    base: "bg-zinc-100 text-zinc-700 border-zinc-200",
+    standard: "bg-blue-50 text-blue-700 border-blue-200",
+    pro: "bg-orange-50 text-orange-700 border-orange-200",
+    lifetime: "bg-orange-100 text-orange-800 border-orange-300",
+  };
 
   return (
     <nav className="flex w-full items-center justify-between px-4 py-2 text-sm font-semibold">
@@ -33,6 +62,14 @@ export async function Navbar() {
         </span>
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Subscription Badge */}
+        {session && (
+          <span
+            className={`hidden sm:inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${badgeStyles[subscriptionStatus]}`}
+          >
+            {badgeLabels[subscriptionStatus]}
+          </span>
+        )}
         {/* Navigation Links - visible on all screens */}
         <Link
           href="/pricing"

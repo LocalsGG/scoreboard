@@ -89,11 +89,21 @@ export async function ensureUserExists(
 
 /**
  * Updates user subscription status
+ * 
+ * SECURITY WARNING: This function should ONLY be called from:
+ * - Payment webhook handlers (Stripe, etc.)
+ * - Admin functions with proper authorization
+ * - Server-side API routes with authentication checks
+ * 
+ * DO NOT expose this function to client-side code or user-facing API endpoints
+ * without additional authorization checks. The RLS policy prevents users from
+ * updating their own subscription_status, but this function bypasses that
+ * when called with proper server credentials.
  */
 export async function updateSubscriptionStatus(
   supabase: SupabaseClient,
   userId: string,
-  status: "base" | "pro" | "enterprise"
+  status: "base" | "standard" | "pro" | "lifetime"
 ): Promise<{ success: boolean; error?: string }> {
   const { error } = await supabase
     .from("users")
@@ -106,4 +116,24 @@ export async function updateSubscriptionStatus(
   }
 
   return { success: true };
+}
+
+/**
+ * Gets the board limit for a subscription status
+ * Base: 1 board
+ * Standard: 20 boards
+ * Pro: 200 boards
+ * Lifetime: 200 boards (same as Pro)
+ */
+export function getBoardLimit(subscriptionStatus: string | null | undefined): number {
+  switch (subscriptionStatus) {
+    case "standard":
+      return 20;
+    case "pro":
+    case "lifetime":
+      return 200;
+    case "base":
+    default:
+      return 1;
+  }
 }

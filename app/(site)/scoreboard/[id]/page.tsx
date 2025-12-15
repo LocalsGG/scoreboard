@@ -76,7 +76,7 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   // Fetch user subscription status
   const userSubscriptionData = await getUserData(supabase, user.id);
   const subscriptionStatus = userSubscriptionData?.subscription_status;
-  const hasPaidSubscription = subscriptionStatus === "pro" || subscriptionStatus === "enterprise";
+  const hasPaidSubscription = subscriptionStatus === "pro" || subscriptionStatus === "standard" || subscriptionStatus === "lifetime";
 
   // Select all columns, but handle element_positions gracefully if it doesn't exist
   let board: Scoreboard | null = null;
@@ -168,7 +168,7 @@ async function generateShareToken(formData: FormData) {
   // Check subscription status before allowing share token generation
   const userDataRecord = await getUserData(supabase, user.id);
   const subscriptionStatus = userDataRecord?.subscription_status;
-  const hasPaidSubscription = subscriptionStatus === "pro" || subscriptionStatus === "enterprise";
+  const hasPaidSubscription = subscriptionStatus === "pro" || subscriptionStatus === "standard" || subscriptionStatus === "lifetime";
 
   if (!hasPaidSubscription) {
     redirect("/pricing");
