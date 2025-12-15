@@ -73,7 +73,7 @@ export function ScoreboardStyleSelector({ boardId, initialStyle }: Props) {
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
         Scoreboard Design
       </p>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {STYLE_OPTIONS.map((option) => {
           const isSelected = selectedStyle === option.value;
           return (
@@ -81,13 +81,13 @@ export function ScoreboardStyleSelector({ boardId, initialStyle }: Props) {
               key={option.value}
               type="button"
               onClick={() => setSelectedStyle(option.value)}
-              className={`group relative flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all duration-150 ${
+              className={`group relative flex flex-col items-center gap-1.5 sm:gap-2 rounded-xl border-2 p-2 sm:p-3 transition-all duration-150 ${
                 isSelected
                   ? "border-black/40 bg-black/5 shadow-md"
                   : "border-zinc-200 bg-white hover:-translate-y-0.5 hover:border-black/20 hover:shadow-md active:scale-[0.99]"
               }`}
             >
-              <div className="relative h-16 w-full overflow-hidden rounded-lg border border-black/10">
+              <div className="relative h-12 sm:h-16 w-full overflow-hidden rounded-lg border border-black/10">
                 <img
                   src={option.preview}
                   alt={option.label}

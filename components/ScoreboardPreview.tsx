@@ -18,11 +18,11 @@ type PreviewState = {
 };
 
 const DEFAULT_POSITIONS: ElementPositions = {
-  title: { x: 720, y: 310 },
-  a_side: { x: 100, y: 450 },
-  b_side: { x: 1200, y: 450 },
-  a_score: { x: 540, y: 465 },
-  b_score: { x: 910, y: 465 },
+  title: { x: 720, y: 200 },
+  a_side: { x: 100, y: 310 },
+  b_side: { x: 1200, y: 310 },
+  a_score: { x: 540, y: 400 },
+  b_score: { x: 910, y: 400 },
 };
 
 const DEBOUNCE_MS = 500;
@@ -286,11 +286,11 @@ export function ScoreboardPreview({
     <div className="relative">
       <svg
         ref={svgRef}
-        viewBox="0 0 1440 810"
-        className="h-auto w-full drop-shadow-xl transition-transform duration-300 ease-out hover:scale-[1.01]"
+        viewBox="0 135 1440 540"
+        className="h-auto w-full drop-shadow-xl transition-transform duration-300 ease-out hover:scale-[1.01] border-2 border-black/20 rounded-lg"
         role="img"
         aria-label={`Preview of ${scoreboardTitle}`}
-        style={{ aspectRatio: "1440 / 810", background: "transparent" }}
+        style={{ aspectRatio: "1920 / 540", background: "transparent" }}
       >
       <defs>
         <filter id={`${gradientId}-text-shadow`} x="-15%" y="-15%" width="130%" height="140%">

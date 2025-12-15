@@ -198,44 +198,45 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
     : null;
 
   return (
-    <div className="relative flex min-h-full justify-center px-6 py-16 font-sans">
-      <main className="relative w-full max-w-6xl space-y-10 animate-fade-in">
-        <div className="relative z-10 flex items-center gap-3">
+    <div className="relative flex min-h-full justify-center px-4 sm:px-6 py-6 sm:py-8 lg:py-12 font-sans">
+      <main className="relative w-full max-w-6xl space-y-4 sm:space-y-6 lg:space-y-8 animate-fade-in">
+        <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white px-3 py-1.5 text-xs font-semibold text-black shadow-sm shadow-black/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/30 hover:bg-white active:scale-95"
+            className="inline-flex items-center justify-center sm:justify-start gap-2 rounded-full border border-black/15 bg-white px-3 py-1.5 text-xs font-semibold text-black shadow-sm shadow-black/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-black/30 hover:bg-white active:scale-95 whitespace-nowrap"
           >
             <span aria-hidden="true">←</span>
-            Back to dashboard
+            <span className="hidden sm:inline">Back to dashboard</span>
+            <span className="sm:hidden">Back</span>
           </Link>
           {shareUrl ? (
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-0">
               <input
                 readOnly
                 value={shareUrl}
-                className="w-full truncate rounded-xl border border-black/15 bg-white px-3 py-2 pr-80 text-sm font-semibold text-black shadow-inner shadow-black/5"
+                className="w-full truncate rounded-xl border border-black/15 bg-white px-3 py-2 pr-24 sm:pr-32 md:pr-80 text-xs sm:text-sm font-semibold text-black shadow-inner shadow-black/5"
               />
               <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
                 <CopyButton
                   value={shareUrl}
                   label="Copy"
-                  className="cursor-pointer rounded-md border border-black/20 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                  className="cursor-pointer rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
                 />
                 <a
                   href={shareUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="cursor-pointer inline-flex items-center gap-1.5 justify-center rounded-md border border-black/20 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                  className="cursor-pointer inline-flex items-center gap-1 justify-center rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
                   aria-label="Open link in new tab"
                 >
-                  <span>Open</span>
+                  <span className="hidden sm:inline">Open</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={2}
                     stroke="currentColor"
-                    className="h-4 w-4"
+                    className="h-3 w-3 sm:h-4 sm:w-4"
                   >
                     <path
                       strokeLinecap="round"
@@ -247,11 +248,11 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
               </div>
             </div>
           ) : (
-            <div className="flex flex-1 items-center gap-2">
-              <p className="text-xs font-medium text-black">
+            <div className="flex flex-col sm:flex-row flex-1 items-stretch sm:items-center gap-2">
+              <p className="text-xs font-medium text-black text-center sm:text-left">
                 Generate a token to create a shareable URL.
               </p>
-              <form action={generateShareToken}>
+              <form action={generateShareToken} className="flex justify-center sm:justify-start">
                 <input type="hidden" name="boardId" value={board.id} />
                 <button
                   type="submit"
@@ -264,7 +265,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
           )}
         </div>
 
-        <div className="relative z-0 -my-40">
+        <div className="relative z-0 -my-8 sm:-my-12 lg:-my-16">
           <ScoreboardPreview
             boardId={board.id}
             initialName={board.name}
@@ -278,9 +279,9 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
           />
         </div>
 
-        <section className="space-y-6 rounded-3xl border border-black/5 bg-white/80 p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] animate-rise">
-          <div className="grid gap-5 lg:grid-cols-3">
-            <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-5 shadow-sm shadow-black/5">
+        <section className="space-y-4 sm:space-y-6 rounded-2xl sm:rounded-3xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] animate-rise">
+          <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
+            <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 shadow-sm shadow-black/5">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
                 A side
               </p>
@@ -293,14 +294,14 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
               <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} />
             </div>
 
-            <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-5 text-center shadow-sm shadow-black/5">
+            <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 text-center shadow-sm shadow-black/5">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
                 Scoreboard name
               </p>
               <BoardNameEditor boardId={board.id} initialName={board.name} align="center" />
             </div>
 
-            <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-5 shadow-sm shadow-black/5">
+            <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 shadow-sm shadow-black/5">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
                 B side
               </p>
@@ -313,7 +314,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
               <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} />
             </div>
           </div>
-          <div className="mt-6 rounded-2xl border border-black/8 bg-white/80 p-5 shadow-sm shadow-black/5">
+          <div className="mt-4 sm:mt-6 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 shadow-sm shadow-black/5">
             <ScoreboardStyleSelector boardId={board.id} initialStyle={board.scoreboard_style} />
           </div>
         </section>
