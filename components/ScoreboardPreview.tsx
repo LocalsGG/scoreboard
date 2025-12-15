@@ -53,6 +53,11 @@ export function ScoreboardPreview({
     initialPositions || DEFAULT_POSITIONS
   );
 
+  // Store the initial positions to restore on reset
+  const initialPositionsRef = useRef<ElementPositions>(
+    initialPositions || DEFAULT_POSITIONS
+  );
+
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -185,9 +190,12 @@ export function ScoreboardPreview({
       style: initialStyle || SCOREBOARD_OVERLAY_IMAGE,
     });
 
+    const positionsToUse = initialPositions || DEFAULT_POSITIONS;
     if (initialPositions) {
       setPositions(initialPositions);
     }
+    // Update the ref to store the initial positions for reset
+    initialPositionsRef.current = positionsToUse;
   }, [
     boardId,
     initialAScore,
@@ -200,11 +208,12 @@ export function ScoreboardPreview({
     initialPositions,
   ]);
 
-  // Reset positions to default
+  // Reset positions to initial (what they were when component loaded)
   const resetPositions = useCallback(() => {
     if (readOnly) return;
-    setPositions(DEFAULT_POSITIONS);
-    savePositions(DEFAULT_POSITIONS);
+    const positionsToReset = initialPositionsRef.current;
+    setPositions(positionsToReset);
+    savePositions(positionsToReset);
   }, [readOnly, savePositions]);
 
   useEffect(() => {

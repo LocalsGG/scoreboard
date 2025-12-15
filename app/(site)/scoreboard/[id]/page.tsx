@@ -11,6 +11,7 @@ import { ResetPositionsButton } from "@/components/ResetPositionsButton";
 import { ensureShareToken, regenerateShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getBaseUrlFromRequest } from "@/lib/urls";
+import { getUserData } from "@/lib/users";
 import type { ElementPositions } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,7 @@ type Scoreboard = {
 type LoadScoreboardResult = {
   board: Scoreboard | null;
   ownerName: string;
+  hasPaidSubscription: boolean;
 };
 
 async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
@@ -70,6 +72,11 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
     (typeof metadata.name === "string" && metadata.name.trim()) ||
     user.email ||
     "you";
+
+  // Fetch user subscription status
+  const userSubscriptionData = await getUserData(supabase, user.id);
+  const subscriptionStatus = userSubscriptionData?.subscription_status;
+  const hasPaidSubscription = subscriptionStatus === "pro" || subscriptionStatus === "enterprise";
 
   // Select all columns, but handle element_positions gracefully if it doesn't exist
   let board: Scoreboard | null = null;
@@ -113,7 +120,7 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   }
 
   if (!board) {
-    return { board: null, ownerName };
+    return { board: null, ownerName, hasPaidSubscription };
   }
 
   // Ensure a share token exists for this board while keeping the logic in one place.
@@ -126,7 +133,7 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
 
   board.share_token = shareToken;
 
-  return { board, ownerName };
+  return { board, ownerName, hasPaidSubscription };
 }
 
 async function generateShareToken(formData: FormData) {
@@ -158,6 +165,15 @@ async function generateShareToken(formData: FormData) {
     throw new Error("You must be signed in to generate share tokens");
   }
 
+  // Check subscription status before allowing share token generation
+  const userDataRecord = await getUserData(supabase, user.id);
+  const subscriptionStatus = userDataRecord?.subscription_status;
+  const hasPaidSubscription = subscriptionStatus === "pro" || subscriptionStatus === "enterprise";
+
+  if (!hasPaidSubscription) {
+    redirect("/pricing");
+  }
+
   const newToken = await regenerateShareToken({ supabase, boardId, ownerId: user.id });
 
   revalidatePath(`/scoreboard/${boardId}`);
@@ -166,7 +182,7 @@ async function generateShareToken(formData: FormData) {
 
 export default async function ScoreboardPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
-  const { board } = await loadScoreboard(id);
+  const { board, hasPaidSubscription } = await loadScoreboard(id);
 
   if (!board) {
     return (
@@ -215,26 +231,67 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
             <span className="sm:hidden">Back</span>
           </Link>
           {shareUrl ? (
-            <div className="relative flex-1 min-w-0">
-              <input
-                readOnly
-                value={shareUrl}
-                className="w-full truncate rounded-xl border border-black/15 bg-white px-3 py-2 pr-24 sm:pr-32 md:pr-80 text-xs sm:text-sm font-semibold text-black shadow-inner shadow-black/5"
-              />
-              <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-                <CopyButton
-                  value={shareUrl}
-                  label="Copy"
-                  className="cursor-pointer rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                />
+            hasPaidSubscription ? (
+              <div className="flex flex-col sm:flex-row flex-1 gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <input
+                    readOnly
+                    value={shareUrl}
+                    className="w-full truncate rounded-xl border border-black/15 bg-white px-3 py-2 pr-24 sm:pr-32 md:pr-80 text-xs sm:text-sm font-semibold text-black shadow-inner shadow-black/5"
+                  />
+                  <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+                    <CopyButton
+                      value={shareUrl}
+                      label="Copy"
+                      className="cursor-pointer rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                    />
+                    <a
+                      href={shareUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cursor-pointer inline-flex items-center gap-1 justify-center rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                      aria-label="Open link in new tab"
+                    >
+                      <span className="hidden sm:inline">Go Live</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="h-3 w-3 sm:h-4 sm:w-4"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                        />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
                 <a
                   href={shareUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="cursor-pointer inline-flex items-center gap-1 justify-center rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                  aria-label="Open link in new tab"
+                  className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
                 >
-                  <span className="hidden sm:inline">Open</span>
+                  Share Scorekeeping
+                </a>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row flex-1 gap-2">
+                <Link
+                  href="/pricing"
+                  className="cursor-pointer inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                >
+                  Copy
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="cursor-pointer inline-flex items-center gap-1 justify-center rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                >
+                  <span className="hidden sm:inline">Go Live</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -249,23 +306,38 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                       d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
                     />
                   </svg>
-                </a>
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                >
+                  Share Scorekeeping
+                </Link>
               </div>
-            </div>
+            )
           ) : (
             <div className="flex flex-col sm:flex-row flex-1 items-stretch sm:items-center gap-2">
               <p className="text-xs font-medium text-black text-center sm:text-left">
                 Generate a token to create a shareable URL.
               </p>
-              <form action={generateShareToken} className="flex justify-center sm:justify-start">
-                <input type="hidden" name="boardId" value={board.id} />
-                <button
-                  type="submit"
+              {hasPaidSubscription ? (
+                <form action={generateShareToken} className="flex justify-center sm:justify-start">
+                  <input type="hidden" name="boardId" value={board.id} />
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 py-2 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                  >
+                    Generate
+                  </button>
+                </form>
+              ) : (
+                <Link
+                  href="/pricing"
                   className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 py-2 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
                 >
                   Generate
-                </button>
-              </form>
+                </Link>
+              )}
             </div>
           )}
         </div>
