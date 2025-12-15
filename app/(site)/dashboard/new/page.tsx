@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "crypto";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { ensureUserExists } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,14 @@ async function createBoard(formData: FormData) {
   const userId = session?.user?.id;
   if (!userId) {
     throw new Error("You must be signed in to create boards");
+  }
+
+  // Ensure user exists in public.users table before creating scoreboard
+  // This handles cases where the user exists in auth.users but not in public.users
+  const userEmail = session?.user?.email || null;
+  const userCheck = await ensureUserExists(supabase, userId, userEmail);
+  if (!userCheck.success) {
+    throw new Error(`Failed to ensure user exists: ${userCheck.error}`);
   }
 
   const rawName = (formData.get("name") as string | null) ?? "";

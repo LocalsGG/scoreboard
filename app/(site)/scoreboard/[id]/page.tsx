@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { CopyButton } from "@/components/CopyButton";
 import { BoardNameEditor } from "@/components/BoardNameEditor";
@@ -10,6 +9,7 @@ import { ScoreboardPreview } from "@/components/ScoreboardPreview";
 import { ScoreboardStyleSelector } from "@/components/ScoreboardStyleSelector";
 import { ensureShareToken, regenerateShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getBaseUrlFromRequest } from "@/lib/urls";
 import type { ElementPositions } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -46,14 +46,21 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
 
   const supabase = await createServerSupabaseClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
+  
+  // Handle authentication errors - if user doesn't exist, redirect to auth
   if (userError) {
+    // If the user from the JWT doesn't exist, the session is invalid
+    if (userError.message.includes('does not exist') || userError.message.includes('JWT')) {
+      console.warn('[loadScoreboard] Invalid session - user does not exist, redirecting to auth');
+      redirect("/auth");
+    }
     throw new Error(userError.message);
   }
   const user = userData.user;
 
   // Allow anonymous users to access scoreboards
   if (!user) {
-    throw new Error("You must be signed in to access scoreboards");
+    redirect("/auth");
   }
 
   const metadata = (user.user_metadata ?? {}) as Record<string, unknown>;
@@ -133,7 +140,13 @@ async function generateShareToken(formData: FormData) {
   const supabase = await createServerSupabaseClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
 
+  // Handle authentication errors - if user doesn't exist, redirect to auth
   if (userError) {
+    // If the user from the JWT doesn't exist, the session is invalid
+    if (userError.message.includes('does not exist') || userError.message.includes('JWT')) {
+      console.warn('[generateShareToken] Invalid session - user does not exist');
+      throw new Error("Your session is invalid. Please sign in again.");
+    }
     throw new Error(userError.message);
   }
 
@@ -180,16 +193,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
     );
   }
 
-  const envBase = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-  const headerBase = await (async () => {
-    try {
-      const hdrs = await Promise.resolve(headers());
-      return typeof hdrs.get === "function" ? hdrs.get("origin") ?? "" : "";
-    } catch {
-      return "";
-    }
-  })();
-  const baseUrl = envBase || headerBase;
+  const baseUrl = await getBaseUrlFromRequest();
   const sharePath = board.share_token ? `/share/${board.share_token}` : null;
   const shareUrl = sharePath
     ? baseUrl

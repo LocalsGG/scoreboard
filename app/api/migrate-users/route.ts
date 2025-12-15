@@ -40,6 +40,12 @@ ON public.users
 FOR SELECT
 USING (auth.uid() = id);
 
+-- Policy: Users can insert their own record
+CREATE POLICY "Users can insert their own record"
+ON public.users
+FOR INSERT
+WITH CHECK (auth.uid() = id);
+
 -- Policy: Users can update their own record (except id)
 CREATE POLICY "Users can update their own record"
 ON public.users
@@ -86,6 +92,17 @@ CREATE TRIGGER on_auth_user_email_updated
 
 -- Create index on email for faster lookups
 CREATE INDEX IF NOT EXISTS users_email_idx ON public.users(email);
+
+-- Function to ensure user exists (can be called by users to create their own record)
+-- Uses SECURITY DEFINER to bypass RLS for inserts
+CREATE OR REPLACE FUNCTION public.ensure_user_exists(user_id uuid, user_email text)
+RETURNS void AS $$
+BEGIN
+  INSERT INTO public.users (id, email, subscription_status)
+  VALUES (user_id, user_email, 'base')
+  ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 `;
 
     // Supabase JS client doesn't support raw SQL execution

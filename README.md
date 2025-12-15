@@ -24,11 +24,35 @@ Create a `.env.local` file in the root directory (this file is gitignored) with 
 NEXT_PUBLIC_SUPABASE_URL=your-project-url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 
+# Optional: Site URL (for share links and OAuth callbacks)
+# For local development: Leave unset or use http://localhost:3000
+# For production: Set to your production URL (e.g., https://scoreboard.locals.gg)
+# If not set, the app will automatically detect the URL from request headers
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
 # Optional: Splash image padding (for fine-tuning the hero image position)
 NEXT_PUBLIC_SPLASH_IMAGE_PADDING_TOP=0px
 ```
 
-You can find both under Supabase Dashboard → Project Settings → API → API Keys (use **Publishable key**, not secret).
+You can find both Supabase variables under Supabase Dashboard → Project Settings → API → API Keys (use **Publishable key**, not secret).
+
+### URL Configuration
+
+The app automatically handles URLs for both local development and production:
+
+- **Local Development**: If `NEXT_PUBLIC_SITE_URL` is not set, the app will use `http://localhost:3000` automatically
+- **Production**: Set `NEXT_PUBLIC_SITE_URL=https://scoreboard.locals.gg` in your production environment variables
+
+The app uses this URL for:
+- Generating share links for scoreboards
+- OAuth callback redirects
+- Password reset links
+
+**Important**: Also configure the Site URL in your Supabase Dashboard:
+- Go to Authentication → URL Configuration
+- Set **Site URL** to match your environment:
+  - Development: `http://localhost:3000`
+  - Production: `https://scoreboard.locals.gg`
 
 ## Supabase schema and policy
 
@@ -120,7 +144,9 @@ If the table already exists, add the policies above. The app filters by `owner_i
 The `/auth` page now surfaces a branded Google button that calls `supabase.auth.signInWithOAuth`. To make it live:
 
 1. Auth → URL Configuration  
-   - Set **Site URL** to your dev/prod host (e.g. `http://localhost:3000` while testing).  
+   - Set **Site URL** to match your environment:
+     - Development: `http://localhost:3000`
+     - Production: `https://scoreboard.locals.gg`
    - Keep the `/auth/update-password` redirect from the email/password setup step. No extra redirect is required for OAuth because the app asks Supabase to send users back to `/dashboard`.
 2. Auth → Providers → **Google**  
    - Create Google OAuth “Web application” credentials in the Google Cloud Console.  
