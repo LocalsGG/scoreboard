@@ -25,19 +25,33 @@ async function getRedirectBaseUrl(request: Request): Promise<string> {
   const forwardedProto = request.headers.get('x-forwarded-proto')
   const host = request.headers.get('host')
 
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL, origin)
-  }
-
+  // Determine the actual request origin
   const finalHost = forwardedHost || host
+  let requestOrigin = origin
   if (finalHost) {
     const protocol =
       forwardedProto ||
       (process.env.NODE_ENV === 'development' ? 'http' : 'https')
-    return normalizeBaseUrl(`${protocol}://${finalHost}`, origin)
+    requestOrigin = normalizeBaseUrl(`${protocol}://${finalHost}`, origin)
   }
 
-  return origin
+  // If NEXT_PUBLIC_SITE_URL is set, use it only if it matches the request origin
+  // This allows dev servers to work correctly even if NEXT_PUBLIC_SITE_URL is set
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    const envUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL, origin)
+    // Only use env URL if it matches the request origin (same domain)
+    // This prevents redirecting to production when on a dev/preview server
+    const envUrlObj = new URL(envUrl)
+    const requestUrlObj = new URL(requestOrigin)
+    
+    // If domains match, use env URL (allows for exact protocol/port matching)
+    // Otherwise, use request origin (for dev/preview servers)
+    if (envUrlObj.hostname === requestUrlObj.hostname) {
+      return envUrl
+    }
+  }
+
+  return requestOrigin
 }
 
 export async function GET(request: Request) {

@@ -77,27 +77,55 @@ export async function createCheckoutSession(
   return { url: checkoutSession.url }
 }
 
-export async function getBaseUrl(request: Request): Promise<string> {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL
-  if (envUrl) {
-    return envUrl.replace(/\/$/, '')
+function normalizeBaseUrl(url: string | null | undefined, fallbackOrigin: string): string {
+  if (!url) {
+    return fallbackOrigin
   }
 
+  const trimmed = url.trim().replace(/\/$/, '')
+  const hasProtocol = /^https?:\/\//i.test(trimmed)
+  const withProtocol = hasProtocol
+    ? trimmed
+    : `${process.env.NODE_ENV === 'development' ? 'http://' : 'https://'}${trimmed}`
+
+  try {
+    return new URL(withProtocol).origin
+  } catch {
+    return fallbackOrigin
+  }
+}
+
+export async function getBaseUrl(request: Request): Promise<string> {
+  const { origin } = new URL(request.url)
   const forwardedHost = request.headers.get('x-forwarded-host')
   const forwardedProto = request.headers.get('x-forwarded-proto')
   const host = request.headers.get('host')
 
+  // Determine the actual request origin
   const finalHost = forwardedHost || host
+  let requestOrigin = origin
   if (finalHost) {
-    let protocol = 'https://'
-    if (forwardedProto) {
-      protocol = `${forwardedProto}://`
-    } else if (process.env.NODE_ENV === 'development') {
-      protocol = 'http://'
-    }
-    return `${protocol}${finalHost}`
+    const protocol =
+      forwardedProto ||
+      (process.env.NODE_ENV === 'development' ? 'http' : 'https')
+    requestOrigin = normalizeBaseUrl(`${protocol}://${finalHost}`, origin)
   }
 
-  const { origin } = new URL(request.url)
-  return origin
+  // If NEXT_PUBLIC_SITE_URL is set, use it only if it matches the request origin
+  // This allows dev servers to work correctly even if NEXT_PUBLIC_SITE_URL is set
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    const envUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL, origin)
+    // Only use env URL if it matches the request origin (same domain)
+    // This prevents redirecting to production when on a dev/preview server
+    const envUrlObj = new URL(envUrl)
+    const requestUrlObj = new URL(requestOrigin)
+    
+    // If domains match, use env URL (allows for exact protocol/port matching)
+    // Otherwise, use request origin (for dev/preview servers)
+    if (envUrlObj.hostname === requestUrlObj.hostname) {
+      return envUrl
+    }
+  }
+
+  return requestOrigin
 }
