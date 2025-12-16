@@ -230,15 +230,15 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
   ]
 
   return (
-    <div className="w-full max-w-xl space-y-6">
+    <div className="w-full space-y-4 sm:space-y-6">
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-black text-center">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-black text-center">
           {heroTitle}
         </h1>
-        {heroSubtitle ? <p className="text-sm text-black">{heroSubtitle}</p> : null}
+        {heroSubtitle ? <p className="text-xs sm:text-sm text-black px-2">{heroSubtitle}</p> : null}
         {isConverting && (
-          <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 mt-3 text-left">
-            <p className="text-sm text-blue-800">
+          <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 sm:px-4 py-2 sm:py-3 mt-3 text-left">
+            <p className="text-xs sm:text-sm text-blue-800">
               <strong>Note:</strong> Your current scoreboards will be linked to your new account automatically.
             </p>
           </div>
@@ -255,16 +255,16 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
               void handleOAuth(provider.id)
             }}
             disabled={Boolean(oauthLoading)}
-            className={`flex w-full items-center justify-center gap-3 rounded-md px-4 py-2 text-sm font-semibold transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 ${provider.className}`}
+            className={`flex w-full items-center justify-center gap-2 sm:gap-3 rounded-md px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 ${provider.className}`}
             style={provider.style}
           >
-            <Image src={provider.icon} alt="" width={20} height={20} className="h-5 w-5" />
-            {provider.label}
+            <Image src={provider.icon} alt="" width={20} height={20} className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+            <span className="truncate">{provider.label}</span>
           </button>
         ))}
         {oauthStatus.type !== 'idle' && oauthStatus.message && (
           <div
-            className={`rounded-lg px-4 py-3 text-sm font-medium ${
+            className={`rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium ${
               oauthStatus.type === 'success'
                 ? 'bg-green-50 text-green-700'
                 : oauthStatus.type === 'error'
@@ -277,24 +277,24 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
         )}
       </div>
 
-      <div className="flex items-center gap-4 text-xs font-semibold uppercase text-black">
+      <div className="flex items-center gap-2 sm:gap-4 text-xs font-semibold uppercase text-black">
         <span className="h-px flex-1 bg-black" />
-        Or email
+        <span className="whitespace-nowrap">Or email</span>
         <span className="h-px flex-1 bg-black" />
       </div>
 
       {view === 'form' ? (
         <form
-          className="space-y-4"
+          className="space-y-3 sm:space-y-4"
           onSubmit={(e) => {
             e.preventDefault()
             void handleSubmit()
           }}
         >
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-black">Email</label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <label className="block text-xs sm:text-sm font-medium text-black">Email</label>
             <input
-              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
+              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 sm:py-2.5 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -304,10 +304,10 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-black">Password</label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <label className="block text-xs sm:text-sm font-medium text-black">Password</label>
             <input
-              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
+              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 sm:py-2.5 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -318,12 +318,12 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
           </div>
 
           {mode === 'signup' ? (
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-black">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label className="block text-xs sm:text-sm font-medium text-black">
                 Confirm password
               </label>
               <input
-                className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
+                className="w-full rounded-md border border-black/10 bg-white px-3 py-2 sm:py-2.5 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -334,49 +334,51 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
             </div>
           ) : null}
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm pt-1">
             <button
               type="button"
               onClick={() => {
                 setMode(mode === 'signin' ? 'signup' : 'signin')
                 setStatus({ type: 'idle' })
               }}
-              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95"
+              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95 text-left sm:text-left"
             >
               {toggleCopy} {toggleAction}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setView('reset')
-                setResetStatus({ type: 'idle' })
-              }}
-              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95"
-            >
-              Forgot password?
-            </button>
+            {mode === 'signin' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setView('reset')
+                  setResetStatus({ type: 'idle' })
+                }}
+                className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95 text-left sm:text-right"
+              >
+                Forgot password?
+              </button>
+            )}
           </div>
 
           <button
             type="submit"
             disabled={status.type === 'loading'}
-            className="flex w-full items-center justify-center rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center rounded-md bg-black px-4 py-2.5 sm:py-2.5 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 mt-2 sm:mt-0"
           >
             {status.type === 'loading' ? 'Working...' : cta}
           </button>
         </form>
       ) : (
         <form
-          className="space-y-4"
+          className="space-y-3 sm:space-y-4"
           onSubmit={(e) => {
             e.preventDefault()
             void handleReset()
           }}
         >
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-black">Email</label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <label className="block text-xs sm:text-sm font-medium text-black">Email</label>
             <input
-              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
+              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 sm:py-2.5 text-sm text-black transition-all duration-150 placeholder:text-zinc-500 hover:-translate-y-0.5 hover:border-black/30 focus:border-black focus:shadow-[0_0_0_3px_rgba(0,0,0,0.08)] focus:outline-none active:scale-[0.99]"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -386,21 +388,21 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
             />
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between text-sm gap-2">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm gap-2 pt-1">
             <button
               type="button"
               onClick={() => {
                 setView('form')
                 setResetStatus({ type: 'idle' })
               }}
-              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95"
+              className="text-black underline-offset-4 transition-transform duration-150 hover:-translate-y-0.5 hover:underline active:scale-95 text-left sm:text-left"
             >
               Back to sign in
             </button>
             <button
               type="submit"
               disabled={resetStatus.type === 'loading'}
-              className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full sm:w-auto rounded-md bg-black px-4 py-2.5 sm:py-2.5 text-sm font-semibold text-white shadow transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:bg-zinc-800 active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {resetStatus.type === 'loading' ? 'Sending...' : 'Send reset email'}
             </button>
@@ -410,7 +412,7 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
 
       {view === 'form' && status.type !== 'idle' && status.message && (
         <div
-          className={`rounded-lg px-4 py-3 text-sm font-medium ${
+          className={`rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium ${
             status.type === 'success'
               ? 'bg-green-50 text-green-700'
               : status.type === 'error'
@@ -424,7 +426,7 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
 
       {view === 'reset' && resetStatus.type !== 'idle' && resetStatus.message && (
         <div
-          className={`rounded-lg px-4 py-3 text-sm font-medium ${
+          className={`rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium ${
             resetStatus.type === 'success'
               ? 'bg-green-50 text-green-700'
               : resetStatus.type === 'error'

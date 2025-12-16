@@ -247,23 +247,23 @@ export default async function Home() {
                 </div>
                 <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">Create up to 1 board</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-red-600 font-bold mt-0.5">✗</span>
+                    <span className="text-red-600 font-bold mt-0.5">×</span>
                     <span className="text-zinc-700">Match your brand with custom colors</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-red-600 font-bold mt-0.5">✗</span>
+                    <span className="text-red-600 font-bold mt-0.5">×</span>
                     <span className="text-zinc-700">Add team and sponsor logos</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-red-600 font-bold mt-0.5">✗</span>
+                    <span className="text-red-600 font-bold mt-0.5">×</span>
                     <span className="text-zinc-700">Invite team members to collaborate</span>
                   </li>
                 </ul>
@@ -292,23 +292,23 @@ export default async function Home() {
                 </p>
                 <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">Create up to 20 scoreboards</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">Match your brand with custom colors</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">Add team and sponsor logos</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">Invite team members to collaborate</span>
                   </li>
                 </ul>
@@ -340,23 +340,23 @@ export default async function Home() {
                 </p>
                 <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
                   <li className="flex items-start gap-3">
-                    <span className="text-green-400 font-bold mt-0.5">✓</span>
+                    <span className="text-green-400 font-bold mt-0.5">✔</span>
                     <span className="text-white">Create up to 200 scoreboards</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-400 font-bold mt-0.5">✓</span>
+                    <span className="text-green-400 font-bold mt-0.5">✔</span>
                     <span className="text-white">No ads, ever - clean viewing experience</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-400 font-bold mt-0.5">✓</span>
+                    <span className="text-green-400 font-bold mt-0.5">✔</span>
                     <span className="text-white">Match your brand with custom colors</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-400 font-bold mt-0.5">✓</span>
+                    <span className="text-green-400 font-bold mt-0.5">✔</span>
                     <span className="text-white">Add team and sponsor logos</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-400 font-bold mt-0.5">✓</span>
+                    <span className="text-green-400 font-bold mt-0.5">✔</span>
                     <span className="text-white">Invite team members to collaborate</span>
                   </li>
                 </ul>
@@ -381,23 +381,23 @@ export default async function Home() {
                 </div>
                 <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">Unlimited scoreboards</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">Everything in Pro</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">Custom integrations</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">Dedicated support</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✓</span>
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
                     <span className="text-zinc-700">SLA guarantees</span>
                   </li>
                 </ul>

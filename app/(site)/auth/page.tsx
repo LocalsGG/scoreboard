@@ -25,9 +25,9 @@ export default async function AuthPage({
   }
 
   return (
-    <div className="relative flex min-h-full items-center justify-center px-4 sm:px-6 py-12 font-sans">
-      <main className="relative z-10 w-full max-w-sm animate-fade-in">
-        <section className="rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm animate-rise">
+    <div className="relative flex min-h-full items-center justify-center px-4 sm:px-6 py-8 sm:py-12 font-sans">
+      <main className="relative z-10 w-full max-w-md animate-fade-in">
+        <section className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 lg:p-8 shadow-sm animate-rise">
           <AuthForm 
             isConverting={isConverting} 
             redirectTo={redirectTo}

@@ -242,23 +242,23 @@ export function PricingPageClient() {
           </div>
           <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">Create up to 1 board</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-600 font-bold mt-0.5">✗</span>
+              <span className="text-red-600 font-bold mt-0.5">×</span>
               <span className="text-zinc-700">Match your brand with custom colors</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-600 font-bold mt-0.5">✗</span>
+              <span className="text-red-600 font-bold mt-0.5">×</span>
               <span className="text-zinc-700">Add team and sponsor logos</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-600 font-bold mt-0.5">✗</span>
+              <span className="text-red-600 font-bold mt-0.5">×</span>
               <span className="text-zinc-700">Invite team members to collaborate</span>
             </li>
           </ul>
@@ -290,23 +290,23 @@ export function PricingPageClient() {
           </p>
           <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
             <li className="flex items-start gap-3">
-              <span className="text-green-400 font-bold mt-0.5">✓</span>
+              <span className="text-green-400 font-bold mt-0.5">✔</span>
               <span className="text-white">Create up to 200 scoreboards</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-400 font-bold mt-0.5">✓</span>
+              <span className="text-green-400 font-bold mt-0.5">✔</span>
               <span className="text-white">No ads, ever - clean viewing experience</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-400 font-bold mt-0.5">✓</span>
+              <span className="text-green-400 font-bold mt-0.5">✔</span>
               <span className="text-white">Match your brand with custom colors</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-400 font-bold mt-0.5">✓</span>
+              <span className="text-green-400 font-bold mt-0.5">✔</span>
               <span className="text-white">Add team and sponsor logos</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-400 font-bold mt-0.5">✓</span>
+              <span className="text-green-400 font-bold mt-0.5">✔</span>
               <span className="text-white">Invite team members to collaborate</span>
             </li>
           </ul>
@@ -336,23 +336,23 @@ export function PricingPageClient() {
           </p>
           <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">Create up to 20 scoreboards</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">Match your brand with custom colors</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">Add team and sponsor logos</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">Invite team members to collaborate</span>
             </li>
           </ul>
@@ -378,23 +378,23 @@ export function PricingPageClient() {
           </div>
           <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">Unlimited scoreboards</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">Everything in Pro</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">Custom integrations</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">Dedicated support</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">SLA guarantees</span>
             </li>
           </ul>
@@ -429,59 +429,59 @@ export function PricingPageClient() {
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">No ads, ever - clean viewing experience</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Match your brand with custom colors</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Add team and sponsor logos</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Invite team members to collaborate</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Custom integrations</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Dedicated support</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">All future updates included</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">✗</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✓</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
           </div>
         </div>
@@ -613,27 +613,27 @@ export function PricingPageClient() {
                 <div className="flex-1 w-full lg:max-w-md">
                   <ul className="flex flex-col gap-2 sm:gap-3 text-sm sm:text-base">
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">Create up to 200 scoreboards</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">No ads, ever - clean viewing experience</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">Match your brand with custom colors</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">Add team and sponsor logos</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">Invite team members to collaborate</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800 font-semibold">All future updates included</span>
                     </li>
                   </ul>

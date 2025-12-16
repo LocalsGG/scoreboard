@@ -175,27 +175,27 @@ export function LifetimeDealBanner() {
                 <div className="flex-1 w-full lg:max-w-md">
                   <ul className="flex flex-col gap-2 sm:gap-3 text-sm sm:text-base">
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">Create up to 200 scoreboards</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">No ads, ever - clean viewing experience</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">Match your brand with custom colors</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">Add team and sponsor logos</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">Invite team members to collaborate</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✓</span>
+                      <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800 font-semibold">All future updates included</span>
                     </li>
                   </ul>
