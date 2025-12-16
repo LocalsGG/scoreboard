@@ -8,6 +8,8 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getUserData, getUserSubscription, getBoardLimit } from "@/lib/users";
 import { syncSubscriptionFromCheckoutSessionId } from "@/lib/stripe/subscriptions";
 import { DeleteBoardButton } from "@/components/DeleteBoardButton";
+import { UpgradeBanner } from "@/components/UpgradeBanner";
+import { BoardLimitBanner } from "@/components/BoardLimitBanner";
 import type { ScoreboardRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -119,30 +121,10 @@ export default async function DashboardPage({
                 <span className="text-sm font-semibold text-zinc-600">
                   {currentBoardCount}/{boardLimit}
                 </span>
-                {!canCreateMore && (
-                  <Link
-                    href="/pricing"
-                    className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-transform duration-150 hover:-translate-y-0.5 active:scale-95"
-                  >
-                    <span>Upgrade</span>
-                    <span>→</span>
-                  </Link>
-                )}
               </div>
             </header>
-            {!canCreateMore && (
-              <div className="rounded-xl border border-orange-200 bg-orange-50/80 p-4 text-sm">
-                <p className="font-semibold text-orange-900">
-                  You&apos;ve reached your board limit ({boardLimit} board{boardLimit !== 1 ? 's' : ''})
-                </p>
-                <p className="mt-1 text-orange-700">
-                  <Link href="/pricing" className="font-semibold underline hover:text-orange-900">
-                    Upgrade your plan
-                  </Link>{" "}
-                  to create more scoreboards.
-                </p>
-              </div>
-            )}
+            {planType === "base" && <UpgradeBanner />}
+            {!canCreateMore && <BoardLimitBanner boardLimit={boardLimit} />}
             {error ? (
               <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                 <p className="font-semibold">Couldn&apos;t load boards</p>

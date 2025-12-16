@@ -277,6 +277,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                   <CopyButton
                     value={controlsShareUrl}
                     label="Share Scorekeeping"
+                    maintainSize={true}
                     className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
                   />
                 )}
@@ -324,6 +325,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                   <CopyButton
                     value={controlsShareUrl}
                     label="Share Scorekeeping"
+                    maintainSize={true}
                     className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
                   />
                 )}
