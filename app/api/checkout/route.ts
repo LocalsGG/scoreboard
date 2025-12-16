@@ -62,6 +62,8 @@ export async function POST(request: Request) {
     if (!validation.valid) {
       console.error('Invalid price ID:', {
         received: priceId,
+        receivedType: typeof priceId,
+        receivedLength: priceId?.length,
         validIds: validPriceIds,
         standardAnnualId, // Working example for comparison
         envVars: {
@@ -70,6 +72,13 @@ export async function POST(request: Request) {
           PRO_MONTHLY: process.env.STRIPE_PRICE_PRO_MONTHLY,
           PRO_ANNUAL: process.env.STRIPE_PRICE_PRO_ANNUAL,
           LIFETIME: process.env.STRIPE_PRICE_LIFETIME,
+        },
+        comparison: {
+          matchesStandardAnnual: priceId === standardAnnualId,
+          matchesStandardMonthly: priceId === process.env.STRIPE_PRICE_STANDARD_MONTHLY,
+          matchesProAnnual: priceId === process.env.STRIPE_PRICE_PRO_ANNUAL,
+          matchesProMonthly: priceId === process.env.STRIPE_PRICE_PRO_MONTHLY,
+          matchesLifetime: priceId === process.env.STRIPE_PRICE_LIFETIME,
         }
       })
       return NextResponse.json(
@@ -80,6 +89,25 @@ export async function POST(request: Request) {
           // Include working example for comparison
           workingExample: standardAnnualId,
           validIds: validPriceIds,
+          debug: {
+            receivedPriceId: priceId,
+            receivedType: typeof priceId,
+            validPriceIdsCount: validPriceIds.length,
+            envVarsSet: {
+              STANDARD_MONTHLY: !!process.env.STRIPE_PRICE_STANDARD_MONTHLY,
+              STANDARD_ANNUAL: !!process.env.STRIPE_PRICE_STANDARD_ANNUAL,
+              PRO_MONTHLY: !!process.env.STRIPE_PRICE_PRO_MONTHLY,
+              PRO_ANNUAL: !!process.env.STRIPE_PRICE_PRO_ANNUAL,
+              LIFETIME: !!process.env.STRIPE_PRICE_LIFETIME,
+            },
+            comparison: {
+              matchesStandardAnnual: priceId === standardAnnualId,
+              matchesStandardMonthly: priceId === process.env.STRIPE_PRICE_STANDARD_MONTHLY,
+              matchesProAnnual: priceId === process.env.STRIPE_PRICE_PRO_ANNUAL,
+              matchesProMonthly: priceId === process.env.STRIPE_PRICE_PRO_MONTHLY,
+              matchesLifetime: priceId === process.env.STRIPE_PRICE_LIFETIME,
+            }
+          }
         },
         { status: 400 }
       )

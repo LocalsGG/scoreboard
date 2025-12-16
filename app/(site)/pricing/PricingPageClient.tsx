@@ -173,7 +173,23 @@ export function PricingPageClient() {
 
     const priceId = getPriceId(plan)
     
+    console.log('Attempting checkout:', {
+      plan,
+      isAnnual,
+      priceId,
+      priceIdType: typeof priceId,
+      standardAnnualId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL,
+      allClientEnvVars: {
+        STANDARD_ANNUAL: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL,
+        STANDARD_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_MONTHLY,
+        PRO_ANNUAL: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL,
+        PRO_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY,
+        LIFETIME: process.env.NEXT_PUBLIC_STRIPE_PRICE_LIFETIME,
+      }
+    })
+    
     if (!priceId) {
+      console.error('No price ID found for plan:', { plan, isAnnual })
       setError('Price configuration error. Please contact support.')
       return
     }
@@ -206,7 +222,20 @@ export function PricingPageClient() {
         // Include debug info in error message if available
         const errorMsg = data.error || 'Failed to create checkout session'
         const debugInfo = data.debug ? `\n\nDebug info: ${JSON.stringify(data.debug, null, 2)}` : ''
-        throw new Error(errorMsg + debugInfo)
+        const receivedInfo = data.received ? `\n\nReceived price ID: ${data.received}` : ''
+        const validIdsInfo = data.validIds ? `\n\nValid price IDs: ${JSON.stringify(data.validIds, null, 2)}` : ''
+        const workingExample = data.workingExample ? `\n\nWorking example (Standard Annual): ${data.workingExample}` : ''
+        
+        console.error('Checkout API error:', {
+          status: response.status,
+          error: errorMsg,
+          received: data.received,
+          validIds: data.validIds,
+          workingExample: data.workingExample,
+          debug: data.debug,
+        })
+        
+        throw new Error(errorMsg + receivedInfo + validIdsInfo + workingExample + debugInfo)
       }
 
       if (data.url) {
