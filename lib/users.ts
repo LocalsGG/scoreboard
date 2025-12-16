@@ -21,10 +21,20 @@ export async function getUserData(
 export async function getUserSubscription(
   supabase: SupabaseClient,
   userId: string
-): Promise<{ plan_type: 'base' | 'standard' | 'pro' | 'lifetime' | null; status: string | null } | null> {
+): Promise<{ 
+  plan_type: 'base' | 'standard' | 'pro' | 'lifetime' | null; 
+  status: string | null;
+  stripe_subscription_id: string | null;
+  stripe_price_id: string | null;
+  stripe_customer_id: string | null;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean | null;
+  created_at: string | null;
+} | null> {
   const { data, error } = await supabase
     .from("subscriptions")
-    .select("plan_type, status")
+    .select("plan_type, status, stripe_subscription_id, stripe_price_id, stripe_customer_id, current_period_start, current_period_end, cancel_at_period_end, created_at")
     .eq("user_id", userId)
     .eq("status", "active")
     .order("created_at", { ascending: false })
@@ -32,10 +42,30 @@ export async function getUserSubscription(
     .maybeSingle();
 
   if (error || !data) {
-    return { plan_type: 'base', status: null };
+    return { 
+      plan_type: 'base', 
+      status: null,
+      stripe_subscription_id: null,
+      stripe_price_id: null,
+      stripe_customer_id: null,
+      current_period_start: null,
+      current_period_end: null,
+      cancel_at_period_end: null,
+      created_at: null,
+    };
   }
 
-  return data as { plan_type: 'base' | 'standard' | 'pro' | 'lifetime' | null; status: string | null };
+  return data as { 
+    plan_type: 'base' | 'standard' | 'pro' | 'lifetime' | null; 
+    status: string | null;
+    stripe_subscription_id: string | null;
+    stripe_price_id: string | null;
+    stripe_customer_id: string | null;
+    current_period_start: string | null;
+    current_period_end: string | null;
+    cancel_at_period_end: boolean | null;
+    created_at: string | null;
+  };
 }
 
 export async function ensureUserExists(

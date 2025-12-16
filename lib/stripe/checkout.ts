@@ -46,7 +46,7 @@ export async function createCheckoutSession(
           quantity: 1,
         },
       ],
-      success_url: `${baseUrl}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${baseUrl}/account?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing?checkout=cancelled`,
       client_reference_id: checkoutRequestId || undefined,
       metadata: {

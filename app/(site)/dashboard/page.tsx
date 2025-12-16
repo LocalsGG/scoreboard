@@ -6,7 +6,6 @@ import { formatDate } from "@/lib/dates";
 import { getGameIcon, getGameName } from "@/lib/assets";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getUserData, getUserSubscription, getBoardLimit } from "@/lib/users";
-import { syncSubscriptionFromCheckoutSessionId } from "@/lib/stripe/subscriptions";
 import { DeleteBoardButton } from "@/components/DeleteBoardButton";
 import { UpgradeBanner } from "@/components/UpgradeBanner";
 import { BoardLimitBanner } from "@/components/BoardLimitBanner";
@@ -43,11 +42,7 @@ const deleteBoard = async (boardId: string) => {
   revalidatePath("/dashboard");
 };
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ checkout?: string; session_id?: string }>;
-}) {
+export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
   
   // Get the session - code exchange is handled by the callback route
@@ -61,12 +56,6 @@ export default async function DashboardPage({
     redirect("/auth");
   }
 
-  const params = await searchParams;
-  const checkoutStatus = params?.checkout;
-  const checkoutSessionId = params?.session_id;
-  if (checkoutStatus === "success" && checkoutSessionId) {
-    await syncSubscriptionFromCheckoutSessionId({ userId, checkoutSessionId });
-  }
 
   const result = await supabase
     .from("scoreboards")
