@@ -255,65 +255,26 @@ export default async function Home() {
                     <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-red-600 font-bold mt-0.5">×</span>
+                    <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                     <span className="text-zinc-700">Match your brand with custom colors</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-red-600 font-bold mt-0.5">×</span>
+                    <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                     <span className="text-zinc-700">Add team and sponsor logos</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-red-600 font-bold mt-0.5">×</span>
+                    <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                     <span className="text-zinc-700">Invite team members to collaborate</span>
                   </li>
                 </ul>
                 <Link
                   href="/auth"
-                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-black px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-                >
-                  Get Started
-                </Link>
-              </div>
-
-              {/* Standard Tier */}
-              <div className="flex flex-col gap-4 sm:gap-6 rounded-lg border border-zinc-200 bg-white p-4 sm:p-6 lg:p-8">
-                <div className="space-y-2 sm:space-y-3">
-                  <h3 className="text-xl sm:text-2xl font-black text-black">Standard</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl sm:text-4xl font-black text-black">$20</span>
-                    <span className="text-sm sm:text-base text-zinc-600">/ month</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-zinc-600">
-                    Billed monthly, cancel anytime
-                  </p>
-                </div>
-                <p className="text-xs sm:text-sm text-zinc-600 mb-2">
-                  Everything in Base, and
-                </p>
-                <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Create up to 20 scoreboards</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Match your brand with custom colors</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Add team and sponsor logos</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Invite team members to collaborate</span>
-                  </li>
-                </ul>
-                <Link
-                  href="/pricing"
                   className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-black px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white transition-colors hover:bg-zinc-800"
                 >
                   Get Started
@@ -363,6 +324,51 @@ export default async function Home() {
                 <Link
                   href="/pricing"
                   className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-black transition-colors hover:bg-zinc-100"
+                >
+                  Get Started
+                </Link>
+              </div>
+
+              {/* Standard Tier */}
+              <div className="flex flex-col gap-4 sm:gap-6 rounded-lg border border-zinc-200 bg-white p-4 sm:p-6 lg:p-8">
+                <div className="space-y-2 sm:space-y-3">
+                  <h3 className="text-xl sm:text-2xl font-black text-black">Standard</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl sm:text-4xl font-black text-black">$20</span>
+                    <span className="text-sm sm:text-base text-zinc-600">/ month</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-zinc-600">
+                    Billed monthly, cancel anytime
+                  </p>
+                </div>
+                <p className="text-xs sm:text-sm text-zinc-600 mb-2">
+                  Everything in Base, and
+                </p>
+                <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
+                    <span className="text-zinc-700">Create up to 20 scoreboards</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
+                    <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
+                    <span className="text-zinc-700">Match your brand with custom colors</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
+                    <span className="text-zinc-700">Add team and sponsor logos</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-600 font-bold mt-0.5">✔</span>
+                    <span className="text-zinc-700">Invite team members to collaborate</span>
+                  </li>
+                </ul>
+                <Link
+                  href="/pricing"
+                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-black px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white transition-colors hover:bg-zinc-800"
                 >
                   Get Started
                 </Link>

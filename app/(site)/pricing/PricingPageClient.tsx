@@ -250,15 +250,21 @@ export function PricingPageClient() {
               <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-600 font-bold mt-0.5">×</span>
+              <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+              </svg>
               <span className="text-zinc-700">Match your brand with custom colors</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-600 font-bold mt-0.5">×</span>
+              <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+              </svg>
               <span className="text-zinc-700">Add team and sponsor logos</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-600 font-bold mt-0.5">×</span>
+              <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+              </svg>
               <span className="text-zinc-700">Invite team members to collaborate</span>
             </li>
           </ul>
@@ -414,7 +420,10 @@ export function PricingPageClient() {
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200 bg-zinc-50">
               <div className="font-semibold text-black text-sm sm:text-base">Features</div>
               <div className="font-semibold text-black text-center text-xs sm:text-base">Base</div>
-              <div className="font-semibold text-black text-center text-xs sm:text-base">Pro</div>
+              <div className="font-semibold text-black text-center text-xs sm:text-base relative bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">
+                <span>Pro</span>
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-bold uppercase whitespace-nowrap">Popular</span>
+              </div>
               <div className="font-semibold text-black text-center text-xs sm:text-base">Standard</div>
               <div className="font-semibold text-black text-center text-xs sm:text-base">Enterprise</div>
               <div className="font-semibold text-black text-center text-xs sm:text-base">Lifetime</div>
@@ -422,7 +431,7 @@ export function PricingPageClient() {
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Scoreboards</div>
               <div className="text-center text-zinc-600 text-sm sm:text-base">1</div>
-              <div className="text-center text-zinc-600 text-sm sm:text-base">200</div>
+              <div className="text-center text-black font-bold text-sm sm:text-base bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">200</div>
               <div className="text-center text-zinc-600 text-sm sm:text-base">20</div>
               <div className="text-center text-zinc-600 text-sm sm:text-base">Unlimited</div>
               <div className="text-center text-zinc-600 text-sm sm:text-base">200</div>
@@ -430,56 +439,112 @@ export function PricingPageClient() {
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">No ads, ever - clean viewing experience</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-lg sm:text-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Match your brand with custom colors</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="text-center text-green-600 font-bold text-lg sm:text-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Add team and sponsor logos</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="text-center text-green-600 font-bold text-lg sm:text-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Invite team members to collaborate</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="text-center text-green-600 font-bold text-lg sm:text-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Custom integrations</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">Dedicated support</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">All future updates included</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
-              <div className="text-center text-red-600 font-bold text-sm sm:text-base">×</div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="text-center text-red-600 flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="text-center text-red-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
