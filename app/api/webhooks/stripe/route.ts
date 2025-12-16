@@ -2,85 +2,13 @@ import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import Stripe from 'stripe'
 import { updateSubscriptionStatus } from '@/lib/users'
-
-type PaidPlanType = 'standard' | 'pro' | 'lifetime'
-
-function getPlanTypeFromPriceId(priceId: string): PaidPlanType {
-  if (priceId === process.env.STRIPE_PRICE_PRO_MONTHLY || 
-      priceId === process.env.STRIPE_PRICE_PRO_ANNUAL) {
-    return 'pro'
-  } else if (priceId === process.env.STRIPE_PRICE_LIFETIME) {
-    return 'lifetime'
-  } else {
-    return 'standard'
-  }
-}
-
-function getPaidPlanTypeFromMetadata(metadata: Stripe.Metadata | null | undefined): PaidPlanType | null {
-  const raw = metadata?.subscription_status
-  if (raw === 'standard' || raw === 'pro' || raw === 'lifetime') {
-    return raw
-  }
-  return null
-}
-
-async function resolveSupabaseUserIdFromStripe(params: {
-  supabase: ReturnType<typeof createAdminSupabaseClient>
-  stripe: Stripe
-  checkoutSession?: Stripe.Checkout.Session
-  subscription?: Stripe.Subscription
-  customerId?: string | null
-}): Promise<string | null> {
-  const { supabase, stripe, checkoutSession, subscription, customerId } = params
-
-  const sessionUserId = checkoutSession?.metadata?.supabase_user_id
-  if (sessionUserId) return sessionUserId
-
-  const subscriptionUserId = subscription?.metadata?.supabase_user_id
-  if (subscriptionUserId) return subscriptionUserId
-
-  const resolvedCustomerId =
-    customerId ||
-    (typeof subscription?.customer === 'string' ? subscription.customer : null) ||
-    (typeof checkoutSession?.customer === 'string' ? checkoutSession.customer : null) ||
-    null
-
-  if (!resolvedCustomerId) return null
-
-  try {
-    const customer = await stripe.customers.retrieve(resolvedCustomerId)
-    if (!('deleted' in customer) && customer.metadata?.supabase_user_id) {
-      const userId = customer.metadata.supabase_user_id
-      // Best-effort: keep profiles.stripe_customer_id in sync.
-      await supabase
-        .from('profiles')
-        .update({ stripe_customer_id: resolvedCustomerId })
-        .eq('id', userId)
-      return userId
-    }
-  } catch (error) {
-    console.error('Failed to retrieve customer for user resolution:', error)
-  }
-
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('stripe_customer_id', resolvedCustomerId)
-    .maybeSingle()
-
-  if (error) {
-    console.error('Failed to resolve profile by stripe_customer_id:', error)
-    return null
-  }
-
-  return profile?.id ?? null
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-02-24.acacia',
-})
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+import { getStripeClient } from '@/lib/stripe/client'
+import {
+  resolveSupabaseUserIdFromStripe,
+  constructWebhookEvent,
+  getPlanTypeFromSubscription,
+  getPlanTypeFromCheckoutSession,
+} from '@/lib/stripe/webhooks'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -96,7 +24,7 @@ export async function POST(request: Request) {
   let event: Stripe.Event
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+    event = constructWebhookEvent(body, signature)
   } catch (err) {
     console.error('Webhook signature verification failed:', err)
     return NextResponse.json(
@@ -106,6 +34,7 @@ export async function POST(request: Request) {
   }
 
   const supabase = createAdminSupabaseClient()
+  const stripe = getStripeClient()
 
   try {
     switch (event.type) {
@@ -127,7 +56,7 @@ export async function POST(request: Request) {
           const priceId = subscription.items.data[0]?.price.id
           
           if (userId && priceId) {
-            const planType = getPaidPlanTypeFromMetadata(subscription.metadata) || getPlanTypeFromPriceId(priceId)
+            const planType = getPlanTypeFromSubscription(subscription, priceId)
             const customerId = subscription.customer as string
             
             await updateSubscriptionStatus(
@@ -153,7 +82,7 @@ export async function POST(request: Request) {
           const priceId = (session.metadata?.price_id as string | undefined) || process.env.STRIPE_PRICE_LIFETIME
           
           if (userId && priceId) {
-            const planType = getPaidPlanTypeFromMetadata(session.metadata) || getPlanTypeFromPriceId(priceId)
+            const planType = getPlanTypeFromCheckoutSession(session, priceId)
             const customerId = session.customer as string
             
             // For lifetime/one-time payments, set a far future end date
@@ -206,7 +135,7 @@ export async function POST(request: Request) {
             // Upsert subscription row for any non-canceled status
             const priceId = subscription.items.data[0]?.price.id
             if (priceId) {
-              const planType = getPaidPlanTypeFromMetadata(subscription.metadata) || getPlanTypeFromPriceId(priceId)
+              const planType = getPlanTypeFromSubscription(subscription, priceId)
               const customerId = subscription.customer as string
               
               await updateSubscriptionStatus(
@@ -254,7 +183,7 @@ export async function POST(request: Request) {
             const priceId = subscription.items.data[0]?.price.id
             if (!priceId) break
 
-            const planType = getPaidPlanTypeFromMetadata(subscription.metadata) || getPlanTypeFromPriceId(priceId)
+            const planType = getPlanTypeFromSubscription(subscription, priceId)
             const customerId = subscription.customer as string
 
             await updateSubscriptionStatus(

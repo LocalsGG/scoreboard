@@ -1,36 +1,18 @@
 import Stripe from 'stripe'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { updateSubscriptionStatus } from '@/lib/users'
+import { getStripeClient } from './client'
+import { getPlanTypeFromPriceId, getPaidPlanTypeFromMetadata, type PaidPlanType } from './config'
 
-type PaidPlanType = 'standard' | 'pro' | 'lifetime'
-
-function getPlanTypeFromPriceId(priceId: string): PaidPlanType {
-  if (
-    priceId === process.env.STRIPE_PRICE_PRO_MONTHLY ||
-    priceId === process.env.STRIPE_PRICE_PRO_ANNUAL
-  ) {
-    return 'pro'
-  }
-
-  if (priceId === process.env.STRIPE_PRICE_LIFETIME) return 'lifetime'
-
-  return 'standard'
-}
-
-function getPaidPlanTypeFromMetadata(metadata: Stripe.Metadata | null | undefined): PaidPlanType | null {
-  const raw = metadata?.subscription_status
-  if (raw === 'standard' || raw === 'pro' || raw === 'lifetime') return raw
-  return null
-}
-
-export async function syncSubscriptionFromCheckoutSessionId(params: {
+export interface SyncSubscriptionFromCheckoutSessionParams {
   userId: string
   checkoutSessionId: string
-}): Promise<{ success: boolean; error?: string }> {
-  const stripeSecretKey = process.env.STRIPE_SECRET_KEY
-  if (!stripeSecretKey) return { success: false, error: 'Missing STRIPE_SECRET_KEY' }
+}
 
-  const stripe = new Stripe(stripeSecretKey, { apiVersion: '2025-02-24.acacia' })
+export async function syncSubscriptionFromCheckoutSessionId(
+  params: SyncSubscriptionFromCheckoutSessionParams
+): Promise<{ success: boolean; error?: string }> {
+  const stripe = getStripeClient()
   const adminSupabase = createAdminSupabaseClient()
 
   let checkoutSession: Stripe.Checkout.Session
@@ -45,11 +27,14 @@ export async function syncSubscriptionFromCheckoutSessionId(params: {
     return { success: false, error: 'Checkout session does not belong to current user' }
   }
 
-  const customerId = typeof checkoutSession.customer === 'string' ? checkoutSession.customer : null
+  const customerId =
+    typeof checkoutSession.customer === 'string' ? checkoutSession.customer : null
 
   if (checkoutSession.mode === 'payment') {
     const priceId = checkoutSession.metadata?.price_id || process.env.STRIPE_PRICE_LIFETIME
-    if (!priceId) return { success: false, error: 'Missing Stripe price id for payment checkout' }
+    if (!priceId) {
+      return { success: false, error: 'Missing Stripe price id for payment checkout' }
+    }
 
     const planType =
       getPaidPlanTypeFromMetadata(checkoutSession.metadata) || getPlanTypeFromPriceId(priceId)
@@ -70,8 +55,11 @@ export async function syncSubscriptionFromCheckoutSessionId(params: {
     )
   }
 
-  const subscriptionId = typeof checkoutSession.subscription === 'string' ? checkoutSession.subscription : null
-  if (!subscriptionId) return { success: false, error: 'Missing subscription id for subscription checkout' }
+  const subscriptionId =
+    typeof checkoutSession.subscription === 'string' ? checkoutSession.subscription : null
+  if (!subscriptionId) {
+    return { success: false, error: 'Missing subscription id for subscription checkout' }
+  }
 
   let subscription: Stripe.Subscription
   try {
@@ -81,7 +69,9 @@ export async function syncSubscriptionFromCheckoutSessionId(params: {
   }
 
   const priceId = subscription.items.data[0]?.price.id
-  if (!priceId) return { success: false, error: 'Missing price id on Stripe subscription' }
+  if (!priceId) {
+    return { success: false, error: 'Missing price id on Stripe subscription' }
+  }
 
   const planType = getPaidPlanTypeFromMetadata(subscription.metadata) || getPlanTypeFromPriceId(priceId)
 
@@ -98,5 +88,3 @@ export async function syncSubscriptionFromCheckoutSessionId(params: {
     subscription.cancel_at_period_end || false
   )
 }
-
-

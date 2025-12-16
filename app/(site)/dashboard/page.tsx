@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/dates";
 import { getGameIcon, getGameName } from "@/lib/assets";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getUserData, getUserSubscription, getBoardLimit } from "@/lib/users";
-import { syncSubscriptionFromCheckoutSessionId } from "@/lib/billing";
+import { syncSubscriptionFromCheckoutSessionId } from "@/lib/stripe/subscriptions";
 import { DeleteBoardButton } from "@/components/DeleteBoardButton";
 import type { ScoreboardRow } from "@/lib/types";
 
