@@ -27,11 +27,45 @@ export async function createCheckoutSession(
 
   // Retrieve the price to determine if it's recurring or one-time
   let price
+  const standardAnnualId = process.env.STRIPE_PRICE_STANDARD_ANNUAL
+  
   try {
+    // Compare with working standard annual
+    console.log('Retrieving Stripe price:', {
+      priceId,
+      standardAnnualId, // Working example
+      matchesStandardAnnual: priceId === standardAnnualId,
+    })
+    
     price = await stripe.prices.retrieve(priceId)
+    
+    console.log('Successfully retrieved price:', {
+      priceId,
+      type: price.type,
+      amount: price.unit_amount,
+      currency: price.currency,
+      recurring: price.recurring,
+    })
+    
+    // If standard annual works, verify it's the same type
+    if (priceId === standardAnnualId) {
+      console.log('✓ This is the working standard annual price')
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
-    console.error('Error retrieving Stripe price:', { priceId, error: errorMessage })
+    const stripeError = error as { type?: string; code?: string; message?: string }
+    
+    console.error('Error retrieving Stripe price:', {
+      priceId,
+      standardAnnualId, // Working example for comparison
+      matchesStandardAnnual: priceId === standardAnnualId,
+      error: errorMessage,
+      stripeErrorType: stripeError.type,
+      stripeErrorCode: stripeError.code,
+      // If this is NOT standard annual, that's the problem
+      isStandardAnnual: priceId === standardAnnualId,
+    })
+    
     throw new Error(`Failed to retrieve price from Stripe: ${errorMessage}. Make sure the price ID exists and matches your Stripe account (test vs live mode).`)
   }
   const isRecurring = price.type === 'recurring'

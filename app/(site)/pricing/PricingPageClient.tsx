@@ -120,20 +120,40 @@ export function PricingPageClient() {
 
   // Get price IDs from environment variables
   const getPriceId = (plan: 'standard' | 'pro' | 'lifetime') => {
+    let priceId: string | undefined
+    
     if (plan === 'lifetime') {
-      return process.env.NEXT_PUBLIC_STRIPE_PRICE_LIFETIME
-    }
-    if (plan === 'standard') {
-      return isAnnual 
+      priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_LIFETIME
+    } else if (plan === 'standard') {
+      priceId = isAnnual 
         ? process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL
         : process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_MONTHLY
-    }
-    if (plan === 'pro') {
-      return isAnnual
+    } else if (plan === 'pro') {
+      priceId = isAnnual
         ? process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL
         : process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY
     }
-    return null
+    
+    // Debug logging - compare with working standard annual
+    if (priceId) {
+      const standardAnnualId = process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL
+      console.log('Price ID lookup:', {
+        plan,
+        isAnnual,
+        priceId,
+        standardAnnualId, // Working example
+        matchesStandardAnnual: priceId === standardAnnualId,
+        allEnvVars: {
+          STANDARD_ANNUAL: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL,
+          STANDARD_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_MONTHLY,
+          PRO_ANNUAL: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL,
+          PRO_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY,
+          LIFETIME: process.env.NEXT_PUBLIC_STRIPE_PRICE_LIFETIME,
+        }
+      })
+    }
+    
+    return priceId || null
   }
 
   const handleCheckout = async (plan: 'standard' | 'pro' | 'lifetime') => {

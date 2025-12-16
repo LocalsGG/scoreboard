@@ -29,11 +29,41 @@ export async function POST(request: Request) {
 
     // Validate price ID matches our expected prices
     const validation = validatePriceId(priceId)
+    const validPriceIds = getValidPriceIds()
+    const standardAnnualId = process.env.STRIPE_PRICE_STANDARD_ANNUAL
+    
+    // Compare with working standard annual for debugging
+    console.log('Price ID validation:', {
+      received: priceId,
+      isValid: validation.valid,
+      standardAnnualId, // Working example
+      matchesStandardAnnual: priceId === standardAnnualId,
+      validIds: validPriceIds,
+      envVars: {
+        STANDARD_MONTHLY: process.env.STRIPE_PRICE_STANDARD_MONTHLY,
+        STANDARD_ANNUAL: process.env.STRIPE_PRICE_STANDARD_ANNUAL,
+        PRO_MONTHLY: process.env.STRIPE_PRICE_PRO_MONTHLY,
+        PRO_ANNUAL: process.env.STRIPE_PRICE_PRO_ANNUAL,
+        LIFETIME: process.env.STRIPE_PRICE_LIFETIME,
+      },
+      envVarComparison: {
+        STANDARD_ANNUAL: {
+          value: process.env.STRIPE_PRICE_STANDARD_ANNUAL,
+          matches: priceId === process.env.STRIPE_PRICE_STANDARD_ANNUAL,
+          exists: !!process.env.STRIPE_PRICE_STANDARD_ANNUAL,
+        },
+        received: {
+          value: priceId,
+          inValidList: validPriceIds.includes(priceId),
+        }
+      }
+    })
+    
     if (!validation.valid) {
-      const validPriceIds = getValidPriceIds()
       console.error('Invalid price ID:', {
         received: priceId,
         validIds: validPriceIds,
+        standardAnnualId, // Working example for comparison
         envVars: {
           STANDARD_MONTHLY: process.env.STRIPE_PRICE_STANDARD_MONTHLY,
           STANDARD_ANNUAL: process.env.STRIPE_PRICE_STANDARD_ANNUAL,
@@ -46,7 +76,10 @@ export async function POST(request: Request) {
         { 
           error: 'Invalid price ID',
           received: priceId,
-          hint: validation.error
+          hint: validation.error,
+          // Include working example for comparison
+          workingExample: standardAnnualId,
+          validIds: validPriceIds,
         },
         { status: 400 }
       )
