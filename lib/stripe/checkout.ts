@@ -37,7 +37,18 @@ export async function createCheckoutSession(
   const isRecurring = price.type === 'recurring'
 
   // Create or retrieve Stripe customer
-  const customerId = await getOrCreateCustomerId(supabase, userId, userEmail)
+  let customerId
+  try {
+    customerId = await getOrCreateCustomerId(supabase, userId, userEmail)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('Error getting or creating customer:', {
+      userId,
+      userEmail,
+      error: errorMessage,
+    })
+    throw new Error(`Failed to create or retrieve customer: ${errorMessage}`)
+  }
 
   // Determine subscription status based on price
   const subscriptionStatus = getPlanTypeFromPriceId(priceId)
