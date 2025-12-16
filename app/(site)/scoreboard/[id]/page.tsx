@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import { CopyButton } from "@/components/CopyButton";
 import { BoardNameEditor } from "@/components/BoardNameEditor";
+import { BoardSubtitleEditor } from "@/components/BoardSubtitleEditor";
 import { ScoreAdjuster } from "@/components/ScoreAdjuster";
 import { SideNameEditor } from "@/components/SideNameEditor";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
@@ -21,6 +22,7 @@ export const dynamic = "force-dynamic";
 type Scoreboard = {
   id: string;
   name: string | null;
+  scoreboard_subtitle: string | null;
   created_at: string | null;
   share_token: string | null;
   owner_id?: string | null;
@@ -89,7 +91,7 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   try {
     const result = await supabase
       .from("scoreboards")
-      .select("id, name, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon")
+      .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon")
       .eq(isUuid ? "id" : "share_token", boardId)
       .eq("owner_id", user.id)
       .maybeSingle<Scoreboard>();
@@ -100,7 +102,7 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
         // Try without element_positions and icon columns
         const resultWithoutPos = await supabase
           .from("scoreboards")
-          .select("id, name, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible")
+          .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible")
           .eq(isUuid ? "id" : "share_token", boardId)
           .eq("owner_id", user.id)
           .maybeSingle<Omit<Scoreboard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
@@ -374,6 +376,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
           <ScoreboardPreview
             boardId={board.id}
             initialName={board.name}
+            initialSubtitle={board.scoreboard_subtitle}
             initialASide={board.a_side}
             initialBSide={board.b_side}
             initialAScore={board.a_score}
@@ -422,6 +425,12 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                 initialTitleVisible={board.title_visible ?? true}
                 align="center" 
                 showLabel={true}
+              />
+              <BoardSubtitleEditor
+                boardId={board.id}
+                initialValue={board.scoreboard_subtitle}
+                placeholder="Scoreboard subtitle"
+                align="center"
               />
               <ResetPositionsButton boardId={board.id} />
             </div>

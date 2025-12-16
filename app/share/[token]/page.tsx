@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 type SharedBoard = {
   id: string;
   name: string | null;
+  scoreboard_subtitle: string | null;
   created_at: string | null;
   a_side: string | null;
   b_side: string | null;
@@ -35,7 +36,7 @@ async function loadSharedBoard(token: string) {
   try {
     const result = await supabase
       .from("scoreboards")
-      .select("id, name, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon")
+      .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon")
       .eq("share_token", token)
       .maybeSingle<SharedBoard>();
     
@@ -44,7 +45,7 @@ async function loadSharedBoard(token: string) {
       if (result.error.message?.includes("element_positions") || result.error.message?.includes("column")) {
         const resultWithoutPos = await supabase
           .from("scoreboards")
-          .select("id, name, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible")
+          .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible")
           .eq("share_token", token)
           .maybeSingle<Omit<SharedBoard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
         
@@ -88,6 +89,7 @@ export default async function SharedScoreboardPage(props: { params: Promise<{ to
     <ScoreboardPreview
       boardId={board.id}
       initialName={board.name}
+      initialSubtitle={board.scoreboard_subtitle}
       initialASide={board.a_side}
       initialBSide={board.b_side}
       initialAScore={board.a_score}

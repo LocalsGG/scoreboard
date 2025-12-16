@@ -9,6 +9,7 @@ type Props = ScoreboardPreviewProps;
 
 type PreviewState = {
   name: string | null;
+  subtitle: string | null;
   aSide: string | null;
   bSide: string | null;
   aScore: number;
@@ -22,6 +23,7 @@ type PreviewState = {
 
 const DEFAULT_POSITIONS: ElementPositions = {
   title: { x: 720, y: 200 },
+  subtitle: { x: 720, y: 600 },
   logo: { x: 720, y: 405 },
   a_side: { x: 100, y: 310 },
   b_side: { x: 1200, y: 310 },
@@ -41,6 +43,7 @@ const DEBOUNCE_MS = 500;
 export function ScoreboardPreview({
   boardId,
   initialName,
+  initialSubtitle,
   initialASide,
   initialBSide,
   initialAScore,
@@ -55,6 +58,7 @@ export function ScoreboardPreview({
 }: Props) {
   const [state, setState] = useState<PreviewState>({
     name: initialName,
+    subtitle: initialSubtitle ?? null,
     aSide: initialASide,
     bSide: initialBSide,
     aScore: initialAScore ?? 0,
@@ -179,6 +183,7 @@ export function ScoreboardPreview({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState({
       name: initialName,
+      subtitle: initialSubtitle ?? null,
       aSide: initialASide,
       bSide: initialBSide,
       aScore: initialAScore ?? 0,
@@ -202,6 +207,7 @@ export function ScoreboardPreview({
     initialBScore,
     initialBSide,
     initialName,
+    initialSubtitle,
     initialUpdatedAt,
     initialStyle,
     initialPositions,
@@ -230,6 +236,7 @@ export function ScoreboardPreview({
           const next = payload.new as Record<string, unknown>;
           setState((prev) => ({
             name: typeof next.name === "string" ? next.name : prev.name,
+            subtitle: typeof next.scoreboard_subtitle === "string" ? next.scoreboard_subtitle : prev.subtitle,
             aSide: typeof next.a_side === "string" ? next.a_side : prev.aSide,
             bSide: typeof next.b_side === "string" ? next.b_side : prev.bSide,
             aScore: typeof next.a_score === "number" ? next.a_score : prev.aScore,
@@ -259,6 +266,11 @@ export function ScoreboardPreview({
       setState((prev) => ({ ...prev, name: detail ?? prev.name }));
     };
 
+    const handleBoardSubtitle = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      setState((prev) => ({ ...prev, subtitle: detail ?? prev.subtitle }));
+    };
+
     const handleScore = (column: "aScore" | "bScore") => (event: Event) => {
       const detail = (event as CustomEvent<number>).detail;
       if (typeof detail === "number") {
@@ -279,6 +291,7 @@ export function ScoreboardPreview({
     const handleScoreB = handleScore("bScore");
 
     window.addEventListener(`board-name-local-${boardId}`, handleBoardName);
+    window.addEventListener(`board-subtitle-local-${boardId}`, handleBoardSubtitle);
     window.addEventListener(`score-local-${boardId}-a_score`, handleScoreA);
     window.addEventListener(`score-local-${boardId}-b_score`, handleScoreB);
     window.addEventListener(`reset-positions-${boardId}`, handleResetPositions);
@@ -287,6 +300,7 @@ export function ScoreboardPreview({
     return () => {
       supabase.removeChannel(channel);
       window.removeEventListener(`board-name-local-${boardId}`, handleBoardName);
+      window.removeEventListener(`board-subtitle-local-${boardId}`, handleBoardSubtitle);
       window.removeEventListener(`score-local-${boardId}-a_score`, handleScoreA);
       window.removeEventListener(`score-local-${boardId}-b_score`, handleScoreB);
       window.removeEventListener(`reset-positions-${boardId}`, handleResetPositions);
@@ -312,6 +326,7 @@ export function ScoreboardPreview({
   const bLead = state.bScore > state.aScore;
 
   const scoreboardTitle = formatLabel(state.name, "SCOREBOARD", 24);
+  const scoreboardSubtitle = formatLabel(state.subtitle, "", 32);
   const aLabel = formatLabel(state.aSide, "A", 16);
   const bLabel = formatLabel(state.bSide, "B", 16);
   const gameIconUrl = getGameIcon(state.name);
@@ -365,6 +380,31 @@ export function ScoreboardPreview({
           onMouseDown={(e) => handleMouseDown("title", e)}
         >
           {scoreboardTitle}
+        </text>
+      )}
+
+      {scoreboardSubtitle && (
+        <text
+          x={positions.subtitle?.x ?? DEFAULT_POSITIONS.subtitle.x}
+          y={positions.subtitle?.y ?? DEFAULT_POSITIONS.subtitle.y}
+          fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
+          fontSize="48"
+          fill="#f8fafc"
+          stroke="#0b1220"
+          strokeWidth="6"
+          fontWeight="800"
+          textAnchor="middle"
+          letterSpacing="4"
+          paintOrder="stroke fill"
+          filter={`url(#${gradientId}-text-shadow)`}
+          style={{
+            cursor: readOnly ? "default" : "move",
+            pointerEvents: "all",
+            opacity: isDragging("subtitle") ? 0.8 : 1,
+          }}
+          onMouseDown={(e) => handleMouseDown("subtitle", e)}
+        >
+          {scoreboardSubtitle}
         </text>
       )}
 

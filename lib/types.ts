@@ -2,6 +2,7 @@
 
 export interface ElementPositions {
   title: { x: number; y: number };
+  subtitle?: { x: number; y: number };
   logo: { x: number; y: number };
   a_side: { x: number; y: number };
   b_side: { x: number; y: number };
@@ -14,6 +15,7 @@ export interface ElementPositions {
 export interface ScoreboardRow {
   id: string;
   name: string | null;
+  scoreboard_subtitle: string | null;
   share_token: string | null;
   owner_id: string | null;
   created_at: string | null;
@@ -49,6 +51,7 @@ export interface AuthStatus {
 export interface ScoreboardPreviewProps {
   boardId: string;
   initialName: string | null;
+  initialSubtitle?: string | null;
   initialASide: string | null;
   initialBSide: string | null;
   initialAScore: number | null;
