@@ -175,11 +175,11 @@ export function PricingPageClient() {
     <>
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 sm:gap-8 lg:gap-12 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-32 sm:pb-40 lg:pb-48">
       <Link
-        href="/dashboard"
+        href={isAuthenticated ? "/dashboard" : "/"}
         className="self-start text-sm text-zinc-600 hover:text-black transition-colors flex items-center gap-1 mb-2 sm:mb-0"
       >
         <span>←</span>
-        <span>Back to Dashboard</span>
+        <span>{isAuthenticated ? "Back to Dashboard" : "Back to Home"}</span>
       </Link>
       <section className="flex flex-col items-center gap-4 sm:gap-6 text-center">
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-black">
