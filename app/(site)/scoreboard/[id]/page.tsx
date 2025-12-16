@@ -8,10 +8,12 @@ import { SideNameEditor } from "@/components/SideNameEditor";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
 import { ScoreboardStyleSelector } from "@/components/ScoreboardStyleSelector";
 import { ResetPositionsButton } from "@/components/ResetPositionsButton";
+import { CharacterIconSelector } from "@/components/CharacterIconSelector";
 import { ensureShareToken, regenerateShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getBaseUrlFromRequest } from "@/lib/urls";
 import { getUserSubscription } from "@/lib/users";
+import { isSmashBrosGame } from "@/lib/assets";
 import type { ElementPositions } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +31,9 @@ type Scoreboard = {
   updated_at: string | null;
   scoreboard_style: string | null;
   element_positions: ElementPositions | null;
+  title_visible: boolean | null;
+  a_side_icon: string | null;
+  b_side_icon: string | null;
 };
 
 type LoadScoreboardResult = {
@@ -84,7 +89,7 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   try {
     const result = await supabase
       .from("scoreboards")
-      .select("id, name, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions")
+      .select("id, name, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon")
       .eq(isUuid ? "id" : "share_token", boardId)
       .eq("owner_id", user.id)
       .maybeSingle<Scoreboard>();
@@ -92,17 +97,24 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
     if (result.error) {
       const errorMsg = result.error.message || '';
       if (errorMsg.includes("element_positions") || errorMsg.includes("column")) {
+        // Try without element_positions and icon columns
         const resultWithoutPos = await supabase
           .from("scoreboards")
-          .select("id, name, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style")
+          .select("id, name, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible")
           .eq(isUuid ? "id" : "share_token", boardId)
           .eq("owner_id", user.id)
-          .maybeSingle<Omit<Scoreboard, "element_positions"> & { element_positions?: null }>();
+          .maybeSingle<Omit<Scoreboard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
         
         if (resultWithoutPos.error) {
           boardError = new Error(resultWithoutPos.error.message || 'Unknown error');
         } else {
-          board = { ...resultWithoutPos.data, element_positions: null } as Scoreboard;
+          board = { 
+            ...resultWithoutPos.data, 
+            element_positions: null, 
+            title_visible: resultWithoutPos.data?.title_visible ?? true,
+            a_side_icon: null,
+            b_side_icon: null,
+          } as Scoreboard;
         }
       } else {
         boardError = new Error(errorMsg);
@@ -369,6 +381,9 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
             initialUpdatedAt={board.updated_at}
             initialStyle={board.scoreboard_style}
             initialPositions={board.element_positions}
+            initialTitleVisible={board.title_visible}
+            initialASideIcon={board.a_side_icon}
+            initialBSideIcon={board.b_side_icon}
           />
         </div>
 
@@ -378,20 +393,36 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
                 A side
               </p>
-              <SideNameEditor
-                boardId={board.id}
-                initialValue={board.a_side}
-                column="a_side"
-                placeholder="A Side"
-              />
+              <div className="flex items-start gap-2">
+                {isSmashBrosGame(board.name) && (
+                  <CharacterIconSelector
+                    boardId={board.id}
+                    initialValue={board.a_side_icon}
+                    column="a_side_icon"
+                    placeholder="Select character icon"
+                    compact={true}
+                  />
+                )}
+                <div className="flex-1">
+                  <SideNameEditor
+                    boardId={board.id}
+                    initialValue={board.a_side}
+                    column="a_side"
+                    placeholder="A Side"
+                  />
+                </div>
+              </div>
               <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} />
             </div>
 
             <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 text-center shadow-sm shadow-black/5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
-                Scoreboard name
-              </p>
-              <BoardNameEditor boardId={board.id} initialName={board.name} align="center" />
+              <BoardNameEditor 
+                boardId={board.id} 
+                initialName={board.name} 
+                initialTitleVisible={board.title_visible ?? true}
+                align="center" 
+                showLabel={true}
+              />
               <ResetPositionsButton boardId={board.id} />
             </div>
 
@@ -399,12 +430,25 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
                 B side
               </p>
-              <SideNameEditor
-                boardId={board.id}
-                initialValue={board.b_side}
-                column="b_side"
-                placeholder="B Side"
-              />
+              <div className="flex items-start gap-2">
+                {isSmashBrosGame(board.name) && (
+                  <CharacterIconSelector
+                    boardId={board.id}
+                    initialValue={board.b_side_icon}
+                    column="b_side_icon"
+                    placeholder="Select character icon"
+                    compact={true}
+                  />
+                )}
+                <div className="flex-1">
+                  <SideNameEditor
+                    boardId={board.id}
+                    initialValue={board.b_side}
+                    column="b_side"
+                    placeholder="B Side"
+                  />
+                </div>
+              </div>
               <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} />
             </div>
           </div>

@@ -70,7 +70,8 @@ create table if not exists public.scoreboards (
   b_side text not null default 'B',
   a_score int not null default 0,
   b_score int not null default 0,
-  scoreboard_style text
+  scoreboard_style text,
+  title_visible boolean not null default true
 );
 ```
 

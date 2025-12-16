@@ -16,6 +16,9 @@ type SharedBoard = {
   updated_at: string | null;
   scoreboard_style: string | null;
   element_positions: ElementPositions | null;
+  title_visible: boolean | null;
+  a_side_icon: string | null;
+  b_side_icon: string | null;
 };
 
 async function loadSharedBoard(token: string) {
@@ -32,7 +35,7 @@ async function loadSharedBoard(token: string) {
   try {
     const result = await supabase
       .from("scoreboards")
-      .select("id, name, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions")
+      .select("id, name, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon")
       .eq("share_token", token)
       .maybeSingle<SharedBoard>();
     
@@ -41,14 +44,20 @@ async function loadSharedBoard(token: string) {
       if (result.error.message?.includes("element_positions") || result.error.message?.includes("column")) {
         const resultWithoutPos = await supabase
           .from("scoreboards")
-          .select("id, name, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style")
+          .select("id, name, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible")
           .eq("share_token", token)
-          .maybeSingle<Omit<SharedBoard, "element_positions"> & { element_positions?: null }>();
+          .maybeSingle<Omit<SharedBoard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
         
         if (resultWithoutPos.error) {
           boardError = new Error(resultWithoutPos.error.message);
         } else {
-          board = { ...resultWithoutPos.data, element_positions: null } as SharedBoard;
+          board = { 
+            ...resultWithoutPos.data, 
+            element_positions: null, 
+            title_visible: resultWithoutPos.data?.title_visible ?? true,
+            a_side_icon: null,
+            b_side_icon: null,
+          } as SharedBoard;
         }
       } else {
         boardError = new Error(result.error.message);
@@ -86,6 +95,9 @@ export default async function SharedScoreboardPage(props: { params: Promise<{ to
       initialUpdatedAt={board.updated_at}
       initialStyle={board.scoreboard_style}
       initialPositions={board.element_positions}
+      initialTitleVisible={board.title_visible}
+      initialASideIcon={board.a_side_icon}
+      initialBSideIcon={board.b_side_icon}
       readOnly={true}
     />
   );

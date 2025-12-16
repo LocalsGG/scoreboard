@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SCOREBOARD_OVERLAY_IMAGE } from "@/lib/assets";
+import { SCOREBOARD_OVERLAY_IMAGE, getGameIcon } from "@/lib/assets";
 import { createClient } from "@/lib/supabase/client";
 import type { ElementPositions, ScoreboardPreviewProps } from "@/lib/types";
 
@@ -15,15 +15,26 @@ type PreviewState = {
   bScore: number;
   updatedAt: string | null;
   style: string;
+  titleVisible: boolean;
+  aSideIcon: string | null;
+  bSideIcon: string | null;
 };
 
 const DEFAULT_POSITIONS: ElementPositions = {
   title: { x: 720, y: 200 },
+  logo: { x: 720, y: 405 },
   a_side: { x: 100, y: 310 },
   b_side: { x: 1200, y: 310 },
   a_score: { x: 540, y: 400 },
   b_score: { x: 910, y: 400 },
+  a_side_icon: { x: 200, y: 310 },
+  b_side_icon: { x: 1240, y: 310 },
 };
+
+// Merge positions with defaults to ensure logo position exists
+function getMergedPositions(positions: ElementPositions | null | undefined): ElementPositions {
+  return positions ? { ...DEFAULT_POSITIONS, ...positions } : DEFAULT_POSITIONS;
+}
 
 const DEBOUNCE_MS = 500;
 
@@ -37,6 +48,9 @@ export function ScoreboardPreview({
   initialUpdatedAt,
   initialStyle,
   initialPositions,
+  initialTitleVisible = true,
+  initialASideIcon,
+  initialBSideIcon,
   readOnly = false,
 }: Props) {
   const [state, setState] = useState<PreviewState>({
@@ -47,15 +61,18 @@ export function ScoreboardPreview({
     bScore: initialBScore ?? 0,
     updatedAt: initialUpdatedAt,
     style: initialStyle || SCOREBOARD_OVERLAY_IMAGE,
+    titleVisible: initialTitleVisible ?? true,
+    aSideIcon: initialASideIcon ?? null,
+    bSideIcon: initialBSideIcon ?? null,
   });
 
   const [positions, setPositions] = useState<ElementPositions>(
-    initialPositions || DEFAULT_POSITIONS
+    getMergedPositions(initialPositions)
   );
 
   // Store the initial positions to restore on reset
   const initialPositionsRef = useRef<ElementPositions>(
-    initialPositions || DEFAULT_POSITIONS
+    getMergedPositions(initialPositions)
   );
 
   const [dragging, setDragging] = useState<string | null>(null);
@@ -168,12 +185,14 @@ export function ScoreboardPreview({
       bScore: initialBScore ?? 0,
       updatedAt: initialUpdatedAt,
       style: initialStyle || SCOREBOARD_OVERLAY_IMAGE,
+      titleVisible: initialTitleVisible ?? true,
+      aSideIcon: initialASideIcon ?? null,
+      bSideIcon: initialBSideIcon ?? null,
     });
 
-    const positionsToUse = initialPositions || DEFAULT_POSITIONS;
-    if (initialPositions) {
-      setPositions(initialPositions);
-    }
+    // Merge initial positions with defaults to ensure logo position exists
+    const positionsToUse = getMergedPositions(initialPositions);
+    setPositions(positionsToUse);
     // Update the ref to store the initial positions for reset
     initialPositionsRef.current = positionsToUse;
   }, [
@@ -186,6 +205,9 @@ export function ScoreboardPreview({
     initialUpdatedAt,
     initialStyle,
     initialPositions,
+    initialTitleVisible,
+    initialASideIcon,
+    initialBSideIcon,
   ]);
 
   // Reset positions to initial (what they were when component loaded)
@@ -217,11 +239,15 @@ export function ScoreboardPreview({
               typeof next.scoreboard_style === "string"
                 ? next.scoreboard_style
                 : prev.style || SCOREBOARD_OVERLAY_IMAGE,
+            titleVisible:
+              typeof next.title_visible === "boolean" ? next.title_visible : prev.titleVisible ?? true,
+            aSideIcon: typeof next.a_side_icon === "string" ? next.a_side_icon : prev.aSideIcon,
+            bSideIcon: typeof next.b_side_icon === "string" ? next.b_side_icon : prev.bSideIcon,
           }));
 
           // Update positions if they changed
           if (next.element_positions && typeof next.element_positions === "object") {
-            const newPositions = next.element_positions as ElementPositions;
+            const newPositions = { ...DEFAULT_POSITIONS, ...(next.element_positions as ElementPositions) };
             setPositions(newPositions);
           }
         }
@@ -244,6 +270,11 @@ export function ScoreboardPreview({
       resetPositions();
     };
 
+    const handleTitleVisibility = (event: Event) => {
+      const detail = (event as CustomEvent<boolean>).detail;
+      setState((prev) => ({ ...prev, titleVisible: detail }));
+    };
+
     const handleScoreA = handleScore("aScore");
     const handleScoreB = handleScore("bScore");
 
@@ -251,6 +282,7 @@ export function ScoreboardPreview({
     window.addEventListener(`score-local-${boardId}-a_score`, handleScoreA);
     window.addEventListener(`score-local-${boardId}-b_score`, handleScoreB);
     window.addEventListener(`reset-positions-${boardId}`, handleResetPositions);
+    window.addEventListener(`title-visibility-${boardId}`, handleTitleVisibility);
 
     return () => {
       supabase.removeChannel(channel);
@@ -258,6 +290,7 @@ export function ScoreboardPreview({
       window.removeEventListener(`score-local-${boardId}-a_score`, handleScoreA);
       window.removeEventListener(`score-local-${boardId}-b_score`, handleScoreB);
       window.removeEventListener(`reset-positions-${boardId}`, handleResetPositions);
+      window.removeEventListener(`title-visibility-${boardId}`, handleTitleVisibility);
     };
   }, [boardId, supabase, resetPositions]);
 
@@ -281,6 +314,7 @@ export function ScoreboardPreview({
   const scoreboardTitle = formatLabel(state.name, "SCOREBOARD", 24);
   const aLabel = formatLabel(state.aSide, "A", 16);
   const bLabel = formatLabel(state.bSide, "B", 16);
+  const gameIconUrl = getGameIcon(state.name);
 
   const isDragging = (elementId: keyof ElementPositions) => dragging === elementId;
 
@@ -309,28 +343,30 @@ export function ScoreboardPreview({
         style={{ pointerEvents: "none" }}
       />
 
-      <text
-        x={positions.title.x}
-        y={positions.title.y}
-        fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
-        fontSize="72"
-        fill="#f8fafc"
-        stroke="#0b1220"
-        strokeWidth="8"
-        fontWeight="800"
-        textAnchor="middle"
-        letterSpacing="8"
-        paintOrder="stroke fill"
-        filter={`url(#${gradientId}-text-shadow)`}
-        style={{
-          cursor: readOnly ? "default" : "move",
-          pointerEvents: "all",
-          opacity: isDragging("title") ? 0.8 : 1,
-        }}
-        onMouseDown={(e) => handleMouseDown("title", e)}
-      >
-        {scoreboardTitle}
-      </text>
+      {state.titleVisible && (
+        <text
+          x={positions.title.x}
+          y={positions.title.y}
+          fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
+          fontSize="72"
+          fill="#f8fafc"
+          stroke="#0b1220"
+          strokeWidth="8"
+          fontWeight="800"
+          textAnchor="middle"
+          letterSpacing="8"
+          paintOrder="stroke fill"
+          filter={`url(#${gradientId}-text-shadow)`}
+          style={{
+            cursor: readOnly ? "default" : "move",
+            pointerEvents: "all",
+            opacity: isDragging("title") ? 0.8 : 1,
+          }}
+          onMouseDown={(e) => handleMouseDown("title", e)}
+        >
+          {scoreboardTitle}
+        </text>
+      )}
 
       <text
         x={positions.a_side.x}
@@ -419,6 +455,55 @@ export function ScoreboardPreview({
       >
         {state.bScore}
       </text>
+
+      <image
+        href={gameIconUrl}
+        x={(positions.logo?.x ?? DEFAULT_POSITIONS.logo.x) - 32}
+        y={(positions.logo?.y ?? DEFAULT_POSITIONS.logo.y) - 32}
+        width="64"
+        height="64"
+        preserveAspectRatio="xMidYMid meet"
+        style={{
+          cursor: readOnly ? "default" : "move",
+          pointerEvents: "all",
+          opacity: isDragging("logo") ? 0.8 : 1,
+        }}
+        onMouseDown={(e) => handleMouseDown("logo", e)}
+      />
+
+      {state.aSideIcon && (
+        <image
+          href={state.aSideIcon}
+          x={(positions.a_side_icon?.x ?? DEFAULT_POSITIONS.a_side_icon.x) - 32}
+          y={(positions.a_side_icon?.y ?? DEFAULT_POSITIONS.a_side_icon.y) - 32}
+          width="64"
+          height="64"
+          preserveAspectRatio="xMidYMid meet"
+          style={{
+            cursor: readOnly ? "default" : "move",
+            pointerEvents: "all",
+            opacity: isDragging("a_side_icon") ? 0.8 : 1,
+          }}
+          onMouseDown={(e) => handleMouseDown("a_side_icon", e)}
+        />
+      )}
+
+      {state.bSideIcon && (
+        <image
+          href={state.bSideIcon}
+          x={(positions.b_side_icon?.x ?? DEFAULT_POSITIONS.b_side_icon.x) - 32}
+          y={(positions.b_side_icon?.y ?? DEFAULT_POSITIONS.b_side_icon.y) - 32}
+          width="64"
+          height="64"
+          preserveAspectRatio="xMidYMid meet"
+          style={{
+            cursor: readOnly ? "default" : "move",
+            pointerEvents: "all",
+            opacity: isDragging("b_side_icon") ? 0.8 : 1,
+          }}
+          onMouseDown={(e) => handleMouseDown("b_side_icon", e)}
+        />
+      )}
     </svg>
     </div>
   );

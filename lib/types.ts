@@ -2,10 +2,13 @@
 
 export interface ElementPositions {
   title: { x: number; y: number };
+  logo: { x: number; y: number };
   a_side: { x: number; y: number };
   b_side: { x: number; y: number };
   a_score: { x: number; y: number };
   b_score: { x: number; y: number };
+  a_side_icon?: { x: number; y: number };
+  b_side_icon?: { x: number; y: number };
 }
 
 export interface ScoreboardRow {
@@ -21,6 +24,8 @@ export interface ScoreboardRow {
   b_score: number | null;
   scoreboard_style: string | null;
   element_positions: ElementPositions | null;
+  a_side_icon: string | null;
+  b_side_icon: string | null;
 }
 
 export interface User {
@@ -51,6 +56,9 @@ export interface ScoreboardPreviewProps {
   initialUpdatedAt: string | null;
   initialStyle?: string | null;
   initialPositions?: ElementPositions | null;
+  initialTitleVisible?: boolean | null;
+  initialASideIcon?: string | null;
+  initialBSideIcon?: string | null;
   readOnly?: boolean;
 }
 

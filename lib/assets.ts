@@ -76,3 +76,21 @@ export function getGameIcon(boardName: string | null): string {
   // Default fallback
   return `${SUPABASE_PUBLIC_IMAGE_BASE}/${GAME_CONFIGS.generic.icon}`;
 }
+
+/**
+ * Checks if the board is a Super Smash Bros game (Melee or Ultimate).
+ * Returns true only for Smash Bros games, false for others.
+ */
+export function isSmashBrosGame(boardName: string | null): boolean {
+  if (!boardName) {
+    return false;
+  }
+
+  const name = boardName.toLowerCase();
+  
+  // Check if it's melee or ultimate
+  return (
+    GAME_CONFIGS.melee.keywords.some(keyword => name.includes(keyword)) ||
+    GAME_CONFIGS.ultimate.keywords.some(keyword => name.includes(keyword))
+  );
+}
