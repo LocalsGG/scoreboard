@@ -134,7 +134,9 @@ export function ScoreboardPreview({
       const svgPoint = getSVGPoint(event);
       if (!svgPoint) return;
 
-      const currentPos = positions[elementId];
+      const currentPos = positions[elementId] ?? DEFAULT_POSITIONS[elementId];
+      if (!currentPos) return;
+
       setDragging(elementId);
       setDragOffset({
         x: svgPoint.x - currentPos.x,
@@ -385,8 +387,8 @@ export function ScoreboardPreview({
 
       {scoreboardSubtitle && (
         <text
-          x={positions.subtitle?.x ?? DEFAULT_POSITIONS.subtitle.x}
-          y={positions.subtitle?.y ?? DEFAULT_POSITIONS.subtitle.y}
+          x={positions.subtitle?.x ?? DEFAULT_POSITIONS.subtitle?.x ?? 720}
+          y={positions.subtitle?.y ?? DEFAULT_POSITIONS.subtitle?.y ?? 600}
           fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
           fontSize="48"
           fill="#f8fafc"
@@ -514,8 +516,8 @@ export function ScoreboardPreview({
       {state.aSideIcon && (
         <image
           href={state.aSideIcon}
-          x={(positions.a_side_icon?.x ?? DEFAULT_POSITIONS.a_side_icon.x) - 32}
-          y={(positions.a_side_icon?.y ?? DEFAULT_POSITIONS.a_side_icon.y) - 32}
+          x={(positions.a_side_icon?.x ?? DEFAULT_POSITIONS.a_side_icon?.x ?? 200) - 32}
+          y={(positions.a_side_icon?.y ?? DEFAULT_POSITIONS.a_side_icon?.y ?? 310) - 32}
           width="64"
           height="64"
           preserveAspectRatio="xMidYMid meet"
@@ -531,8 +533,8 @@ export function ScoreboardPreview({
       {state.bSideIcon && (
         <image
           href={state.bSideIcon}
-          x={(positions.b_side_icon?.x ?? DEFAULT_POSITIONS.b_side_icon.x) - 32}
-          y={(positions.b_side_icon?.y ?? DEFAULT_POSITIONS.b_side_icon.y) - 32}
+          x={(positions.b_side_icon?.x ?? DEFAULT_POSITIONS.b_side_icon?.x ?? 1240) - 32}
+          y={(positions.b_side_icon?.y ?? DEFAULT_POSITIONS.b_side_icon?.y ?? 310) - 32}
           width="64"
           height="64"
           preserveAspectRatio="xMidYMid meet"
