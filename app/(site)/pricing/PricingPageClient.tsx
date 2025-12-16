@@ -9,7 +9,7 @@ import { PricingToggle } from '@/components/PricingToggle'
 export function PricingPageClient() {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
-  const [isAnnual, setIsAnnual] = useState(false)
+  const [isAnnual, setIsAnnual] = useState(true)
   const [isLifetimeExpanded, setIsLifetimeExpanded] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)

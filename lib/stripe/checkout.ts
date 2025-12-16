@@ -40,6 +40,7 @@ export async function createCheckoutSession(
     {
       customer: customerId,
       mode: isRecurring ? 'subscription' : 'payment',
+      payment_method_types: ['card'],
       line_items: [
         {
           price: priceId,

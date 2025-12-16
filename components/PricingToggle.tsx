@@ -10,7 +10,7 @@ interface PricingToggleProps {
 }
 
 export function PricingToggle({ onToggle, onLifetimeClick }: PricingToggleProps) {
-  const [selectedOption, setSelectedOption] = useState<PricingOption>('monthly')
+  const [selectedOption, setSelectedOption] = useState<PricingOption>('annual')
 
   function handleOptionSelect(option: PricingOption) {
     setSelectedOption(option)
@@ -28,9 +28,9 @@ export function PricingToggle({ onToggle, onLifetimeClick }: PricingToggleProps)
 
   const getSliderPosition = () => {
     switch (selectedOption) {
-      case 'monthly':
-        return 'translate-x-0'
       case 'annual':
+        return 'translate-x-0'
+      case 'monthly':
         return 'translate-x-[100%]'
       case 'lifetime':
         return 'translate-x-[200%]'
@@ -53,17 +53,6 @@ export function PricingToggle({ onToggle, onLifetimeClick }: PricingToggleProps)
         <div className="relative flex items-center">
           <button
             type="button"
-            onClick={() => handleOptionSelect('monthly')}
-            className={`relative z-10 px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
-              selectedOption === 'monthly'
-                ? 'text-white'
-                : 'text-black hover:text-zinc-600'
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            type="button"
             onClick={() => handleOptionSelect('annual')}
             className={`relative z-10 px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
               selectedOption === 'annual'
@@ -72,6 +61,17 @@ export function PricingToggle({ onToggle, onLifetimeClick }: PricingToggleProps)
             }`}
           >
             Annual
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOptionSelect('monthly')}
+            className={`relative z-10 px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
+              selectedOption === 'monthly'
+                ? 'text-white'
+                : 'text-black hover:text-zinc-600'
+            }`}
+          >
+            Monthly
           </button>
           <button
             type="button"
