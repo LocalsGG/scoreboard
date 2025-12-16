@@ -54,7 +54,7 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
     ? 'Sign in to save your scoreboards permanently. Your existing data will be preserved.'
     : view === 'reset'
     ? 'Send a reset link to your email and follow the instructions.'
-    : 'Sign in with your email and password. Switch modes or reset below.'
+    : ''
 
   useEffect(() => {
     let isMounted = true
@@ -231,11 +231,13 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
 
   return (
     <div className="w-full max-w-xl space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-black">{heroTitle}</h1>
-        <p className="text-sm text-black">{heroSubtitle}</p>
+      <div className="space-y-2 text-center">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-black text-center">
+          {heroTitle}
+        </h1>
+        {heroSubtitle ? <p className="text-sm text-black">{heroSubtitle}</p> : null}
         {isConverting && (
-          <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 mt-3">
+          <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 mt-3 text-left">
             <p className="text-sm text-blue-800">
               <strong>Note:</strong> Your current scoreboards will be linked to your new account automatically.
             </p>

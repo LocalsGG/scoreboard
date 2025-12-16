@@ -98,3 +98,4 @@ export function MobileMenu({ email }: MobileMenuProps) {
     </div>
   )
 }
+

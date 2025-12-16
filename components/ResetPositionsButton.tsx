@@ -33,3 +33,4 @@ export function ResetPositionsButton({ boardId }: Props) {
     </button>
   );
 }
+

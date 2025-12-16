@@ -1,28 +1,42 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 
-async function getRedirectBaseUrl(request: Request): Promise<string> {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL
-  if (envUrl) {
-    return envUrl.replace(/\/$/, '')
+function normalizeBaseUrl(url: string | null | undefined, fallbackOrigin: string) {
+  if (!url) {
+    return fallbackOrigin
   }
 
+  const trimmed = url.trim().replace(/\/$/, '')
+  const hasProtocol = /^https?:\/\//i.test(trimmed)
+  const withProtocol = hasProtocol
+    ? trimmed
+    : `${process.env.NODE_ENV === 'development' ? 'http://' : 'https://'}${trimmed}`
+
+  try {
+    return new URL(withProtocol).origin
+  } catch {
+    return fallbackOrigin
+  }
+}
+
+async function getRedirectBaseUrl(request: Request): Promise<string> {
+  const { origin } = new URL(request.url)
   const forwardedHost = request.headers.get('x-forwarded-host')
   const forwardedProto = request.headers.get('x-forwarded-proto')
   const host = request.headers.get('host')
-  
-  const finalHost = forwardedHost || host
-  if (finalHost) {
-    let protocol = 'https://'
-    if (forwardedProto) {
-      protocol = `${forwardedProto}://`
-    } else if (process.env.NODE_ENV === 'development') {
-      protocol = 'http://'
-    }
-    return `${protocol}${finalHost}`
+
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL, origin)
   }
 
-  const { origin } = new URL(request.url)
+  const finalHost = forwardedHost || host
+  if (finalHost) {
+    const protocol =
+      forwardedProto ||
+      (process.env.NODE_ENV === 'development' ? 'http' : 'https')
+    return normalizeBaseUrl(`${protocol}://${finalHost}`, origin)
+  }
+
   return origin
 }
 
@@ -30,45 +44,53 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const error = searchParams.get('error')
-  
+
   const baseUrl = await getRedirectBaseUrl(request)
-  
+
   if (error) {
-    return NextResponse.redirect(`${baseUrl}/auth?error=${encodeURIComponent(error)}`)
+    const errorUrl = new URL('/auth', baseUrl)
+    errorUrl.searchParams.set('error', error)
+    return NextResponse.redirect(errorUrl)
   }
-  
-  // Check if we have checkout redirect params
+
   const redirect = searchParams.get('redirect')
   const plan = searchParams.get('plan')
   const isAnnual = searchParams.get('isAnnual')
-  
+
   let next = searchParams.get('next') ?? '/dashboard'
   if (!next.startsWith('/')) {
     next = '/dashboard'
   }
-  
+
   if (code) {
     const supabase = await createServerSupabaseClient()
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-    
+
     if (exchangeError) {
       const errorMsg = exchangeError.message || 'Unknown error'
-      return NextResponse.redirect(`${baseUrl}/auth?error=${encodeURIComponent(errorMsg)}`)
+      const errorUrl = new URL('/auth', baseUrl)
+      errorUrl.searchParams.set('error', errorMsg)
+      return NextResponse.redirect(errorUrl)
     }
-    
-    // If we have checkout params, redirect to a checkout trigger page
+
     if (redirect === 'pricing' && plan) {
       const params = new URLSearchParams({
         plan,
         ...(plan !== 'lifetime' && isAnnual && { isAnnual }),
       })
-      return NextResponse.redirect(`${baseUrl}/pricing?checkout=true&${params.toString()}`)
+      const pricingUrl = new URL('/pricing', baseUrl)
+      pricingUrl.searchParams.set('checkout', 'true')
+      params.forEach((value, key) => pricingUrl.searchParams.set(key, value))
+      return NextResponse.redirect(pricingUrl)
     }
-    
-    return NextResponse.redirect(`${baseUrl}${next}`)
+
+    const nextUrl = new URL(next, baseUrl)
+    return NextResponse.redirect(nextUrl)
   }
-  
-  return NextResponse.redirect(`${baseUrl}/auth?error=no_code`)
+
+  const missingCodeUrl = new URL('/auth', baseUrl)
+  missingCodeUrl.searchParams.set('error', 'no_code')
+  return NextResponse.redirect(missingCodeUrl)
 }
 
 

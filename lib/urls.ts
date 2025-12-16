@@ -96,3 +96,4 @@ export async function getBaseUrlFromRequest(): Promise<string> {
 
   return ''
 }
+

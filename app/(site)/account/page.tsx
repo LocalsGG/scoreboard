@@ -25,41 +25,41 @@ export default async function AccountPage() {
   return (
     <div className="flex min-h-full justify-center px-6 py-14 font-sans">
       <main className="w-full max-w-4xl space-y-8 animate-fade-in">
-        <div className="space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-            Account
-          </p>
-          <h1 className="text-4xl font-extrabold text-black dark:text-white">
-            Account settings
-          </h1>
-        </div>
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-black transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-95"
+        >
+          <span aria-hidden className="text-lg leading-none">←</span>
+          <span>Back to dashboard</span>
+        </Link>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200/80 bg-white/70 p-8 shadow-sm animate-rise dark:border-zinc-800 dark:bg-zinc-950/60">
+        <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm animate-rise">
+          <h1 className="text-4xl font-extrabold text-black">Account settings</h1>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-600">
                 {isAnonymous ? 'Account Type' : 'Email'}
               </p>
-              <p className="text-base font-semibold text-black dark:text-white">
+              <p className="text-base font-semibold text-black">
                 {isAnonymous ? 'Guest Account' : user.email}
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-zinc-600">
                 User ID:{" "}
-                <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-[11px] text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+                <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-[11px] text-zinc-800">
                   {user.id}
                 </code>
               </p>
               {isAnonymous && (
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-zinc-600">
                   You&apos;re signed in as a guest. Create an account to save your scoreboards permanently.
                 </p>
               )}
               {!isAnonymous && (
                 <div className="space-y-1 pt-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-600">
                     Subscription
                   </p>
-                  <p className="text-base font-semibold text-black dark:text-white capitalize">
+                  <p className="text-base font-semibold text-black capitalize">
                     {planType}
                   </p>
                 </div>
@@ -74,7 +74,6 @@ export default async function AccountPage() {
               </Link>
             )}
           </div>
-
         </section>
       </main>
     </div>
