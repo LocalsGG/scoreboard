@@ -71,8 +71,34 @@ export async function POST(request: Request) {
     return NextResponse.json({ url })
   } catch (error) {
     console.error('Checkout error:', error)
+    
+    // Log detailed error information for debugging
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    
+    console.error('Checkout error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      envCheck: {
+        hasStripeSecret: !!process.env.STRIPE_SECRET_KEY,
+        stripeSecretPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 7),
+        hasPriceIds: {
+          STANDARD_MONTHLY: !!process.env.STRIPE_PRICE_STANDARD_MONTHLY,
+          STANDARD_ANNUAL: !!process.env.STRIPE_PRICE_STANDARD_ANNUAL,
+          PRO_MONTHLY: !!process.env.STRIPE_PRICE_PRO_MONTHLY,
+          PRO_ANNUAL: !!process.env.STRIPE_PRICE_PRO_ANNUAL,
+          LIFETIME: !!process.env.STRIPE_PRICE_LIFETIME,
+        },
+      },
+    })
+    
+    // Return more detailed error in development, generic in production
+    const isDevelopment = process.env.NODE_ENV === 'development'
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { 
+        error: 'Failed to create checkout session',
+        ...(isDevelopment && { details: errorMessage }),
+      },
       { status: 500 }
     )
   }

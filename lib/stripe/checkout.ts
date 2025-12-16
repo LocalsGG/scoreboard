@@ -26,7 +26,14 @@ export async function createCheckoutSession(
   const stripe = getStripeClient()
 
   // Retrieve the price to determine if it's recurring or one-time
-  const price = await stripe.prices.retrieve(priceId)
+  let price
+  try {
+    price = await stripe.prices.retrieve(priceId)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('Error retrieving Stripe price:', { priceId, error: errorMessage })
+    throw new Error(`Failed to retrieve price from Stripe: ${errorMessage}. Make sure the price ID exists and matches your Stripe account (test vs live mode).`)
+  }
   const isRecurring = price.type === 'recurring'
 
   // Create or retrieve Stripe customer
@@ -36,7 +43,9 @@ export async function createCheckoutSession(
   const subscriptionStatus = getPlanTypeFromPriceId(priceId)
 
   // Create checkout session
-  const checkoutSession = await stripe.checkout.sessions.create(
+  let checkoutSession
+  try {
+    checkoutSession = await stripe.checkout.sessions.create(
     {
       customer: customerId,
       mode: isRecurring ? 'subscription' : 'payment',
@@ -77,7 +86,16 @@ export async function createCheckoutSession(
         return `checkout:fallback:${userId}:${priceId}:${timeBucket}`
       })(),
     }
-  )
+    )
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('Error creating Stripe checkout session:', {
+      priceId,
+      customerId,
+      error: errorMessage,
+    })
+    throw new Error(`Failed to create checkout session: ${errorMessage}`)
+  }
 
   return { url: checkoutSession.url }
 }
