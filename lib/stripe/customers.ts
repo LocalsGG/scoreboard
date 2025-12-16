@@ -71,17 +71,32 @@ export async function getOrCreateCustomerId(
 
     // Store customer ID in Supabase
     // Try update first (most common case)
-    const { error: updateError } = await supabase
+    // Use .select() to check if any rows were actually updated
+    const { data: updatedRows, error: updateError, count } = await supabase
       .from('profiles')
       .update({ stripe_customer_id: customer.id })
       .eq('id', userId)
+      .select('id')
 
-    if (updateError) {
-      // If update failed, try upsert (handles case where profile doesn't exist)
-      console.warn('Update failed, trying upsert:', {
+    // Check if update actually modified any rows
+    // Supabase returns error: null even when 0 rows are updated
+    const rowsUpdated = (updatedRows && updatedRows.length > 0) || (count !== null && count > 0)
+
+    if (updateError || !rowsUpdated) {
+      // If update failed OR no rows were updated, try upsert
+      // This handles the case where profile doesn't exist despite ensureUserExists
+      const reason = updateError 
+        ? `Update error: ${updateError.message}` 
+        : 'No rows updated (profile may not exist)'
+      
+      console.warn('Update failed or no rows updated, trying upsert:', {
         userId,
-        updateError: updateError.message,
-        code: updateError.code,
+        reason,
+        updateError: updateError?.message,
+        updateErrorCode: updateError?.code,
+        rowsUpdated,
+        updatedRowsCount: updatedRows?.length || 0,
+        count,
       })
       
       const { error: upsertError } = await supabase
@@ -114,7 +129,9 @@ export async function getOrCreateCustomerId(
         console.log('Successfully upserted Stripe customer ID in profile')
       }
     } else {
-      console.log('Successfully updated Stripe customer ID in profile')
+      console.log('Successfully updated Stripe customer ID in profile', {
+        rowsUpdated: updatedRows?.length || count,
+      })
     }
 
     return customer.id
