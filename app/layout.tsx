@@ -5,7 +5,9 @@ export const metadata: Metadata = {
   title: "Scoreboard",
   description: "Simple scoreboards and dashboards.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/favicon.ico",
+    shortcut: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/favicon.ico",
+    apple: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/favicon.ico",
   },
 };
 

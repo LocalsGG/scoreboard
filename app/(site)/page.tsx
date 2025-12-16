@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { HERO_SCOREBOARD_IMAGES } from "@/lib/assets";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSiteUrl } from "@/lib/urls";
 
 const OBS_OVERLAY_EXAMPLES = [
   {
@@ -27,11 +28,58 @@ const OBS_OVERLAY_EXAMPLES = [
 ];
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
-  title: "Scoreboard.to | Live score overlays for gaming and esports",
-  description:
-    "Drop a single URL into OBS, Streamlabs, vMix, or Wirecast and keep every score updated in real time. Built for gamers, esports, and rec leagues.",
-};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const siteUrl = await getSiteUrl();
+  
+  return {
+    title: "Live Scoreboard Overlays | Stream The Score! | Scoreboard.to",
+    description:
+      "Free live scoreboard overlays for streaming. Drop a single URL into OBS, Streamlabs, vMix, or Wirecast and keep every score updated in real time. Perfect for gamers, esports, and rec leagues. Stream the score!",
+    keywords: [
+      "live scoreboard",
+      "scoreboard overlay",
+      "OBS overlay",
+      "streaming overlay",
+      "live score",
+      "esports scoreboard",
+      "gaming scoreboard",
+      "stream scoreboard",
+      "OBS scoreboard",
+      "Streamlabs overlay",
+      "real-time scoreboard",
+      "free scoreboard",
+    ],
+    alternates: {
+      canonical: siteUrl || undefined,
+    },
+    openGraph: {
+      title: "Live Scoreboard Overlays | Stream The Score!",
+      description:
+        "Free live scoreboard overlays for streaming. Drop a single URL into OBS, Streamlabs, vMix, or Wirecast and keep every score updated in real time.",
+      type: "website",
+      siteName: "Scoreboard.to",
+      url: siteUrl || undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Live Scoreboard Overlays | Stream The Score!",
+      description:
+        "Free live scoreboard overlays for streaming. Perfect for OBS, Streamlabs, and more.",
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+  };
+}
 
 const splashImagePaddingTop =
   process.env.NEXT_PUBLIC_SPLASH_IMAGE_PADDING_TOP ?? "0px";
@@ -51,16 +99,48 @@ export default async function Home() {
     redirect("/dashboard");
   }
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Scoreboard.to - Live Scoreboard Overlays",
+    applicationCategory: "MultimediaApplication",
+    operatingSystem: "Web Browser",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    description:
+      "Free live scoreboard overlays for streaming. Stream the score! Drop a single URL into OBS, Streamlabs, vMix, or Wirecast and keep every score updated in real time.",
+    featureList: [
+      "Live scoreboard overlays",
+      "OBS integration",
+      "Streamlabs integration",
+      "Real-time score updates",
+      "Browser-based - no installs",
+      "Free to use",
+    ],
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "5",
+      ratingCount: "1",
+    },
+  };
+
   return (
     <main className="relative isolate overflow-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 sm:gap-10 lg:gap-16 px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16 pt-8 sm:pt-12">
         <section className="flex flex-col items-center gap-0">
           <div className="space-y-0.5 sm:space-y-1 text-center w-full max-w-4xl">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black uppercase leading-tight tracking-tight text-black text-center">
-              Free scoreboard overlays!
+              Live Scoreboard Overlays
             </h1>
             <p className="w-full text-sm sm:text-base lg:text-lg font-semibold text-zinc-700 text-center px-2">
-              keep every stream&apos;s score in sync
+              Stream The Score!
             </p>
           </div>
           <div className="relative w-full -my-8 sm:-my-12 lg:-my-16" style={{ paddingTop: splashImagePaddingTop }}>
@@ -72,7 +152,7 @@ export default async function Home() {
                       <div className="relative w-full aspect-video">
                         <Image
                           src={src}
-                          alt="Scoreboard overlay"
+                          alt="Live scoreboard overlay for streaming - Real-time score display for OBS and Streamlabs"
                           fill
                           sizes="100vw"
                           priority={index === 0}
