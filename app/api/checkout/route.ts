@@ -92,12 +92,31 @@ export async function POST(request: Request) {
       },
     })
     
-    // Return more detailed error in development, generic in production
-    const isDevelopment = process.env.NODE_ENV === 'development'
+    // Return error details (but sanitize sensitive info)
+    const sanitizedError = errorMessage.includes('STRIPE_SECRET_KEY') 
+      ? 'Stripe secret key is missing or invalid'
+      : errorMessage.includes('price') || errorMessage.includes('Price')
+      ? errorMessage // Price errors are safe to expose
+      : errorMessage.includes('customer')
+      ? 'Failed to create or retrieve customer'
+      : 'Failed to create checkout session'
+    
     return NextResponse.json(
       { 
-        error: 'Failed to create checkout session',
-        ...(isDevelopment && { details: errorMessage }),
+        error: sanitizedError,
+        // Include environment check info to help debug
+        debug: {
+          hasStripeSecret: !!process.env.STRIPE_SECRET_KEY,
+          stripeKeyType: process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_') ? 'live' : 
+                         process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_') ? 'test' : 'unknown',
+          hasPriceIds: {
+            STANDARD_MONTHLY: !!process.env.STRIPE_PRICE_STANDARD_MONTHLY,
+            STANDARD_ANNUAL: !!process.env.STRIPE_PRICE_STANDARD_ANNUAL,
+            PRO_MONTHLY: !!process.env.STRIPE_PRICE_PRO_MONTHLY,
+            PRO_ANNUAL: !!process.env.STRIPE_PRICE_PRO_ANNUAL,
+            LIFETIME: !!process.env.STRIPE_PRICE_LIFETIME,
+          },
+        },
       },
       { status: 500 }
     )

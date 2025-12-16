@@ -183,7 +183,10 @@ export function PricingPageClient() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session')
+        // Include debug info in error message if available
+        const errorMsg = data.error || 'Failed to create checkout session'
+        const debugInfo = data.debug ? `\n\nDebug info: ${JSON.stringify(data.debug, null, 2)}` : ''
+        throw new Error(errorMsg + debugInfo)
       }
 
       if (data.url) {
