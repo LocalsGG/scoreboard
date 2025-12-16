@@ -25,6 +25,10 @@ export async function createCheckoutSession(
 
   const stripe = getStripeClient()
 
+  // Retrieve the price to determine if it's recurring or one-time
+  const price = await stripe.prices.retrieve(priceId)
+  const isRecurring = price.type === 'recurring'
+
   // Create or retrieve Stripe customer
   const customerId = await getOrCreateCustomerId(supabase, userId, userEmail)
 
@@ -35,7 +39,7 @@ export async function createCheckoutSession(
   const checkoutSession = await stripe.checkout.sessions.create(
     {
       customer: customerId,
-      mode: priceId === process.env.STRIPE_PRICE_LIFETIME ? 'payment' : 'subscription',
+      mode: isRecurring ? 'subscription' : 'payment',
       line_items: [
         {
           price: priceId,
@@ -52,7 +56,7 @@ export async function createCheckoutSession(
         checkout_request_id: checkoutRequestId || undefined,
       },
       subscription_data:
-        priceId !== process.env.STRIPE_PRICE_LIFETIME
+        isRecurring
           ? {
               metadata: {
                 supabase_user_id: userId,
