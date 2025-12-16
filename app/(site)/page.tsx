@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Live Scoreboard Overlays | Stream The Score! | Scoreboard.to",
     description:
-      "Free live scoreboard overlays for streaming. Drop a single URL into OBS, Streamlabs, vMix, or Wirecast and keep every score updated in real time. Perfect for gamers, esports, and rec leagues. Stream the score!",
+      "Live scoreboard overlays for esports streaming. Add to any streaming solution—OBS, Streamlabs, vMix, Wirecast, and more. Easily share and update your scoreboard in real time. Perfect for esports tournaments and live streaming.",
     keywords: [
       "live scoreboard",
       "scoreboard overlay",
@@ -57,7 +57,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: "Live Scoreboard Overlays | Stream The Score!",
       description:
-        "Free live scoreboard overlays for streaming. Drop a single URL into OBS, Streamlabs, vMix, or Wirecast and keep every score updated in real time.",
+        "Live scoreboard overlays for esports streaming. Add to any streaming solution and easily share and update your scoreboard in real time.",
       type: "website",
       siteName: "Scoreboard.to",
       url: siteUrl || undefined,
@@ -66,7 +66,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: "Live Scoreboard Overlays | Stream The Score!",
       description:
-        "Free live scoreboard overlays for streaming. Perfect for OBS, Streamlabs, and more.",
+        "Live scoreboard overlays for esports streaming. Works with any streaming solution—OBS, Streamlabs, vMix, Wirecast, and more.",
     },
     robots: {
       index: true,
@@ -112,7 +112,7 @@ export default async function Home() {
       priceCurrency: "USD",
     },
     description:
-      "Free live scoreboard overlays for streaming. Stream the score! Drop a single URL into OBS, Streamlabs, vMix, or Wirecast and keep every score updated in real time.",
+      "Live scoreboard overlays for esports streaming. Add to any streaming solution and easily share and update your scoreboard in real time.",
     featureList: [
       "Live scoreboard overlays",
       "OBS integration",
@@ -168,8 +168,7 @@ export default async function Home() {
           </div>
           <div className="space-y-0.5 sm:space-y-1 text-center w-full max-w-3xl">
             <p className="text-sm sm:text-base lg:text-lg xl:text-xl text-zinc-800 text-center px-2">
-              Share a live scoreboard link so family and fans can follow the game in real time. Use it on a stream, a TV,
-              or just phones on the sideline. No installs, runs from your browser.
+              Create live scoreboard overlays for esports streaming. Add to any streaming solution—OBS, Streamlabs, vMix, Wirecast, and more. Easily share and update your scoreboard in real time. No installs, runs from your browser.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <Link
@@ -189,11 +188,10 @@ export default async function Home() {
                 Live overlay preview
               </p>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-black">
-                Drop Scoreboard.to straight into OBS or Streamlabs
+                Works with any streaming solution
               </h2>
               <p className="text-sm sm:text-base lg:text-lg text-zinc-700 px-2">
-                Every overlay is a single browser source so you can drag, resize, and brand it just like any other scene.
-                Updates land instantly when you tweak scores from your phone or laptop.
+                Add Scoreboard.to to OBS, Streamlabs, vMix, Wirecast, or any streaming platform that supports browser sources. Every overlay is a single URL you can drag, resize, and brand just like any other scene. Easily share your scoreboard link and update scores in real time from any device.
               </p>
             </div>
             <div className="grid gap-4 sm:gap-6 text-left grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">

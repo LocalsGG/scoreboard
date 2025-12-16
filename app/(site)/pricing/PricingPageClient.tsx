@@ -267,6 +267,10 @@ export function PricingPageClient() {
               </svg>
               <span className="text-zinc-700">Invite team members to collaborate</span>
             </li>
+            <li className="flex items-start gap-3">
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
+              <span className="text-zinc-700">All future updates included</span>
+            </li>
           </ul>
           <Link
             href="/auth"
@@ -315,6 +319,10 @@ export function PricingPageClient() {
               <span className="text-green-400 font-bold mt-0.5">✔</span>
               <span className="text-white">Invite team members to collaborate</span>
             </li>
+            <li className="flex items-start gap-3">
+              <span className="text-green-400 font-bold mt-0.5">✔</span>
+              <span className="text-white">All future updates included</span>
+            </li>
           </ul>
           <button
             onClick={() => handleCheckout('pro')}
@@ -360,6 +368,10 @@ export function PricingPageClient() {
             <li className="flex items-start gap-3">
               <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">Invite team members to collaborate</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
+              <span className="text-zinc-700">All future updates included</span>
             </li>
           </ul>
           <button
@@ -530,21 +542,9 @@ export function PricingPageClient() {
             </div>
             <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4">
               <div className="font-medium text-zinc-700 text-sm sm:text-base">All future updates included</div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-red-600 flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
+              <div className="text-center text-green-600 font-bold text-lg sm:text-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">✔</div>
+              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
               <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
             </div>
@@ -562,19 +562,6 @@ export function PricingPageClient() {
         <p className="text-xs sm:text-sm text-zinc-600">
           All prices shown in US Dollars, excluding taxes. Applicable taxes will be calculated at checkout.
         </p>
-      </section>
-
-      <section className="max-w-6xl mx-auto w-full flex flex-col items-center gap-3 sm:gap-4 text-center rounded-lg border border-zinc-200 bg-white p-4 sm:p-6 lg:p-8 mx-4 sm:mx-0">
-        <h2 className="text-xl sm:text-2xl font-black text-black">Looking for a custom solution?</h2>
-        <p className="text-sm sm:text-base text-zinc-700 max-w-2xl">
-          Let&apos;s talk about your specific needs and how we can help.
-        </p>
-        <Link
-          href="mailto:contact@locals.gg"
-          className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-black bg-white px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-black transition-colors hover:bg-zinc-50"
-        >
-          Contact Us
-        </Link>
       </section>
     </main>
 
