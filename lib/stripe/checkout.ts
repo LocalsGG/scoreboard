@@ -42,12 +42,16 @@ export async function createCheckoutSession(
     customerId = await getOrCreateCustomerId(supabase, userId, userEmail)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
-    console.error('Error getting or creating customer:', {
+    const errorStack = error instanceof Error ? error.stack : undefined
+    console.error('Error getting or creating customer in checkout:', {
       userId,
       userEmail,
+      priceId,
       error: errorMessage,
+      stack: errorStack,
     })
-    throw new Error(`Failed to create or retrieve customer: ${errorMessage}`)
+    // Preserve the original error message for better debugging
+    throw error
   }
 
   // Determine subscription status based on price

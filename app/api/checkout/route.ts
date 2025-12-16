@@ -93,13 +93,10 @@ export async function POST(request: Request) {
     })
     
     // Return error details (but sanitize sensitive info)
+    // Don't sanitize too much - we need to see the actual error in production
     const sanitizedError = errorMessage.includes('STRIPE_SECRET_KEY') 
       ? 'Stripe secret key is missing or invalid'
-      : errorMessage.includes('price') || errorMessage.includes('Price')
-      ? errorMessage // Price errors are safe to expose
-      : errorMessage.includes('customer')
-      ? 'Failed to create or retrieve customer'
-      : 'Failed to create checkout session'
+      : errorMessage // Show the actual error message for debugging
     
     return NextResponse.json(
       { 
