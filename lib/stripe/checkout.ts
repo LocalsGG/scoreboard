@@ -53,7 +53,7 @@ export async function createCheckoutSession(
         supabase_user_id: userId,
         subscription_status: subscriptionStatus,
         price_id: priceId,
-        checkout_request_id: checkoutRequestId || undefined,
+        checkout_request_id: checkoutRequestId || null,
       },
       subscription_data:
         isRecurring
@@ -62,7 +62,7 @@ export async function createCheckoutSession(
                 supabase_user_id: userId,
                 subscription_status: subscriptionStatus,
                 price_id: priceId,
-                checkout_request_id: checkoutRequestId || undefined,
+                checkout_request_id: checkoutRequestId || null,
               },
             }
           : undefined,
