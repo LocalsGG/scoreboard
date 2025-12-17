@@ -47,3 +47,4 @@ export function getPaidPlanTypeFromMetadata(
   }
   return null
 }
+

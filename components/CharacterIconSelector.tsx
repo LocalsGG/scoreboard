@@ -351,3 +351,4 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
     </div>
   );
 }
+

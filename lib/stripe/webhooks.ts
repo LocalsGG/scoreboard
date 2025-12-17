@@ -86,3 +86,4 @@ export function getPlanTypeFromCheckoutSession(
   }
   return getPaidPlanTypeFromMetadata(session.metadata) || getPlanTypeFromPriceId(priceId)
 }
+

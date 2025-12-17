@@ -84,3 +84,4 @@ export function TitleVisibilityToggle({ boardId, initialVisible = true }: Props)
     </button>
   );
 }
+

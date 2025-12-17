@@ -88,3 +88,4 @@ export async function syncSubscriptionFromCheckoutSessionId(
     subscription.cancel_at_period_end || false
   )
 }
+

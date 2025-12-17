@@ -60,3 +60,4 @@ export function BoardLimitBanner({ boardLimit }: BoardLimitBannerProps) {
     </div>
   )
 }
+

@@ -18,3 +18,4 @@ export function getWebhookSecret(): string {
   }
   return webhookSecret
 }
+
