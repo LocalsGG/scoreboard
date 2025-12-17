@@ -1,15 +1,15 @@
 // Common types used throughout the application
 
 export interface ElementPositions {
-  title: { x: number; y: number };
-  subtitle?: { x: number; y: number };
-  logo: { x: number; y: number };
-  a_side: { x: number; y: number };
-  b_side: { x: number; y: number };
-  a_score: { x: number; y: number };
-  b_score: { x: number; y: number };
-  a_side_icon?: { x: number; y: number };
-  b_side_icon?: { x: number; y: number };
+  title: { x: number; y: number; fontSize?: number };
+  subtitle?: { x: number; y: number; fontSize?: number };
+  logo: { x: number; y: number; width?: number; height?: number };
+  a_side: { x: number; y: number; fontSize?: number };
+  b_side: { x: number; y: number; fontSize?: number };
+  a_score: { x: number; y: number; fontSize?: number };
+  b_score: { x: number; y: number; fontSize?: number };
+  a_side_icon?: { x: number; y: number; width?: number; height?: number };
+  b_side_icon?: { x: number; y: number; width?: number; height?: number };
 }
 
 export interface ScoreboardRow {
@@ -28,6 +28,8 @@ export interface ScoreboardRow {
   element_positions: ElementPositions | null;
   a_side_icon: string | null;
   b_side_icon: string | null;
+  center_text_color: string | null;
+  custom_logo_url: string | null;
 }
 
 export interface User {
@@ -62,6 +64,9 @@ export interface ScoreboardPreviewProps {
   initialTitleVisible?: boolean | null;
   initialASideIcon?: string | null;
   initialBSideIcon?: string | null;
+  initialCenterTextColor?: string | null;
+  initialCustomLogoUrl?: string | null;
   readOnly?: boolean;
+  onUndoRedoReady?: (handlers: { onUndo: () => void; onRedo: () => void; canUndo: boolean; canRedo: boolean }) => void;
 }
 

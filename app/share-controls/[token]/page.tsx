@@ -28,6 +28,8 @@ type SharedBoard = {
   title_visible: boolean | null;
   a_side_icon: string | null;
   b_side_icon: string | null;
+  center_text_color: string | null;
+  custom_logo_url: string | null;
 };
 
 async function loadSharedBoard(token: string) {
@@ -44,7 +46,7 @@ async function loadSharedBoard(token: string) {
   try {
     const result = await supabase
       .from("scoreboards")
-      .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon")
+      .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url")
       .eq("share_token", token)
       .maybeSingle<SharedBoard>();
     
@@ -53,7 +55,7 @@ async function loadSharedBoard(token: string) {
       if (result.error.message?.includes("element_positions") || result.error.message?.includes("column")) {
         const resultWithoutPos = await supabase
           .from("scoreboards")
-          .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible")
+          .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url")
           .eq("share_token", token)
           .maybeSingle<Omit<SharedBoard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
         
@@ -111,15 +113,14 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
             initialTitleVisible={board.title_visible}
             initialASideIcon={board.a_side_icon}
             initialBSideIcon={board.b_side_icon}
+            initialCenterTextColor={board.center_text_color}
+            initialCustomLogoUrl={board.custom_logo_url}
           />
         </div>
 
         <section className="space-y-4 sm:space-y-6 rounded-2xl sm:rounded-3xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] animate-rise">
           <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
             <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 shadow-sm shadow-black/5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
-                A side
-              </p>
               <div className="flex items-start gap-2">
                 {isSmashBrosGame(board.name) && (
                   <CharacterIconSelector
@@ -135,7 +136,7 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
                     boardId={board.id}
                     initialValue={board.a_side}
                     column="a_side"
-                    placeholder="A Side"
+                    placeholder="A Side Name"
                   />
                 </div>
               </div>
@@ -147,22 +148,20 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
                 boardId={board.id} 
                 initialName={board.name} 
                 initialTitleVisible={board.title_visible ?? true}
+                initialCustomLogoUrl={board.custom_logo_url}
                 align="center" 
                 showLabel={true}
               />
               <BoardSubtitleEditor
                 boardId={board.id}
                 initialValue={board.scoreboard_subtitle}
-                placeholder="Scoreboard subtitle"
+                placeholder="Subtitle"
                 align="center"
               />
               <ResetPositionsButton boardId={board.id} />
             </div>
 
             <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 shadow-sm shadow-black/5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
-                B side
-              </p>
               <div className="flex items-start gap-2">
                 {isSmashBrosGame(board.name) && (
                   <CharacterIconSelector
@@ -178,7 +177,7 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
                     boardId={board.id}
                     initialValue={board.b_side}
                     column="b_side"
-                    placeholder="B Side"
+                    placeholder="B Side Name"
                   />
                 </div>
               </div>

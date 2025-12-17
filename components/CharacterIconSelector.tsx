@@ -97,6 +97,7 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
     setIsOpen(false);
     setSaving(true);
     setError(null);
+    window.dispatchEvent(new CustomEvent("scoreboard-saving-start"));
 
     try {
       const updatePayload: Record<string, string | null> = {
@@ -120,6 +121,7 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
       setSelectedIcon(initialValue);
     } finally {
       setSaving(false);
+      window.dispatchEvent(new CustomEvent("scoreboard-saving-end"));
     }
   };
 
@@ -344,10 +346,11 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
         </div>
       )}
 
-      <div className="flex items-center gap-2 text-xs text-black">
-        {saving ? <span>Saving…</span> : selectedIcon ? <span>Saved</span> : <span>No icon selected</span>}
-        {error ? <span className="text-red-600">({error})</span> : null}
-      </div>
+      {error && (
+        <div className="flex items-center gap-2 text-xs text-red-600">
+          <span>({error})</span>
+        </div>
+      )}
     </div>
   );
 }

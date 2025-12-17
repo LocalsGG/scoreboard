@@ -6,15 +6,19 @@ import { BoardNameEditor } from "@/components/BoardNameEditor";
 import { BoardSubtitleEditor } from "@/components/BoardSubtitleEditor";
 import { ScoreAdjuster } from "@/components/ScoreAdjuster";
 import { SideNameEditor } from "@/components/SideNameEditor";
-import { ScoreboardPreview } from "@/components/ScoreboardPreview";
+import { ScoreboardWithControls, UndoRedoControlsWrapper } from "@/components/ScoreboardWithControls";
 import { ScoreboardStyleSelector } from "@/components/ScoreboardStyleSelector";
+import { CompactStyleSelector } from "@/components/CompactStyleSelector";
+import { SaveStatusIndicator } from "@/components/SaveStatusIndicator";
 import { ResetPositionsButton } from "@/components/ResetPositionsButton";
 import { CharacterIconSelector } from "@/components/CharacterIconSelector";
+import { CenterTextColorPicker } from "@/components/CenterTextColorPicker";
+import { LogoUploader } from "@/components/LogoUploader";
 import { ensureShareToken, regenerateShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getBaseUrlFromRequest } from "@/lib/urls";
 import { getUserSubscription } from "@/lib/users";
-import { isSmashBrosGame } from "@/lib/assets";
+import { isSmashBrosGame, HERO_SCOREBOARD_IMAGES, SCOREBOARD_OVERLAY_IMAGE } from "@/lib/assets";
 import type { ElementPositions } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +40,8 @@ type Scoreboard = {
   title_visible: boolean | null;
   a_side_icon: string | null;
   b_side_icon: string | null;
+  center_text_color: string | null;
+  custom_logo_url: string | null;
 };
 
 type LoadScoreboardResult = {
@@ -91,7 +97,7 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   try {
     const result = await supabase
       .from("scoreboards")
-      .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon")
+      .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url")
       .eq(isUuid ? "id" : "share_token", boardId)
       .eq("owner_id", user.id)
       .maybeSingle<Scoreboard>();
@@ -102,7 +108,7 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
         // Try without element_positions and icon columns
         const resultWithoutPos = await supabase
           .from("scoreboards")
-          .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible")
+          .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url")
           .eq(isUuid ? "id" : "share_token", boardId)
           .eq("owner_id", user.id)
           .maybeSingle<Omit<Scoreboard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
@@ -238,142 +244,93 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
 
   return (
     <div className="relative flex min-h-full justify-center px-4 sm:px-6 py-6 sm:py-8 lg:py-12 font-sans">
-      <main className="relative w-full max-w-6xl space-y-4 sm:space-y-6 lg:space-y-8 animate-fade-in">
-        <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-black hover:text-zinc-700 transition-colors"
-          >
-            <span aria-hidden="true">←</span>
-            <span>Back to dashboard</span>
-          </Link>
-          {shareUrl ? (
-            hasPaidSubscription ? (
-              <div className="flex flex-col sm:flex-row flex-1 gap-2">
-                <div className="relative flex-1 min-w-0">
-                  <input
-                    readOnly
-                    value={shareUrl}
-                    className="w-full truncate rounded-xl border border-black/15 bg-white px-3 py-2 pr-24 sm:pr-32 md:pr-80 text-xs sm:text-sm font-semibold text-black shadow-inner shadow-black/5"
-                  />
-                  <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-                    <CopyButton
-                      value={shareUrl}
-                      label="Copy"
-                      className="cursor-pointer rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                    />
-                    <a
-                      href={shareUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="cursor-pointer inline-flex items-center gap-1 justify-center rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                      aria-label="Open link in new tab"
-                    >
-                      <span className="hidden sm:inline">Go Live</span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                        className="h-3 w-3 sm:h-4 sm:w-4"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                        />
-                      </svg>
-                    </a>
-                  </div>
-                </div>
-                {controlsShareUrl && (
+      <main className="relative w-full max-w-6xl space-y-6 sm:space-y-8 lg:space-y-10 animate-fade-in">
+        {/* Header Navigation */}
+        <header className="flex items-center gap-4 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-black hover:text-zinc-700 transition-colors whitespace-nowrap"
+            >
+              <span aria-hidden="true">←</span>
+              <span className="hidden sm:inline">Back to dashboard</span>
+              <span className="sm:hidden">Back</span>
+            </Link>
+            <div className="h-4 w-px bg-black/20" />
+            <UndoRedoControlsWrapper />
+            <div className="h-4 w-px bg-black/20" />
+            <ResetPositionsButton boardId={board.id} compact={true} />
+          </div>
+
+          {/* Share Controls - Full Width Link Bar */}
+          <div className="flex-1 min-w-0">
+            {shareUrl ? (
+              <div className="relative w-full">
+                <input
+                  readOnly
+                  value={shareUrl}
+                  className="w-full truncate rounded-lg border border-black/15 bg-white px-3 py-1.5 pr-40 text-xs font-semibold text-black shadow-inner shadow-black/5"
+                />
+                <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-1">
                   <CopyButton
-                    value={controlsShareUrl}
-                    label="Share Scorekeeping"
-                    maintainSize={true}
-                    className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                    value={shareUrl}
+                    label="Copy"
+                    className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
                   />
-                )}
+                  <a
+                    href={shareUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                    aria-label="Open link in new tab"
+                    title="Go Live"
+                  >
+                    Go Live
+                  </a>
+                  {controlsShareUrl && (
+                    <>
+                      <div className="h-4 w-px bg-black/20 mx-0.5" />
+                      <CopyButton
+                        value={controlsShareUrl}
+                        label="Share Scorekeeping"
+                        maintainSize={true}
+                        className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                      />
+                    </>
+                  )}
+                </div>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row flex-1 gap-2">
-                <div className="relative flex-1 min-w-0">
-                  <input
-                    readOnly
-                    value={shareUrl}
-                    className="w-full truncate rounded-xl border border-black/15 bg-white px-3 py-2 pr-24 sm:pr-32 md:pr-80 text-xs sm:text-sm font-semibold text-black shadow-inner shadow-black/5"
-                  />
-                  <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-                    <CopyButton
-                      value={shareUrl}
-                      label="Copy"
-                      className="cursor-pointer rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                    />
-                    <a
-                      href={shareUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="cursor-pointer inline-flex items-center gap-1 justify-center rounded-md border border-black/20 bg-white px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                      aria-label="Open link in new tab"
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-medium text-black whitespace-nowrap">
+                  Generate token
+                </p>
+                {hasPaidSubscription ? (
+                  <form action={generateShareToken} className="flex-shrink-0">
+                    <input type="hidden" name="boardId" value={board.id} />
+                    <button
+                      type="submit"
+                      className="inline-flex items-center justify-center rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
                     >
-                      <span className="hidden sm:inline">Go Live</span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                        className="h-3 w-3 sm:h-4 sm:w-4"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                        />
-                      </svg>
-                    </a>
-                  </div>
-                </div>
-                {controlsShareUrl && (
-                  <CopyButton
-                    value={controlsShareUrl}
-                    label="Share Scorekeeping"
-                    maintainSize={true}
-                    className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                  />
-                )}
-              </div>
-            )
-          ) : (
-            <div className="flex flex-col sm:flex-row flex-1 items-stretch sm:items-center gap-2">
-              <p className="text-xs font-medium text-black text-center sm:text-left">
-                Generate a token to create a shareable URL.
-              </p>
-              {hasPaidSubscription ? (
-                <form action={generateShareToken} className="flex justify-center sm:justify-start">
-                  <input type="hidden" name="boardId" value={board.id} />
-                  <button
-                    type="submit"
-                    className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 py-2 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                      Generate
+                    </button>
+                  </form>
+                ) : (
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center justify-center rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
                   >
                     Generate
-                  </button>
-                </form>
-              ) : (
-                <Link
-                  href="/pricing"
-                  className="inline-flex items-center justify-center rounded-md border border-black/20 bg-white px-3 py-2 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                >
-                  Generate
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        </header>
 
-        <div className="relative z-0 -my-8 sm:-my-12 lg:-my-16">
-          <ScoreboardPreview
+        {/* Scoreboard Preview */}
+        <div className="relative z-0 -my-4 sm:-my-6 lg:-my-8">
+          <ScoreboardWithControls
             boardId={board.id}
             initialName={board.name}
             initialSubtitle={board.scoreboard_subtitle}
@@ -387,83 +344,124 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
             initialTitleVisible={board.title_visible}
             initialASideIcon={board.a_side_icon}
             initialBSideIcon={board.b_side_icon}
+            initialCenterTextColor={board.center_text_color}
+            initialCustomLogoUrl={board.custom_logo_url}
           />
         </div>
 
-        <section className="space-y-4 sm:space-y-6 rounded-2xl sm:rounded-3xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] animate-rise">
-          <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
-            <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 shadow-sm shadow-black/5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
-                A side
-              </p>
-              <div className="flex items-start gap-2">
-                {isSmashBrosGame(board.name) && (
-                  <CharacterIconSelector
-                    boardId={board.id}
-                    initialValue={board.a_side_icon}
-                    column="a_side_icon"
-                    placeholder="Select character icon"
-                    compact={true}
-                  />
-                )}
-                <div className="flex-1">
-                  <SideNameEditor
-                    boardId={board.id}
-                    initialValue={board.a_side}
-                    column="a_side"
-                    placeholder="A Side"
+        {/* Controls Section */}
+        <section className="space-y-6 sm:space-y-8">
+          {/* Score Controls - Single Panel */}
+          <div className="rounded-2xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] relative">
+            <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
+              <SaveStatusIndicator />
+            </div>
+            <div className="space-y-6">
+              {/* Scoreboard Name - Centered above logo */}
+              <div className="flex flex-col items-center">
+                <div className="w-full max-w-md">
+                  <BoardNameEditor 
+                    boardId={board.id} 
+                    initialName={board.name} 
+                    initialTitleVisible={board.title_visible ?? true}
+                    initialCustomLogoUrl={board.custom_logo_url}
+                    align="center" 
+                    showLabel={false}
                   />
                 </div>
               </div>
-              <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} />
-            </div>
 
-            <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 text-center shadow-sm shadow-black/5">
-              <BoardNameEditor 
-                boardId={board.id} 
-                initialName={board.name} 
-                initialTitleVisible={board.title_visible ?? true}
-                align="center" 
-                showLabel={true}
-              />
-              <BoardSubtitleEditor
-                boardId={board.id}
-                initialValue={board.scoreboard_subtitle}
-                placeholder="Scoreboard subtitle"
-                align="center"
-              />
-              <ResetPositionsButton boardId={board.id} />
-            </div>
+              {/* Top Row: A Side Name | A Side Score | Logo | B Side Score | B Side Name */}
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 sm:gap-3 items-start">
+                {/* A Side Name */}
+                <div className="space-y-2 min-w-0">
+                  <div className="flex items-start gap-2">
+                    {isSmashBrosGame(board.name) && (
+                      <CharacterIconSelector
+                        boardId={board.id}
+                        initialValue={board.a_side_icon}
+                        column="a_side_icon"
+                        placeholder="Select character icon"
+                        compact={true}
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <SideNameEditor
+                        boardId={board.id}
+                        initialValue={board.a_side}
+                        column="a_side"
+                        placeholder="A Side Name"
+                        initialPositions={board.element_positions}
+                      />
+                    </div>
+                  </div>
+                </div>
 
-            <div className="space-y-4 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 shadow-sm shadow-black/5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black">
-                B side
-              </p>
-              <div className="flex items-start gap-2">
-                {isSmashBrosGame(board.name) && (
-                  <CharacterIconSelector
+                {/* A Side Score */}
+                <div className="space-y-2 min-w-0">
+                  <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} initialPositions={board.element_positions} />
+                </div>
+
+                {/* Logo */}
+                <div className="space-y-2 flex flex-col items-center min-w-0">
+                  <LogoUploader
                     boardId={board.id}
-                    initialValue={board.b_side_icon}
-                    column="b_side_icon"
-                    placeholder="Select character icon"
-                    compact={true}
-                  />
-                )}
-                <div className="flex-1">
-                  <SideNameEditor
-                    boardId={board.id}
-                    initialValue={board.b_side}
-                    column="b_side"
-                    placeholder="B Side"
+                    initialCustomLogoUrl={board.custom_logo_url}
+                    boardName={board.name}
+                    initialPositions={board.element_positions}
                   />
                 </div>
+
+                {/* B Side Score */}
+                <div className="space-y-2 min-w-0">
+                  <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} initialPositions={board.element_positions} />
+                </div>
+
+                {/* B Side Name */}
+                <div className="space-y-2 min-w-0">
+                  <div className="flex items-start gap-2">
+                    {isSmashBrosGame(board.name) && (
+                      <CharacterIconSelector
+                        boardId={board.id}
+                        initialValue={board.b_side_icon}
+                        column="b_side_icon"
+                        placeholder="Select character icon"
+                        compact={true}
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <SideNameEditor
+                        boardId={board.id}
+                        initialValue={board.b_side}
+                        column="b_side"
+                        placeholder="B Side Name"
+                        initialPositions={board.element_positions}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} />
+
+              {/* Bottom Row: Style Selector and Subtitle */}
+              <div className="grid grid-cols-3 items-end gap-4">
+                <div className="flex justify-start">
+                  <CompactStyleSelector boardId={board.id} initialStyle={board.scoreboard_style} />
+                </div>
+                <div className="space-y-2 flex flex-col items-center">
+                  <div className="w-full max-w-[200px]">
+                    <BoardSubtitleEditor
+                      boardId={board.id}
+                      initialValue={board.scoreboard_subtitle}
+                      placeholder="Subtitle"
+                      align="center"
+                    />
+                  </div>
+                </div>
+                <div></div>
+              </div>
             </div>
           </div>
-          <div className="mt-4 sm:mt-6 rounded-2xl border border-black/8 bg-white/80 p-4 sm:p-5 shadow-sm shadow-black/5">
-            <ScoreboardStyleSelector boardId={board.id} initialStyle={board.scoreboard_style} />
-          </div>
+
         </section>
       </main>
     </div>
