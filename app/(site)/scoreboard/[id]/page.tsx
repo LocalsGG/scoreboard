@@ -367,6 +367,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                     initialCustomLogoUrl={board.custom_logo_url}
                     align="center" 
                     showLabel={false}
+                    initialPositions={board.element_positions}
                   />
                 </div>
               </div>
@@ -397,7 +398,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                   </div>
                 </div>
 
-                {/* A Side Score */}
+                {/* A Side Score - Left Counter */}
                 <div className="space-y-2 min-w-0">
                   <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} initialPositions={board.element_positions} />
                 </div>
@@ -412,7 +413,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                   />
                 </div>
 
-                {/* B Side Score */}
+                {/* B Side Score - Right Counter */}
                 <div className="space-y-2 min-w-0">
                   <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} initialPositions={board.element_positions} />
                 </div>
@@ -454,6 +455,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                       initialValue={board.scoreboard_subtitle}
                       placeholder="Subtitle"
                       align="center"
+                      initialPositions={board.element_positions}
                     />
                   </div>
                 </div>

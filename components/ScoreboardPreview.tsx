@@ -593,7 +593,7 @@ export function ScoreboardPreview({
   }, [readOnly, onUndoRedoReady, historyIndex, history.length]);
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <svg
         ref={svgRef}
         viewBox="0 135 1440 540"
