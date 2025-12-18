@@ -4,14 +4,13 @@ import { BoardNameEditor } from "@/components/BoardNameEditor";
 import { BoardSubtitleEditor } from "@/components/BoardSubtitleEditor";
 import { ScoreAdjuster } from "@/components/ScoreAdjuster";
 import { SideNameEditor } from "@/components/SideNameEditor";
-import { ScoreboardStyleSelector } from "@/components/ScoreboardStyleSelector";
 import { CompactStyleSelector } from "@/components/CompactStyleSelector";
 import { ResetPositionsButton } from "@/components/ResetPositionsButton";
 import { CharacterIconSelector } from "@/components/CharacterIconSelector";
-import { LogoUploader } from "@/components/LogoUploader";
+import { LogoSelector } from "@/components/LogoSelector";
+import { GameTypeIndicator } from "@/components/GameTypeIndicator";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { isSmashBrosGame } from "@/lib/assets";
-import type { ElementPositions } from "@/lib/types";
+import type { ElementPositions, ScoreboardType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +31,7 @@ type SharedBoard = {
   b_side_icon: string | null;
   center_text_color: string | null;
   custom_logo_url: string | null;
+  scoreboard_type: string | null;
 };
 
 async function loadSharedBoard(token: string) {
@@ -48,7 +48,7 @@ async function loadSharedBoard(token: string) {
   try {
     const result = await supabase
       .from("scoreboards")
-      .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url")
+      .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url, scoreboard_type")
       .eq("share_token", token)
       .maybeSingle<SharedBoard>();
     
@@ -57,7 +57,7 @@ async function loadSharedBoard(token: string) {
       if (result.error.message?.includes("element_positions") || result.error.message?.includes("column")) {
         const resultWithoutPos = await supabase
           .from("scoreboards")
-          .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url")
+          .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url, scoreboard_type")
           .eq("share_token", token)
           .maybeSingle<Omit<SharedBoard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
         
@@ -117,6 +117,7 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
             initialBSideIcon={board.b_side_icon}
             initialCenterTextColor={board.center_text_color}
             initialCustomLogoUrl={board.custom_logo_url}
+            initialScoreboardType={board.scoreboard_type as "melee" | "ultimate" | "guilty-gear" | "generic" | null}
           />
         </div>
 
@@ -144,7 +145,7 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
                 {/* A Side Name */}
                 <div className="space-y-2 min-w-0">
                   <div className="flex items-start gap-2">
-                    {isSmashBrosGame(board.name) && (
+                    {(board.scoreboard_type === "melee" || board.scoreboard_type === "ultimate") && (
                       <CharacterIconSelector
                         boardId={board.id}
                         initialValue={board.a_side_icon}
@@ -172,10 +173,10 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
 
                 {/* Logo */}
                 <div className="space-y-2 flex flex-col items-center min-w-0">
-                  <LogoUploader
+                  <LogoSelector
                     boardId={board.id}
                     initialCustomLogoUrl={board.custom_logo_url}
-                    boardName={board.name}
+                    initialScoreboardType={board.scoreboard_type as ScoreboardType | null}
                     initialPositions={board.element_positions}
                   />
                 </div>
@@ -188,7 +189,7 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
                 {/* B Side Name */}
                 <div className="space-y-2 min-w-0">
                   <div className="flex items-start gap-2">
-                    {isSmashBrosGame(board.name) && (
+                    {(board.scoreboard_type === "melee" || board.scoreboard_type === "ultimate") && (
                       <CharacterIconSelector
                         boardId={board.id}
                         initialValue={board.b_side_icon}
@@ -210,7 +211,7 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
                 </div>
               </div>
 
-              {/* Bottom Row: Style Selector and Subtitle */}
+              {/* Bottom Row: Style Selector, Subtitle, and Game Type */}
               <div className="grid grid-cols-3 items-end gap-4">
                 <div className="flex justify-start">
                   <CompactStyleSelector boardId={board.id} initialStyle={board.scoreboard_style} />
@@ -226,7 +227,12 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
                     />
                   </div>
                 </div>
-                <div></div>
+                <div className="flex justify-end">
+                  <GameTypeIndicator 
+                    boardId={board.id} 
+                    initialType={board.scoreboard_type as ScoreboardType | null} 
+                  />
+                </div>
               </div>
             </div>
           </div>

@@ -1,5 +1,17 @@
-const SUPABASE_PUBLIC_IMAGE_BASE =
-  "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images";
+/**
+ * Gets the Supabase public storage URL for images.
+ * Uses environment variable if available, otherwise falls back to hardcoded URL.
+ */
+export function getSupabaseStorageUrl(): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (supabaseUrl) {
+    return `${supabaseUrl}/storage/v1/object/public/public%20images`;
+  }
+  // Fallback for backwards compatibility
+  return "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images";
+}
+
+const SUPABASE_PUBLIC_IMAGE_BASE = getSupabaseStorageUrl();
 
 export const HERO_SCOREBOARD_IMAGES = [
   `${SUPABASE_PUBLIC_IMAGE_BASE}/scoreboard1.svg`,
@@ -12,7 +24,7 @@ export const SCOREBOARD_OVERLAY_IMAGE = `${SUPABASE_PUBLIC_IMAGE_BASE}/scoreboar
 export const TOURNAMENT_EXAMPLE_IMAGE = `${SUPABASE_PUBLIC_IMAGE_BASE}/tournamentexample.png`;
 
 // Game configuration mapping
-const GAME_CONFIGS = {
+export const GAME_CONFIGS = {
   melee: {
     displayName: "Super Smash Bros. Melee",
     icon: "melee-icon.svg",

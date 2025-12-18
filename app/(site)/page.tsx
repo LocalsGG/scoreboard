@@ -2,31 +2,34 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { HERO_SCOREBOARD_IMAGES } from "@/lib/assets";
+import { HERO_SCOREBOARD_IMAGES, getSupabaseStorageUrl } from "@/lib/assets";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSiteUrl } from "@/lib/urls";
 import { LifetimeDealBanner } from "@/components/LifetimeDealBanner";
 
-const OBS_OVERLAY_EXAMPLES = [
-  {
-    title: "Live overlay in OBS",
-    description:
-      "Drop the Scoreboard.to link straight into OBS and the overlay updates the second you change the score.",
-    src: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/gif1.gif",
-  },
-  {
-    title: "Add language + context",
-    description:
-      "Customize labels, languages, and team details from any browser so viewers always know what they are watching.",
-    src: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/gif2.gif",
-  },
-  {
-    title: "Brand it with your logo",
-    description:
-      "Layer in team or sponsor logos right inside OBS while keeping the overlay synced to the live game.",
-    src: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/gif3.gif",
-  },
-];
+const getOBSOverlayExamples = () => {
+  const baseUrl = getSupabaseStorageUrl();
+  return [
+    {
+      title: "Live overlay in OBS",
+      description:
+        "Drop the Scoreboard.to link straight into OBS and the overlay updates the second you change the score.",
+      src: `${baseUrl}/gif1.gif`,
+    },
+    {
+      title: "Add language + context",
+      description:
+        "Customize labels, languages, and team details from any browser so viewers always know what they are watching.",
+      src: `${baseUrl}/gif2.gif`,
+    },
+    {
+      title: "Brand it with your logo",
+      description:
+        "Layer in team or sponsor logos right inside OBS while keeping the overlay synced to the live game.",
+      src: `${baseUrl}/gif3.gif`,
+    },
+  ];
+};
 
 export const dynamic = "force-dynamic";
 
@@ -195,7 +198,7 @@ export default async function Home() {
               </p>
             </div>
             <div className="grid gap-4 sm:gap-6 text-left grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {OBS_OVERLAY_EXAMPLES.map((card, index) => (
+              {getOBSOverlayExamples().map((card, index) => (
                 <div
                   key={card.title}
                   className="flex h-full flex-col gap-3 sm:gap-4 rounded-xl sm:rounded-2xl border border-black/8 bg-gradient-to-b from-white/90 to-white/70 p-4 sm:p-5 shadow-[0_16px_45px_rgba(12,18,36,0.1)]"
@@ -208,6 +211,7 @@ export default async function Home() {
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover"
                       priority={index === 0}
+                      loading={index === 0 ? undefined : "lazy"}
                       unoptimized
                     />
                   </div>

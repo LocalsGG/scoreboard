@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
+import { getSupabaseStorageUrl } from "@/lib/assets";
 import "./globals.css";
+
+const faviconUrl = `${getSupabaseStorageUrl()}/favicon.ico`;
 
 export const metadata: Metadata = {
   title: "Scoreboard",
   description: "Simple scoreboards and dashboards.",
   icons: {
-    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/favicon.ico",
-    shortcut: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/favicon.ico",
-    apple: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/favicon.ico",
+    icon: faviconUrl,
+    shortcut: faviconUrl,
+    apple: faviconUrl,
   },
 };
 

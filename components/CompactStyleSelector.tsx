@@ -84,6 +84,7 @@ export function CompactStyleSelector({ boardId, initialStyle }: Props) {
               src={option.preview}
               alt={option.label}
               className="h-full w-auto object-contain"
+              loading="lazy"
             />
             {isSelected && (
               <div className="absolute right-0.5 top-0.5 flex h-2.5 w-2.5 sm:h-3 sm:w-3 items-center justify-center rounded-full bg-black">
@@ -107,3 +108,5 @@ export function CompactStyleSelector({ boardId, initialStyle }: Props) {
     </div>
   );
 }
+
+

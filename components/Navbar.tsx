@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSupabaseStorageUrl } from "@/lib/assets";
 import { NavActions } from "./NavActions";
 
 export async function Navbar() {
@@ -18,7 +19,7 @@ export async function Navbar() {
         className="group flex items-center gap-3 rounded-full px-2 text-base font-extrabold tracking-tight text-black transition hover:text-zinc-700"
       >
         <Image
-          src="https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/logo.svg"
+          src={`${getSupabaseStorageUrl()}/logo.svg`}
           alt="Scoreboard logo"
           width={40}
           height={40}

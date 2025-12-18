@@ -295,11 +295,15 @@ export function PricingPageClient() {
           <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
             <li className="flex items-start gap-3">
               <span className="text-green-600 font-bold mt-0.5">✔</span>
-              <span className="text-zinc-700">Create up to 1 board</span>
+              <span className="text-zinc-700 font-bold">Create up to 1 board</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-green-600 font-bold mt-0.5">✔</span>
+              <span className="text-zinc-700">Invite team members to collaborate</span>
             </li>
             <li className="flex items-start gap-3">
               <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -312,16 +316,6 @@ export function PricingPageClient() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
               </svg>
               <span className="text-zinc-700">Add team and sponsor logos</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <span className="text-zinc-700">Invite team members to collaborate</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✔</span>
-              <span className="text-zinc-700">All future updates included</span>
             </li>
           </ul>
           <Link
@@ -353,15 +347,11 @@ export function PricingPageClient() {
           <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
             <li className="flex items-start gap-3">
               <span className="text-green-400 font-bold mt-0.5">✔</span>
-              <span className="text-white">Create up to 200 scoreboards</span>
+              <span className="text-white font-bold">Create up to 200 scoreboards</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-green-400 font-bold mt-0.5">✔</span>
               <span className="text-white">No ads, ever - clean viewing experience</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-green-400 font-bold mt-0.5">✔</span>
-              <span className="text-white">Match your brand with custom colors</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-green-400 font-bold mt-0.5">✔</span>
@@ -373,7 +363,7 @@ export function PricingPageClient() {
             </li>
             <li className="flex items-start gap-3">
               <span className="text-green-400 font-bold mt-0.5">✔</span>
-              <span className="text-white">All future updates included</span>
+              <span className="text-white">Match your brand with custom colors</span>
             </li>
           </ul>
           <button
@@ -403,15 +393,11 @@ export function PricingPageClient() {
           <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
             <li className="flex items-start gap-3">
               <span className="text-green-600 font-bold mt-0.5">✔</span>
-              <span className="text-zinc-700">Create up to 20 scoreboards</span>
+              <span className="text-zinc-700 font-bold">Create up to 20 scoreboards</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-green-600 font-bold mt-0.5">✔</span>
               <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✔</span>
-              <span className="text-zinc-700">Match your brand with custom colors</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-green-600 font-bold mt-0.5">✔</span>
@@ -422,8 +408,10 @@ export function PricingPageClient() {
               <span className="text-zinc-700">Invite team members to collaborate</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-600 font-bold mt-0.5">✔</span>
-              <span className="text-zinc-700">All future updates included</span>
+              <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span className="text-zinc-700">Match your brand with custom colors</span>
             </li>
           </ul>
           <button
@@ -449,7 +437,7 @@ export function PricingPageClient() {
           <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
             <li className="flex items-start gap-3">
               <span className="text-green-600 font-bold mt-0.5">✔</span>
-              <span className="text-zinc-700">Unlimited scoreboards</span>
+              <span className="text-zinc-700 font-bold">Unlimited scoreboards</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-green-600 font-bold mt-0.5">✔</span>
@@ -474,133 +462,6 @@ export function PricingPageClient() {
           >
             Contact Us
           </Link>
-        </div>
-      </section>
-
-      <section className="max-w-6xl mx-auto w-full">
-        <h2 className="text-xl sm:text-2xl font-black text-black mb-4 sm:mb-6 lg:mb-8 text-center px-4">Compare tiers & features</h2>
-        <div className="border border-zinc-200 rounded-lg overflow-hidden bg-white overflow-x-auto mx-4 sm:mx-0">
-          <div className="min-w-[600px] sm:min-w-0">
-            <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200 bg-zinc-50">
-              <div className="font-semibold text-black text-sm sm:text-base">Features</div>
-              <div className="font-semibold text-black text-center text-xs sm:text-base">Base</div>
-              <div className="font-semibold text-black text-center text-xs sm:text-base relative bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">
-                <span>Pro</span>
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-bold uppercase whitespace-nowrap">Popular</span>
-              </div>
-              <div className="font-semibold text-black text-center text-xs sm:text-base">Standard</div>
-              <div className="font-semibold text-black text-center text-xs sm:text-base">Enterprise</div>
-              <div className="font-semibold text-black text-center text-xs sm:text-base">Lifetime</div>
-            </div>
-            <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
-              <div className="font-medium text-zinc-700 text-sm sm:text-base">Scoreboards</div>
-              <div className="text-center text-zinc-600 text-sm sm:text-base">1</div>
-              <div className="text-center text-black font-bold text-sm sm:text-base bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">200</div>
-              <div className="text-center text-zinc-600 text-sm sm:text-base">20</div>
-              <div className="text-center text-zinc-600 text-sm sm:text-base">Unlimited</div>
-              <div className="text-center text-zinc-600 text-sm sm:text-base">200</div>
-            </div>
-            <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
-              <div className="font-medium text-zinc-700 text-sm sm:text-base">No ads, ever - clean viewing experience</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-lg sm:text-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-            </div>
-            <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
-              <div className="font-medium text-zinc-700 text-sm sm:text-base">Match your brand with custom colors</div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-green-600 font-bold text-lg sm:text-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-            </div>
-            <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
-              <div className="font-medium text-zinc-700 text-sm sm:text-base">Add team and sponsor logos</div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-green-600 font-bold text-lg sm:text-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-            </div>
-            <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
-              <div className="font-medium text-zinc-700 text-sm sm:text-base">Invite team members to collaborate</div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-green-600 font-bold text-lg sm:text-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-            </div>
-            <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
-              <div className="font-medium text-zinc-700 text-sm sm:text-base">Custom integrations</div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-            </div>
-            <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-zinc-200">
-              <div className="font-medium text-zinc-700 text-sm sm:text-base">Dedicated support</div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-red-600 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-            </div>
-            <div className="grid grid-cols-6 gap-2 sm:gap-4 p-3 sm:p-4">
-              <div className="font-medium text-zinc-700 text-sm sm:text-base">All future updates included</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-lg sm:text-xl bg-gradient-to-br from-orange-50 to-orange-100/50 border-l-2 border-r-2 border-orange-500 py-2 -mx-2 sm:-mx-4">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-              <div className="text-center text-green-600 font-bold text-sm sm:text-base">✔</div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -718,7 +579,7 @@ export function PricingPageClient() {
                   <ul className="flex flex-col gap-2 sm:gap-3 text-sm sm:text-base">
                     <li className="flex items-start gap-3">
                       <span className="text-green-600 font-bold mt-0.5">✔</span>
-                      <span className="text-zinc-800">Create up to 200 scoreboards</span>
+                      <span className="text-zinc-800 font-bold">Create up to 200 scoreboards</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-green-600 font-bold mt-0.5">✔</span>
@@ -735,10 +596,6 @@ export function PricingPageClient() {
                     <li className="flex items-start gap-3">
                       <span className="text-green-600 font-bold mt-0.5">✔</span>
                       <span className="text-zinc-800">Invite team members to collaborate</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-green-600 font-bold mt-0.5">✔</span>
-                      <span className="text-zinc-800 font-semibold">All future updates included</span>
                     </li>
                   </ul>
                 </div>

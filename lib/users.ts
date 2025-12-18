@@ -73,11 +73,23 @@ export async function ensureUserExists(
   userId: string,
   email: string | null
 ): Promise<{ success: boolean; error?: string }> {
+  // Check if user already exists in profiles
   const existingUser = await getUserData(supabase, userId);
   if (existingUser) {
     return { success: true };
   }
 
+  // Verify we have a valid session before attempting to create profile
+  // This ensures the user exists in auth.users
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !session?.user || session.user.id !== userId) {
+    return { 
+      success: false, 
+      error: "Invalid session. Please sign in again." 
+    };
+  }
+
+  // Try RPC function first if it exists (this is the preferred method)
   const rpcResult = await supabase.rpc("ensure_user_exists", {
     user_id: userId,
     user_email: email || "",
@@ -88,7 +100,9 @@ export async function ensureUserExists(
   }
 
   const rpcErrorMsg = rpcResult.error.message || '';
+  // If RPC doesn't exist, try direct insert
   if (rpcErrorMsg.includes("function") && rpcErrorMsg.includes("does not exist")) {
+    // Try insert - user exists in auth.users since we have a valid session
     const { error: insertError } = await supabase
       .from("profiles")
       .insert({
@@ -97,9 +111,26 @@ export async function ensureUserExists(
       });
 
     if (insertError) {
+      // Unique constraint violation (23505) - user already exists (race condition)
+      // This is actually success - the user exists now
       if (insertError.code === "23505") {
         return { success: true };
       }
+      // Foreign key constraint violation (23503) - user doesn't exist in auth.users
+      // This shouldn't happen if we verified the session, but handle it
+      if (insertError.code === "23503") {
+        return { 
+          success: false, 
+          error: "User authentication is invalid. Please sign in again." 
+        };
+      }
+      // Log other errors for debugging
+      console.error("Error inserting profile:", {
+        code: insertError.code,
+        message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint,
+      });
       return { success: false, error: insertError.message || 'Unknown error' };
     }
 

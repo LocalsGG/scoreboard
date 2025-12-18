@@ -7,19 +7,17 @@ import { BoardSubtitleEditor } from "@/components/BoardSubtitleEditor";
 import { ScoreAdjuster } from "@/components/ScoreAdjuster";
 import { SideNameEditor } from "@/components/SideNameEditor";
 import { ScoreboardWithControls, UndoRedoControlsWrapper } from "@/components/ScoreboardWithControls";
-import { ScoreboardStyleSelector } from "@/components/ScoreboardStyleSelector";
 import { CompactStyleSelector } from "@/components/CompactStyleSelector";
 import { SaveStatusIndicator } from "@/components/SaveStatusIndicator";
 import { ResetPositionsButton } from "@/components/ResetPositionsButton";
 import { CharacterIconSelector } from "@/components/CharacterIconSelector";
-import { CenterTextColorPicker } from "@/components/CenterTextColorPicker";
-import { LogoUploader } from "@/components/LogoUploader";
-import { ensureShareToken, regenerateShareToken } from "@/lib/scoreboards";
+import { LogoSelector } from "@/components/LogoSelector";
+import { GameTypeIndicator } from "@/components/GameTypeIndicator";
+import { ensureShareToken, createShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getBaseUrlFromRequest } from "@/lib/urls";
 import { getUserSubscription } from "@/lib/users";
-import { isSmashBrosGame, HERO_SCOREBOARD_IMAGES, SCOREBOARD_OVERLAY_IMAGE } from "@/lib/assets";
-import type { ElementPositions } from "@/lib/types";
+import type { ElementPositions, ScoreboardType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +40,7 @@ type Scoreboard = {
   b_side_icon: string | null;
   center_text_color: string | null;
   custom_logo_url: string | null;
+  scoreboard_type: string | null;
 };
 
 type LoadScoreboardResult = {
@@ -97,7 +96,7 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   try {
     const result = await supabase
       .from("scoreboards")
-      .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url")
+      .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url, scoreboard_type")
       .eq(isUuid ? "id" : "share_token", boardId)
       .eq("owner_id", user.id)
       .maybeSingle<Scoreboard>();
@@ -108,7 +107,7 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
         // Try without element_positions and icon columns
         const resultWithoutPos = await supabase
           .from("scoreboards")
-          .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url")
+          .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url, scoreboard_type")
           .eq(isUuid ? "id" : "share_token", boardId)
           .eq("owner_id", user.id)
           .maybeSingle<Omit<Scoreboard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
@@ -192,7 +191,16 @@ async function generateShareToken(formData: FormData) {
     redirect("/pricing");
   }
 
-  const newToken = await regenerateShareToken({ supabase, boardId, ownerId: user.id });
+  const newToken = createShareToken();
+  const { error: updateError } = await supabase
+    .from("scoreboards")
+    .update({ share_token: newToken })
+    .eq("id", boardId)
+    .eq("owner_id", user.id);
+
+  if (updateError) {
+    throw new Error(updateError.message || "Failed to regenerate share token");
+  }
 
   revalidatePath(`/scoreboard/${boardId}`);
   revalidatePath(`/share/${newToken}`);
@@ -346,6 +354,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
             initialBSideIcon={board.b_side_icon}
             initialCenterTextColor={board.center_text_color}
             initialCustomLogoUrl={board.custom_logo_url}
+            initialScoreboardType={board.scoreboard_type as "melee" | "ultimate" | "guilty-gear" | "generic" | null}
           />
         </div>
 
@@ -377,7 +386,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                 {/* A Side Name */}
                 <div className="space-y-2 min-w-0">
                   <div className="flex items-start gap-2">
-                    {isSmashBrosGame(board.name) && (
+                    {(board.scoreboard_type === "melee" || board.scoreboard_type === "ultimate") && (
                       <CharacterIconSelector
                         boardId={board.id}
                         initialValue={board.a_side_icon}
@@ -405,10 +414,10 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
 
                 {/* Logo */}
                 <div className="space-y-2 flex flex-col items-center min-w-0">
-                  <LogoUploader
+                  <LogoSelector
                     boardId={board.id}
                     initialCustomLogoUrl={board.custom_logo_url}
-                    boardName={board.name}
+                    initialScoreboardType={board.scoreboard_type as ScoreboardType | null}
                     initialPositions={board.element_positions}
                   />
                 </div>
@@ -421,7 +430,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                 {/* B Side Name */}
                 <div className="space-y-2 min-w-0">
                   <div className="flex items-start gap-2">
-                    {isSmashBrosGame(board.name) && (
+                    {(board.scoreboard_type === "melee" || board.scoreboard_type === "ultimate") && (
                       <CharacterIconSelector
                         boardId={board.id}
                         initialValue={board.b_side_icon}
@@ -443,7 +452,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                 </div>
               </div>
 
-              {/* Bottom Row: Style Selector and Subtitle */}
+              {/* Bottom Row: Style Selector, Subtitle, and Game Type */}
               <div className="grid grid-cols-3 items-end gap-4">
                 <div className="flex justify-start">
                   <CompactStyleSelector boardId={board.id} initialStyle={board.scoreboard_style} />
@@ -459,7 +468,12 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                     />
                   </div>
                 </div>
-                <div></div>
+                <div className="flex justify-end">
+                  <GameTypeIndicator 
+                    boardId={board.id} 
+                    initialType={board.scoreboard_type as ScoreboardType | null} 
+                  />
+                </div>
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { getGameIcon } from "@/lib/assets";
+import { GAME_CONFIGS, getSupabaseStorageUrl } from "@/lib/assets";
 import type { ElementPositions } from "@/lib/types";
 
 type Props = {
@@ -13,11 +13,10 @@ type Props = {
   placeholder?: string;
   align?: "left" | "center";
   showLabel?: boolean;
-  initialPositions?: ElementPositions | null;
+  initialPositions?: unknown;
 };
 
 const DEBOUNCE_MS = 400;
-const DEFAULT_FONT_SIZE = 72;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_TYPES = ["image/svg+xml", "image/png", "image/jpeg", "image/jpg"];
 const ALLOWED_EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg"];
@@ -54,14 +53,6 @@ export function BoardNameEditor({
   const [logoError, setLogoError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isFirstRun = useRef(true);
-  
-  // Size state
-  const initialFontSize = initialPositions?.title?.fontSize ?? DEFAULT_FONT_SIZE;
-  const [fontSize, setFontSize] = useState<number>(initialFontSize);
-  const [fontSizeInput, setFontSizeInput] = useState<string>(String(initialFontSize));
-  const [savingSize, setSavingSize] = useState(false);
-  const [errorSize, setErrorSize] = useState<string | null>(null);
-  const isFirstRunSize = useRef(true);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -77,13 +68,6 @@ export function BoardNameEditor({
     setCustomLogoUrl(initialCustomLogoUrl ?? null);
   }, [boardId, initialCustomLogoUrl]);
 
-  useEffect(() => {
-    const currentFontSize = initialPositions?.title?.fontSize ?? DEFAULT_FONT_SIZE;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setFontSize(currentFontSize);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setFontSizeInput(String(currentFontSize));
-  }, [boardId, initialPositions]);
 
   const broadcastLocal = (next: string) => {
     const eventName = `board-name-local-${boardId}`;
@@ -150,7 +134,8 @@ export function BoardNameEditor({
     window.dispatchEvent(new CustomEvent("scoreboard-saving-end"));
   };
 
-  const currentLogoUrl = customLogoUrl || getGameIcon(value);
+  const DEFAULT_LOGO_URL = `${getSupabaseStorageUrl()}/${GAME_CONFIGS.generic.icon}`;
+  const currentLogoUrl = customLogoUrl || DEFAULT_LOGO_URL;
 
   const validateFile = (file: File): string | null => {
     // Check file size
@@ -199,7 +184,7 @@ export function BoardNameEditor({
       const { error: uploadError } = await supabase.storage
         .from(LOGOS_BUCKET)
         .upload(filePath, file, {
-          cacheControl: "3600",
+          cacheControl: "31536000", // 1 year cache
           upsert: false,
         });
 
@@ -300,55 +285,6 @@ export function BoardNameEditor({
     }
   };
 
-  // Handle size changes
-  useEffect(() => {
-    if (isFirstRunSize.current) {
-      isFirstRunSize.current = false;
-      return;
-    }
-    if (!boardId) return;
-
-    const handler = setTimeout(async () => {
-      setSavingSize(true);
-      window.dispatchEvent(new CustomEvent("scoreboard-saving-start"));
-      
-      const { data: boardData } = await supabase
-        .from("scoreboards")
-        .select("element_positions")
-        .eq("id", boardId)
-        .single();
-
-      const currentPositions: ElementPositions = boardData?.element_positions || {
-        title: { x: 720, y: 200, fontSize: DEFAULT_FONT_SIZE },
-        subtitle: { x: 720, y: 600, fontSize: 48 },
-        logo: { x: 720, y: 405, width: 64, height: 64 },
-        a_side: { x: 100, y: 310, fontSize: 60 },
-        b_side: { x: 1200, y: 310, fontSize: 60 },
-        a_score: { x: 540, y: 400, fontSize: 110 },
-        b_score: { x: 910, y: 400, fontSize: 110 },
-      };
-
-      const updatedPositions: ElementPositions = {
-        ...currentPositions,
-        title: { ...currentPositions.title, fontSize: fontSize },
-      };
-
-      const { error: updateError } = await supabase
-        .from("scoreboards")
-        .update({ element_positions: updatedPositions })
-        .eq("id", boardId);
-
-      if (updateError) {
-        setErrorSize(updateError.message);
-      } else {
-        setErrorSize(null);
-      }
-      setSavingSize(false);
-      window.dispatchEvent(new CustomEvent("scoreboard-saving-end"));
-    }, DEBOUNCE_MS);
-
-    return () => clearTimeout(handler);
-  }, [boardId, fontSize, supabase]);
 
   return (
     <div className={`mt-2 flex flex-col gap-2 ${containerAlignment}`}>
@@ -404,45 +340,10 @@ export function BoardNameEditor({
           placeholder={placeholder}
           className={`flex-1 min-w-0 bg-transparent text-sm text-black outline-none placeholder:text-black/50 ${inputAlignment}`}
         />
-        <input
-          type="number"
-          value={fontSizeInput}
-          onChange={(e) => {
-            const inputValue = e.target.value;
-            // Allow free typing - update input value immediately
-            setFontSizeInput(inputValue);
-            // Only update fontSize if it's a valid number
-            const value = parseInt(inputValue, 10);
-            if (!isNaN(value)) {
-              setFontSize(value);
-            }
-          }}
-          onBlur={(e) => {
-            // Validate on blur - clamp to min/max
-            const value = parseInt(e.target.value, 10);
-            let finalValue = value;
-            if (isNaN(value) || value < 12) {
-              finalValue = 12;
-            } else if (value > 300) {
-              finalValue = 300;
-            }
-            setFontSize(finalValue);
-            setFontSizeInput(String(finalValue));
-          }}
-          min={12}
-          max={300}
-          disabled={savingSize}
-          className="w-14 sm:w-16 bg-transparent px-1 sm:px-2 py-0 text-xs text-black outline-none border-l border-black/20 pl-2 ml-2 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-        />
       </div>
       {error && (
         <div className={`flex items-center gap-2 text-xs text-red-600 ${helperAlignment}`}>
           <span>({error})</span>
-        </div>
-      )}
-      {errorSize && (
-        <div className={`flex items-center gap-2 text-xs text-red-600 ${helperAlignment}`}>
-          <span>({errorSize})</span>
         </div>
       )}
     </div>

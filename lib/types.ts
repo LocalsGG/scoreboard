@@ -30,6 +30,7 @@ export interface ScoreboardRow {
   b_side_icon: string | null;
   center_text_color: string | null;
   custom_logo_url: string | null;
+  scoreboard_type: string | null;
 }
 
 export interface User {
@@ -49,6 +50,9 @@ export interface AuthStatus {
   message?: string;
 }
 
+// Scoreboard related types
+export type ScoreboardType = "melee" | "ultimate" | "guilty-gear" | "generic";
+
 // Component props types
 export interface ScoreboardPreviewProps {
   boardId: string;
@@ -66,6 +70,7 @@ export interface ScoreboardPreviewProps {
   initialBSideIcon?: string | null;
   initialCenterTextColor?: string | null;
   initialCustomLogoUrl?: string | null;
+  initialScoreboardType?: ScoreboardType | null;
   readOnly?: boolean;
   onUndoRedoReady?: (handlers: { onUndo: () => void; onRedo: () => void; canUndo: boolean; canRedo: boolean }) => void;
 }

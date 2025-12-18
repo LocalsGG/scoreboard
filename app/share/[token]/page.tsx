@@ -22,6 +22,7 @@ type SharedBoard = {
   b_side_icon: string | null;
   center_text_color: string | null;
   custom_logo_url: string | null;
+  scoreboard_type: string | null;
 };
 
 async function loadSharedBoard(token: string) {
@@ -38,7 +39,7 @@ async function loadSharedBoard(token: string) {
   try {
     const result = await supabase
       .from("scoreboards")
-      .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url")
+      .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url, scoreboard_type")
       .eq("share_token", token)
       .maybeSingle<SharedBoard>();
     
@@ -47,7 +48,7 @@ async function loadSharedBoard(token: string) {
       if (result.error.message?.includes("element_positions") || result.error.message?.includes("column")) {
         const resultWithoutPos = await supabase
           .from("scoreboards")
-          .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url")
+          .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url, scoreboard_type")
           .eq("share_token", token)
           .maybeSingle<Omit<SharedBoard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
         
@@ -104,6 +105,7 @@ export default async function SharedScoreboardPage(props: { params: Promise<{ to
       initialBSideIcon={board.b_side_icon}
       initialCenterTextColor={board.center_text_color}
       initialCustomLogoUrl={board.custom_logo_url}
+      initialScoreboardType={board.scoreboard_type as "melee" | "ultimate" | "guilty-gear" | "generic" | null}
       readOnly={true}
     />
   );

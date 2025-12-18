@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { randomUUID } from "crypto";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ensureUserExists, getUserSubscription, getBoardLimit } from "@/lib/users";
+import { getSupabaseStorageUrl, GAME_CONFIGS } from "@/lib/assets";
+import type { ScoreboardType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -14,28 +16,49 @@ type Template = {
   icon: string;
 };
 
-const gameTemplates: Template[] = [
-  {
-    slug: "melee",
-    name: "Super Smash Bros. Melee",
-    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/melee-icon.svg",
-  },
-  {
-    slug: "ultimate",
-    name: "Super Smash Bros. Ultimate",
-    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/ultimate-icon.svg",
-  },
-  {
-    slug: "guilty-gear-strive",
-    name: "Guilty Gear Strive",
-    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/guilty-icon.svg",
-  },
-  {
-    slug: "generic",
-    name: "Generic",
-    icon: "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images/logo.svg",
-  },
-];
+// Map template slugs to database scoreboard_type values
+function getScoreboardTypeFromSlug(slug: string): string {
+  if (slug === "guilty-gear-strive") {
+    return "guilty-gear";
+  }
+  return slug;
+}
+
+// Get default logo URL based on scoreboard type
+function getDefaultLogoUrl(scoreboardType: string | null): string | null {
+  if (!scoreboardType || !(scoreboardType in GAME_CONFIGS)) {
+    return null;
+  }
+  const baseUrl = getSupabaseStorageUrl();
+  const config = GAME_CONFIGS[scoreboardType as ScoreboardType];
+  return `${baseUrl}/${config.icon}`;
+}
+
+const getGameTemplates = (): Template[] => {
+  const baseUrl = getSupabaseStorageUrl();
+  return [
+    {
+      slug: "melee",
+      name: "Super Smash Bros. Melee",
+      icon: `${baseUrl}/melee-icon.svg`,
+    },
+    {
+      slug: "ultimate",
+      name: "Super Smash Bros. Ultimate",
+      icon: `${baseUrl}/ultimate-icon.svg`,
+    },
+    {
+      slug: "guilty-gear-strive",
+      name: "Guilty Gear Strive",
+      icon: `${baseUrl}/guilty-icon.svg`,
+    },
+    {
+      slug: "generic",
+      name: "Generic",
+      icon: `${baseUrl}/logo.svg`,
+    },
+  ];
+};
 
 async function createBoard(formData: FormData) {
   "use server";
@@ -81,6 +104,13 @@ async function createBoard(formData: FormData) {
   const rawName = (formData.get("name") as string | null) ?? "";
   const name = rawName.trim() || "Generic Scoreboard";
   const shareToken = randomUUID().replace(/-/g, "");
+  
+  // Get scoreboard_type from form data and map template slug to database value
+  const rawType = (formData.get("scoreboard_type") as string | null) ?? "";
+  const scoreboardType = rawType ? getScoreboardTypeFromSlug(rawType) : null;
+  
+  // Get default logo URL based on game type
+  const customLogoUrl = getDefaultLogoUrl(scoreboardType);
 
   const { data, error } = await supabase
     .from("scoreboards")
@@ -88,6 +118,8 @@ async function createBoard(formData: FormData) {
       name,
       owner_id: userId,
       share_token: shareToken,
+      scoreboard_type: scoreboardType || null,
+      custom_logo_url: customLogoUrl,
     })
     .select("id")
     .maybeSingle<{ id: string }>();
@@ -140,9 +172,10 @@ export default async function NewScoreboardPage() {
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            {gameTemplates.map((template) => (
+            {getGameTemplates().map((template) => (
               <form key={template.slug} action={createBoard} className="h-full">
                 <input type="hidden" name="name" value={`${template.name} Scoreboard`} />
+                <input type="hidden" name="scoreboard_type" value={template.slug} />
                 <button
                   type="submit"
                   className="group flex h-full w-full flex-col justify-between rounded-xl border border-zinc-200 bg-white p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] cursor-pointer"

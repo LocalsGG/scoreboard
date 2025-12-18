@@ -1,93 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SCOREBOARD_OVERLAY_IMAGE, getGameIcon } from "@/lib/assets";
+import { SCOREBOARD_OVERLAY_IMAGE, GAME_CONFIGS, getSupabaseStorageUrl } from "@/lib/assets";
 import { createClient } from "@/lib/supabase/client";
 import type { ElementPositions, ScoreboardPreviewProps } from "@/lib/types";
+import { getMergedPositions, DEFAULT_POSITIONS, DEBOUNCE_MS, DEFAULT_CENTER_TEXT_COLOR } from "./scoreboard-preview/constants";
+import { usePreviewState } from "./scoreboard-preview/usePreviewState";
+import { usePreviewSubscriptions } from "./scoreboard-preview/usePreviewSubscriptions";
+import type { PreviewState } from "./scoreboard-preview/types";
 
 type Props = ScoreboardPreviewProps;
-
-type PreviewState = {
-  name: string | null;
-  subtitle: string | null;
-  aSide: string | null;
-  bSide: string | null;
-  aScore: number;
-  bScore: number;
-  updatedAt: string | null;
-  style: string;
-  titleVisible: boolean;
-  aSideIcon: string | null;
-  bSideIcon: string | null;
-  centerTextColor: string;
-  customLogoUrl: string | null;
-};
-
-const DEFAULT_POSITIONS: ElementPositions = {
-  title: { x: 720, y: 200, fontSize: 72 },
-  subtitle: { x: 720, y: 600, fontSize: 48 },
-  logo: { x: 720, y: 405, width: 64, height: 64 },
-  a_side: { x: 100, y: 310, fontSize: 60 },
-  b_side: { x: 1200, y: 310, fontSize: 60 },
-  a_score: { x: 540, y: 400, fontSize: 110 },
-  b_score: { x: 910, y: 400, fontSize: 110 },
-  a_side_icon: { x: 200, y: 310, width: 64, height: 64 },
-  b_side_icon: { x: 1240, y: 310, width: 64, height: 64 },
-};
-
-// Merge positions with defaults to ensure logo position exists and fontSize is set
-function getMergedPositions(positions: ElementPositions | null | undefined): ElementPositions {
-  if (!positions) return DEFAULT_POSITIONS;
-  
-  const merged = { ...DEFAULT_POSITIONS, ...positions };
-  // Ensure logo has width and height
-  if (merged.logo && (!merged.logo.width || !merged.logo.height)) {
-    merged.logo = {
-      ...merged.logo,
-      width: merged.logo.width ?? DEFAULT_POSITIONS.logo.width ?? 64,
-      height: merged.logo.height ?? DEFAULT_POSITIONS.logo.height ?? 64,
-    };
-  }
-  // Ensure fontSize is set for text elements
-  if (merged.title && !merged.title.fontSize) {
-    merged.title.fontSize = DEFAULT_POSITIONS.title.fontSize ?? 72;
-  }
-  if (merged.subtitle && !merged.subtitle.fontSize) {
-    merged.subtitle.fontSize = DEFAULT_POSITIONS.subtitle?.fontSize ?? 48;
-  }
-  if (merged.a_side && !merged.a_side.fontSize) {
-    merged.a_side.fontSize = DEFAULT_POSITIONS.a_side.fontSize ?? 60;
-  }
-  if (merged.b_side && !merged.b_side.fontSize) {
-    merged.b_side.fontSize = DEFAULT_POSITIONS.b_side.fontSize ?? 60;
-  }
-  if (merged.a_score && !merged.a_score.fontSize) {
-    merged.a_score.fontSize = DEFAULT_POSITIONS.a_score.fontSize ?? 110;
-  }
-  if (merged.b_score && !merged.b_score.fontSize) {
-    merged.b_score.fontSize = DEFAULT_POSITIONS.b_score.fontSize ?? 110;
-  }
-  // Ensure icon sizes are set
-  if (merged.a_side_icon && (!merged.a_side_icon.width || !merged.a_side_icon.height)) {
-    merged.a_side_icon = {
-      ...merged.a_side_icon,
-      width: merged.a_side_icon.width ?? DEFAULT_POSITIONS.a_side_icon?.width ?? 64,
-      height: merged.a_side_icon.height ?? DEFAULT_POSITIONS.a_side_icon?.height ?? 64,
-    };
-  }
-  if (merged.b_side_icon && (!merged.b_side_icon.width || !merged.b_side_icon.height)) {
-    merged.b_side_icon = {
-      ...merged.b_side_icon,
-      width: merged.b_side_icon.width ?? DEFAULT_POSITIONS.b_side_icon?.width ?? 64,
-      height: merged.b_side_icon.height ?? DEFAULT_POSITIONS.b_side_icon?.height ?? 64,
-    };
-  }
-  return merged;
-}
-
-const DEBOUNCE_MS = 500;
-
-const DEFAULT_CENTER_TEXT_COLOR = "#f8fafc";
 
 export function ScoreboardPreview({
   boardId,
@@ -105,6 +27,7 @@ export function ScoreboardPreview({
   initialBSideIcon,
   initialCenterTextColor,
   initialCustomLogoUrl,
+  initialScoreboardType,
   readOnly = false,
   onUndoRedoReady,
 }: Props) {
@@ -122,15 +45,16 @@ export function ScoreboardPreview({
     bSideIcon: initialBSideIcon ?? null,
     centerTextColor: initialCenterTextColor || DEFAULT_CENTER_TEXT_COLOR,
     customLogoUrl: initialCustomLogoUrl ?? null,
+    scoreboardType: initialScoreboardType ?? null,
   });
 
   const [positions, setPositions] = useState<ElementPositions>(
-    getMergedPositions(initialPositions)
+    getMergedPositions(initialPositions, initialScoreboardType)
   );
 
   // Store the initial positions to restore on reset
   const initialPositionsRef = useRef<ElementPositions>(
-    getMergedPositions(initialPositions)
+    getMergedPositions(initialPositions, initialScoreboardType)
   );
 
   // Undo/Redo history
@@ -139,7 +63,7 @@ export function ScoreboardPreview({
     state: PreviewState;
   };
   const [history, setHistory] = useState<HistorySnapshot[]>([
-    { positions: getMergedPositions(initialPositions), state: { name: initialName, subtitle: initialSubtitle ?? null, aSide: initialASide, bSide: initialBSide, aScore: initialAScore ?? 0, bScore: initialBScore ?? 0, updatedAt: initialUpdatedAt, style: initialStyle || SCOREBOARD_OVERLAY_IMAGE, titleVisible: initialTitleVisible ?? true, aSideIcon: initialASideIcon ?? null, bSideIcon: initialBSideIcon ?? null, centerTextColor: initialCenterTextColor || DEFAULT_CENTER_TEXT_COLOR, customLogoUrl: initialCustomLogoUrl ?? null } },
+    { positions: getMergedPositions(initialPositions, initialScoreboardType), state: { name: initialName, subtitle: initialSubtitle ?? null, aSide: initialASide, bSide: initialBSide, aScore: initialAScore ?? 0, bScore: initialBScore ?? 0, updatedAt: initialUpdatedAt, style: initialStyle || SCOREBOARD_OVERLAY_IMAGE, titleVisible: initialTitleVisible ?? true, aSideIcon: initialASideIcon ?? null, bSideIcon: initialBSideIcon ?? null, centerTextColor: initialCenterTextColor || DEFAULT_CENTER_TEXT_COLOR, customLogoUrl: initialCustomLogoUrl ?? null, scoreboardType: initialScoreboardType ?? null } },
   ]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const isUndoRedoRef = useRef(false);
@@ -382,6 +306,7 @@ export function ScoreboardPreview({
   }, [dragging, dragOffset, getSVGPoint, savePositions, state, addToHistory]);
 
 
+  // Update state when initial values change (excluding positions-related changes)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState({
@@ -398,13 +323,8 @@ export function ScoreboardPreview({
       bSideIcon: initialBSideIcon ?? null,
       centerTextColor: initialCenterTextColor || DEFAULT_CENTER_TEXT_COLOR,
       customLogoUrl: initialCustomLogoUrl ?? null,
+      scoreboardType: initialScoreboardType ?? null,
     });
-
-    // Merge initial positions with defaults to ensure logo position exists
-    const positionsToUse = getMergedPositions(initialPositions);
-    setPositions(positionsToUse);
-    // Update the ref to store the initial positions for reset
-    initialPositionsRef.current = positionsToUse;
   }, [
     boardId,
     initialAScore,
@@ -415,13 +335,22 @@ export function ScoreboardPreview({
     initialSubtitle,
     initialUpdatedAt,
     initialStyle,
-    initialPositions,
     initialTitleVisible,
     initialASideIcon,
     initialBSideIcon,
     initialCenterTextColor,
     initialCustomLogoUrl,
+    initialScoreboardType,
   ]);
+
+  // Update positions only when positions or scoreboard type change (NOT when name changes)
+  useEffect(() => {
+    // Merge initial positions with defaults to ensure logo position exists
+    const positionsToUse = getMergedPositions(initialPositions, initialScoreboardType);
+    setPositions(positionsToUse);
+    // Update the ref to store the initial positions for reset
+    initialPositionsRef.current = positionsToUse;
+  }, [boardId, initialPositions, initialScoreboardType]);
 
   // Reset positions to initial (what they were when component loaded)
   const resetPositions = useCallback(() => {
@@ -463,11 +392,16 @@ export function ScoreboardPreview({
                 : prev.centerTextColor || DEFAULT_CENTER_TEXT_COLOR,
             customLogoUrl:
               typeof next.custom_logo_url === "string" ? next.custom_logo_url : prev.customLogoUrl ?? null,
+            scoreboardType:
+              typeof next.scoreboard_type === "string" ? next.scoreboard_type as "melee" | "ultimate" | "guilty-gear" | "generic" : prev.scoreboardType ?? null,
           }));
 
           // Update positions if they changed
           if (next.element_positions && typeof next.element_positions === "object") {
-            const newPositions = getMergedPositions(next.element_positions as ElementPositions);
+            const scoreboardType = typeof next.scoreboard_type === "string" 
+              ? next.scoreboard_type as "melee" | "ultimate" | "guilty-gear" | "generic" 
+              : state.scoreboardType;
+            const newPositions = getMergedPositions(next.element_positions as ElementPositions, scoreboardType);
             setPositions(newPositions);
           }
         }
@@ -512,6 +446,11 @@ export function ScoreboardPreview({
       setState((prev) => ({ ...prev, customLogoUrl: detail ?? null }));
     };
 
+    const handleScoreboardType = (event: Event) => {
+      const detail = (event as CustomEvent<"melee" | "ultimate" | "guilty-gear" | "generic" | null>).detail;
+      setState((prev) => ({ ...prev, scoreboardType: detail ?? null }));
+    };
+
     const handleScoreA = handleScore("aScore");
     const handleScoreB = handleScore("bScore");
 
@@ -523,6 +462,7 @@ export function ScoreboardPreview({
     window.addEventListener(`title-visibility-${boardId}`, handleTitleVisibility);
     window.addEventListener(`center-text-color-local-${boardId}`, handleCenterTextColor);
     window.addEventListener(`custom-logo-local-${boardId}`, handleCustomLogo);
+    window.addEventListener(`scoreboard-type-local-${boardId}`, handleScoreboardType);
 
     return () => {
       supabase.removeChannel(channel);
@@ -534,6 +474,7 @@ export function ScoreboardPreview({
       window.removeEventListener(`title-visibility-${boardId}`, handleTitleVisibility);
       window.removeEventListener(`center-text-color-local-${boardId}`, handleCenterTextColor);
       window.removeEventListener(`custom-logo-local-${boardId}`, handleCustomLogo);
+      window.removeEventListener(`scoreboard-type-local-${boardId}`, handleScoreboardType);
     };
   }, [boardId, supabase, resetPositions]);
 
@@ -551,6 +492,12 @@ export function ScoreboardPreview({
     return trimmed.length > maxLength ? `${trimmed.slice(0, maxLength - 1)}...` : trimmed;
   };
 
+  // Helper to safely get a number value, handling NaN
+  const safeNumber = (value: number | undefined | null, fallback: number): number => {
+    if (value == null || Number.isNaN(value)) return fallback;
+    return value;
+  };
+
   const aLead = state.aScore > state.bScore;
   const bLead = state.bScore > state.aScore;
 
@@ -558,9 +505,19 @@ export function ScoreboardPreview({
   const scoreboardSubtitle = formatLabel(state.subtitle, "", 32);
   const aLabel = formatLabel(state.aSide, "A", 16);
   const bLabel = formatLabel(state.bSide, "B", 16);
-  const gameIconUrl = state.customLogoUrl || getGameIcon(state.name);
+  // Use custom logo URL or default to generic logo
+  const DEFAULT_LOGO_URL = `${getSupabaseStorageUrl()}/${GAME_CONFIGS.generic.icon}`;
+  const gameIconUrl = state.customLogoUrl || DEFAULT_LOGO_URL;
 
   const isDragging = (elementId: keyof ElementPositions) => dragging === elementId;
+
+  // Extract logo with defaults for type safety
+  const logo: { x: number; y: number; width: number; height: number } | null = positions.logo ? {
+    x: safeNumber(positions.logo.x, DEFAULT_POSITIONS.logo.x),
+    y: safeNumber(positions.logo.y, DEFAULT_POSITIONS.logo.y),
+    width: safeNumber(positions.logo.width, safeNumber(DEFAULT_POSITIONS.logo.width, 64)),
+    height: safeNumber(positions.logo.height, safeNumber(DEFAULT_POSITIONS.logo.height, 64)),
+  } : null;
 
   // Store latest handlers in ref
   const handlersRef = useRef({ onUndo: handleUndo, onRedo: handleRedo });
@@ -619,8 +576,8 @@ export function ScoreboardPreview({
 
       {state.titleVisible && state.name && state.name.trim() && (
         <text
-          x={positions.title.x}
-          y={positions.title.y}
+          x={safeNumber(positions.title.x, DEFAULT_POSITIONS.title.x)}
+          y={safeNumber(positions.title.y, DEFAULT_POSITIONS.title.y)}
           fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
           fontSize={positions.title.fontSize ?? 72}
           fill={state.centerTextColor}
@@ -644,8 +601,8 @@ export function ScoreboardPreview({
 
       {scoreboardSubtitle && (
         <text
-          x={positions.subtitle?.x ?? DEFAULT_POSITIONS.subtitle?.x ?? 720}
-          y={positions.subtitle?.y ?? DEFAULT_POSITIONS.subtitle?.y ?? 600}
+          x={safeNumber(positions.subtitle?.x, safeNumber(DEFAULT_POSITIONS.subtitle?.x, 720))}
+          y={safeNumber(positions.subtitle?.y, safeNumber(DEFAULT_POSITIONS.subtitle?.y, 600))}
           fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
           fontSize={positions.subtitle?.fontSize ?? 48}
           fill={state.centerTextColor}
@@ -668,8 +625,8 @@ export function ScoreboardPreview({
       )}
 
       <text
-        x={positions.a_side.x}
-        y={positions.a_side.y}
+        x={safeNumber(positions.a_side.x, DEFAULT_POSITIONS.a_side.x)}
+        y={safeNumber(positions.a_side.y, DEFAULT_POSITIONS.a_side.y)}
         fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
         fontSize={positions.a_side.fontSize ?? 60}
         fill={state.centerTextColor}
@@ -691,8 +648,8 @@ export function ScoreboardPreview({
       </text>
 
       <text
-        x={positions.b_side.x}
-        y={positions.b_side.y}
+        x={safeNumber(positions.b_side.x, DEFAULT_POSITIONS.b_side.x)}
+        y={safeNumber(positions.b_side.y, DEFAULT_POSITIONS.b_side.y)}
         fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
         fontSize={positions.b_side.fontSize ?? 60}
         fill={state.centerTextColor}
@@ -714,8 +671,8 @@ export function ScoreboardPreview({
       </text>
 
       <text
-        x={positions.a_score.x}
-        y={positions.a_score.y}
+        x={safeNumber(positions.a_score.x, DEFAULT_POSITIONS.a_score.x)}
+        y={safeNumber(positions.a_score.y, DEFAULT_POSITIONS.a_score.y)}
         fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
         fontSize={positions.a_score.fontSize ?? 110}
         fill={state.centerTextColor}
@@ -735,8 +692,8 @@ export function ScoreboardPreview({
       </text>
 
       <text
-        x={positions.b_score.x}
-        y={positions.b_score.y}
+        x={safeNumber(positions.b_score.x, DEFAULT_POSITIONS.b_score.x)}
+        y={safeNumber(positions.b_score.y, DEFAULT_POSITIONS.b_score.y)}
         fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
         fontSize={positions.b_score.fontSize ?? 110}
         fill={state.centerTextColor}
@@ -755,34 +712,36 @@ export function ScoreboardPreview({
         {state.bScore}
       </text>
 
-      <g>
-        <image
-          href={gameIconUrl}
-          x={(positions.logo?.x ?? DEFAULT_POSITIONS.logo.x) - ((positions.logo?.width ?? DEFAULT_POSITIONS.logo.width ?? 64) / 2)}
-          y={(positions.logo?.y ?? DEFAULT_POSITIONS.logo.y) - ((positions.logo?.height ?? DEFAULT_POSITIONS.logo.height ?? 64) / 2)}
-          width={positions.logo?.width ?? DEFAULT_POSITIONS.logo.width ?? 64}
-          height={positions.logo?.height ?? DEFAULT_POSITIONS.logo.height ?? 64}
-          preserveAspectRatio="xMidYMid meet"
-          style={{
-            cursor: readOnly ? "default" : "move",
-            pointerEvents: "all",
-            opacity: isDragging("logo") ? 0.8 : 1,
-          }}
-          onMouseDown={(e) => {
-            if (!readOnly) {
-              handleLogoMouseDown(e);
-            }
-          }}
-        />
-      </g>
+      {logo && (
+        <g>
+          <image
+            href={gameIconUrl}
+            x={logo.x - (logo.width / 2)}
+            y={logo.y - (logo.height / 2)}
+            width={logo.width}
+            height={logo.height}
+            preserveAspectRatio="xMidYMid meet"
+            style={{
+              cursor: readOnly ? "default" : "move",
+              pointerEvents: "all",
+              opacity: isDragging("logo") ? 0.8 : 1,
+            }}
+            onMouseDown={(e) => {
+              if (!readOnly) {
+                handleLogoMouseDown(e);
+              }
+            }}
+          />
+        </g>
+      )}
 
       {state.aSideIcon && (
         <image
           href={state.aSideIcon}
-          x={(positions.a_side_icon?.x ?? DEFAULT_POSITIONS.a_side_icon?.x ?? 200) - ((positions.a_side_icon?.width ?? DEFAULT_POSITIONS.a_side_icon?.width ?? 64) / 2)}
-          y={(positions.a_side_icon?.y ?? DEFAULT_POSITIONS.a_side_icon?.y ?? 310) - ((positions.a_side_icon?.height ?? DEFAULT_POSITIONS.a_side_icon?.height ?? 64) / 2)}
-          width={positions.a_side_icon?.width ?? DEFAULT_POSITIONS.a_side_icon?.width ?? 64}
-          height={positions.a_side_icon?.height ?? DEFAULT_POSITIONS.a_side_icon?.height ?? 64}
+          x={safeNumber(positions.a_side_icon?.x, safeNumber(DEFAULT_POSITIONS.a_side_icon?.x, 200)) - (safeNumber(positions.a_side_icon?.width, safeNumber(DEFAULT_POSITIONS.a_side_icon?.width, 64)) / 2)}
+          y={safeNumber(positions.a_side_icon?.y, safeNumber(DEFAULT_POSITIONS.a_side_icon?.y, 310)) - (safeNumber(positions.a_side_icon?.height, safeNumber(DEFAULT_POSITIONS.a_side_icon?.height, 64)) / 2)}
+          width={safeNumber(positions.a_side_icon?.width, safeNumber(DEFAULT_POSITIONS.a_side_icon?.width, 64))}
+          height={safeNumber(positions.a_side_icon?.height, safeNumber(DEFAULT_POSITIONS.a_side_icon?.height, 64))}
           preserveAspectRatio="xMidYMid meet"
           style={{
             cursor: readOnly ? "default" : "move",
@@ -800,10 +759,10 @@ export function ScoreboardPreview({
       {state.bSideIcon && (
         <image
           href={state.bSideIcon}
-          x={(positions.b_side_icon?.x ?? DEFAULT_POSITIONS.b_side_icon?.x ?? 1240) - ((positions.b_side_icon?.width ?? DEFAULT_POSITIONS.b_side_icon?.width ?? 64) / 2)}
-          y={(positions.b_side_icon?.y ?? DEFAULT_POSITIONS.b_side_icon?.y ?? 310) - ((positions.b_side_icon?.height ?? DEFAULT_POSITIONS.b_side_icon?.height ?? 64) / 2)}
-          width={positions.b_side_icon?.width ?? DEFAULT_POSITIONS.b_side_icon?.width ?? 64}
-          height={positions.b_side_icon?.height ?? DEFAULT_POSITIONS.b_side_icon?.height ?? 64}
+          x={safeNumber(positions.b_side_icon?.x, safeNumber(DEFAULT_POSITIONS.b_side_icon?.x, 1240)) - (safeNumber(positions.b_side_icon?.width, safeNumber(DEFAULT_POSITIONS.b_side_icon?.width, 64)) / 2)}
+          y={safeNumber(positions.b_side_icon?.y, safeNumber(DEFAULT_POSITIONS.b_side_icon?.y, 310)) - (safeNumber(positions.b_side_icon?.height, safeNumber(DEFAULT_POSITIONS.b_side_icon?.height, 64)) / 2)}
+          width={safeNumber(positions.b_side_icon?.width, safeNumber(DEFAULT_POSITIONS.b_side_icon?.width, 64))}
+          height={safeNumber(positions.b_side_icon?.height, safeNumber(DEFAULT_POSITIONS.b_side_icon?.height, 64))}
           preserveAspectRatio="xMidYMid meet"
           style={{
             cursor: readOnly ? "default" : "move",

@@ -3,7 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { formatDate } from "@/lib/dates";
-import { getGameIcon, getGameName } from "@/lib/assets";
+import { getGameIcon, getGameName, GAME_CONFIGS } from "@/lib/assets";
+import { getDefaultLogo } from "@/components/scoreboard-preview/gameConfigs";
+import type { ScoreboardType } from "@/lib/types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getUserData, getUserSubscription, getBoardLimit } from "@/lib/users";
 import { DeleteBoardButton } from "@/components/DeleteBoardButton";
@@ -59,7 +61,7 @@ export default async function DashboardPage() {
 
   const result = await supabase
     .from("scoreboards")
-    .select("id, name, updated_at, owner_id")
+    .select("id, name, updated_at, owner_id, scoreboard_type")
     .eq("owner_id", userId)
     .order("updated_at", { ascending: false });
 
@@ -127,6 +129,12 @@ export default async function DashboardPage() {
                       const gameName = getGameName(board.name);
                       const updatedLabel = formatDate(board.updated_at);
                       const viewHref = `/scoreboard/${board.id}`;
+                      
+                      // Get scoreboard type display name
+                      const scoreboardType = board.scoreboard_type as ScoreboardType | null;
+                      const typeDisplayName = scoreboardType && scoreboardType in GAME_CONFIGS
+                        ? GAME_CONFIGS[scoreboardType].displayName
+                        : gameName;
 
                       return (
                         <li
@@ -135,7 +143,7 @@ export default async function DashboardPage() {
                         >
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                             <Image
-                              src={getGameIcon(board.name)}
+                              src={board.scoreboard_type ? getDefaultLogo(board.scoreboard_type as ScoreboardType) : getGameIcon(board.name)}
                               alt={`${label} icon`}
                               width={24}
                               height={24}
@@ -144,7 +152,7 @@ export default async function DashboardPage() {
                             />
                             <div className="min-w-0 flex-1">
                               <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 truncate">
-                                {gameName}
+                                {typeDisplayName}
                               </p>
                               <h2 className="text-sm sm:text-base font-semibold text-black truncate">
                                 <Link

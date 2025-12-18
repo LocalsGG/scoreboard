@@ -14,6 +14,8 @@ type Props = {
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const CHARACTER_ICONS_BUCKET = "public images";
 const CHARACTER_ICONS_PATH = "supersmashbroscharactericons";
+const CHARACTERS_CACHE_KEY = "scoreboard_characters_cache";
+const CHARACTERS_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
 function getCharacterIconUrl(filename: string): string {
   if (!SUPABASE_URL) return "";
@@ -21,6 +23,47 @@ function getCharacterIconUrl(filename: string): string {
   const encodedPath = encodeURIComponent(CHARACTER_ICONS_PATH);
   // Filename should already be just the filename (not including path) when coming from list()
   return `${SUPABASE_URL}/storage/v1/object/public/${encodedBucket}/${encodedPath}/${encodeURIComponent(filename)}`;
+}
+
+// Lazy-loaded image component that only loads when visible
+function LazyCharacterIcon({ character }: { character: { name: string; url: string } }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (!imgRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { rootMargin: "50px" } // Start loading 50px before visible
+    );
+
+    observer.observe(imgRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <img
+      ref={imgRef}
+      src={isVisible ? character.url : undefined}
+      alt={character.name}
+      className="w-6 h-6 object-contain flex-shrink-0"
+      loading="lazy"
+      onError={(e) => {
+        (e.target as HTMLImageElement).style.display = "none";
+      }}
+    />
+  );
 }
 
 export function CharacterIconSelector({ boardId, initialValue, column, placeholder, compact = false }: Props) {
@@ -34,12 +77,29 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch character icons from Supabase storage via API route
+  // Fetch character icons from Supabase storage via API route with caching
   useEffect(() => {
     async function fetchCharacters() {
       try {
         setLoading(true);
         setError(null);
+        
+        // Check cache first
+        try {
+          const cached = localStorage.getItem(CHARACTERS_CACHE_KEY);
+          if (cached) {
+            const { data, timestamp } = JSON.parse(cached);
+            const now = Date.now();
+            if (now - timestamp < CHARACTERS_CACHE_EXPIRY) {
+              console.log("Using cached characters:", data.length);
+              setCharacters(data);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (cacheError) {
+          // Ignore cache errors
+        }
         
         // Fetch from API route (server-side has better permissions)
         const response = await fetch("/api/characters");
@@ -55,6 +115,16 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
         if (data.characters && data.characters.length > 0) {
           console.log("Found characters:", data.characters.length);
           setCharacters(data.characters);
+          
+          // Cache the result
+          try {
+            localStorage.setItem(CHARACTERS_CACHE_KEY, JSON.stringify({
+              data: data.characters,
+              timestamp: Date.now(),
+            }));
+          } catch (cacheError) {
+            // Ignore cache errors
+          }
         } else {
           console.log("No character files found");
           setError("No character icons found in storage");
@@ -156,6 +226,7 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
               src={selectedIcon}
               alt={selectedCharacterName}
               className="w-6 h-6 object-contain"
+              loading="lazy"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = "none";
               }}
@@ -208,14 +279,7 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
                           : "hover:bg-black/5"
                       }`}
                     >
-                      <img
-                        src={character.url}
-                        alt={character.name}
-                        className="w-6 h-6 object-contain flex-shrink-0"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
+                      <LazyCharacterIcon character={character} />
                       <span className="truncate">{character.name}</span>
                     </button>
                   ))}
@@ -300,15 +364,7 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
                           : "hover:bg-black/5"
                       }`}
                     >
-                      <img
-                        src={character.url}
-                        alt={character.name}
-                        className="w-6 h-6 object-contain flex-shrink-0"
-                        onError={(e) => {
-                          // Hide broken images
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
+                      <LazyCharacterIcon character={character} />
                       <span className="truncate">{character.name}</span>
                     </button>
                   ))}
@@ -336,6 +392,7 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
             src={selectedIcon}
             alt="Selected character"
             className="w-8 h-8 object-contain border border-black/10 rounded"
+            loading="lazy"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
             }}
