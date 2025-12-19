@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
 import { BoardNameEditor } from "@/components/BoardNameEditor";
@@ -91,6 +92,35 @@ async function loadSharedBoard(token: string) {
   }
 
   return { board };
+}
+
+export async function generateMetadata(
+  props: { params: Promise<{ token: string }> }
+): Promise<Metadata> {
+  const { token } = await props.params;
+  const { board } = await loadSharedBoard(token);
+  
+  if (!board) {
+    return {
+      title: "Scoreboard Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const boardName = board.name || "Scoreboard Controls";
+  const description = `Control ${boardName} - Edit your live scoreboard overlay on Scoreboardtools`;
+
+  return {
+    title: `${boardName} - Controls`,
+    description,
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
 }
 
 export default async function SharedControlsPage(props: { params: Promise<{ token: string }> }) {

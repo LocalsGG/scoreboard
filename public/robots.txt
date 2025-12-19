@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /auth
+Disallow: /scoreboard/
+Disallow: /share-controls/
+Allow: /share/
+
+# Update the sitemap URL below with your actual domain
+Sitemap: /sitemap.xml

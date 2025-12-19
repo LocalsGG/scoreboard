@@ -13,7 +13,7 @@ const getOBSOverlayExamples = () => {
     {
       title: "Live overlay in OBS",
       description:
-        "Drop the Scoreboard.to link straight into OBS and the overlay updates the second you change the score.",
+        "Drop the Scoreboardtools link straight into OBS and the overlay updates the second you change the score.",
       src: `${baseUrl}/gif1.gif`,
     },
     {
@@ -37,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = await getSiteUrl();
   
   return {
-    title: "Live Scoreboard Overlays | Stream The Score! | Scoreboard.to",
+    title: "Live Scoreboard Overlays | Stream The Score!",
     description:
       "Live scoreboard overlays for esports streaming. Add to any streaming solution—OBS, Streamlabs, vMix, Wirecast, and more. Easily share and update your scoreboard in real time. Perfect for esports tournaments and live streaming.",
     keywords: [
@@ -53,21 +53,22 @@ export async function generateMetadata(): Promise<Metadata> {
       "Streamlabs overlay",
       "real-time scoreboard",
       "free scoreboard",
+      "scoreboard tools",
     ],
     alternates: {
       canonical: siteUrl || undefined,
     },
     openGraph: {
-      title: "Live Scoreboard Overlays | Stream The Score!",
+      title: "Live Scoreboard Overlays | Stream The Score! | Scoreboardtools",
       description:
         "Live scoreboard overlays for esports streaming. Add to any streaming solution and easily share and update your scoreboard in real time.",
       type: "website",
-      siteName: "Scoreboard.to",
+      siteName: "Scoreboardtools",
       url: siteUrl || undefined,
     },
     twitter: {
       card: "summary_large_image",
-      title: "Live Scoreboard Overlays | Stream The Score!",
+      title: "Live Scoreboard Overlays | Stream The Score! | Scoreboardtools",
       description:
         "Live scoreboard overlays for esports streaming. Works with any streaming solution—OBS, Streamlabs, vMix, Wirecast, and more.",
     },
@@ -106,7 +107,7 @@ export default async function Home() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "Scoreboard.to - Live Scoreboard Overlays",
+    name: "Scoreboardtools - Live Scoreboard Overlays",
     applicationCategory: "MultimediaApplication",
     operatingSystem: "Web Browser",
     offers: {
@@ -194,7 +195,7 @@ export default async function Home() {
                 Works with any streaming solution
               </h2>
               <p className="text-sm sm:text-base lg:text-lg text-zinc-700 px-2">
-                Add Scoreboard.to to OBS, Streamlabs, vMix, Wirecast, or any streaming platform that supports browser sources. Every overlay is a single URL you can drag, resize, and brand just like any other scene. Easily share your scoreboard link and update scores in real time from any device.
+                Add Scoreboardtools to OBS, Streamlabs, vMix, Wirecast, or any streaming platform that supports browser sources. Every overlay is a single URL you can drag, resize, and brand just like any other scene. Easily share your scoreboard link and update scores in real time from any device.
               </p>
             </div>
             <div className="grid gap-4 sm:gap-6 text-left grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">

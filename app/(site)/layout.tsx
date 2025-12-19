@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { OAuthCallbackHandler } from "@/components/OAuthCallbackHandler";
 
 export const metadata: Metadata = {
-  title: "Scoreboard",
-  description: "Simple scoreboards and dashboards.",
+  title: {
+    default: "Scoreboardtools - Live Scoreboard Overlays for Streaming",
+    template: "%s | Scoreboardtools",
+  },
+  description: "Create live scoreboard overlays for esports streaming. Works with OBS, Streamlabs, vMix, Wirecast, and more. Real-time score updates, no installs required.",
 };
 
 export default function SiteLayout({
@@ -26,6 +30,16 @@ export default function SiteLayout({
           <span className="text-black">© 2025 LOCALS.GG</span>
           <p className="text-sm text-zinc-600">
             Modern tools for real-world gaming events and communities.
+          </p>
+          <p className="text-sm text-zinc-600">
+            <Link
+              href="https://discord.gg/vS6gQZyNgT"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-black hover:underline"
+            >
+              Let us know what features we should add!
+            </Link>
           </p>
         </div>
       </footer>

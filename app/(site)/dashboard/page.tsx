@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -14,6 +15,15 @@ import { BoardLimitBanner } from "@/components/BoardLimitBanner";
 import type { ScoreboardRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Manage your scoreboards. Create, edit, and organize your live scoreboard overlays for streaming.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 const deleteBoard = async (boardId: string) => {
   "use server";

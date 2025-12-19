@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -82,6 +83,44 @@ async function loadSharedBoard(token: string) {
   }
 
   return { board };
+}
+
+export async function generateMetadata(
+  props: { params: Promise<{ token: string }> }
+): Promise<Metadata> {
+  const { token } = await props.params;
+  const { board } = await loadSharedBoard(token);
+  
+  if (!board) {
+    return {
+      title: "Scoreboard Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const boardName = board.name || "Live Scoreboard";
+  const description = board.scoreboard_subtitle 
+    ? `${boardName} - ${board.scoreboard_subtitle} | Live scoreboard overlay on Scoreboardtools`
+    : `${boardName} - Live scoreboard overlay on Scoreboardtools`;
+
+  return {
+    title: boardName,
+    description,
+    openGraph: {
+      title: boardName,
+      description,
+      type: "website",
+      siteName: "Scoreboardtools",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: boardName,
+      description,
+    },
+  };
 }
 
 export default async function SharedScoreboardPage(props: { params: Promise<{ token: string }> }) {

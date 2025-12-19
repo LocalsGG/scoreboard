@@ -42,7 +42,50 @@ export async function getOrCreateCustomerId(
     }
 
     if (profile?.stripe_customer_id) {
-      return profile.stripe_customer_id
+      // Verify the customer actually exists in Stripe
+      // It might have been deleted or belong to a different Stripe account/environment
+      try {
+        const existingCustomer = await stripe.customers.retrieve(profile.stripe_customer_id)
+        
+        // If customer exists and is not deleted, return it
+        if (existingCustomer && !existingCustomer.deleted) {
+          return profile.stripe_customer_id
+        }
+        
+        // Customer was deleted, log and continue to create a new one
+        console.warn('Stored Stripe customer was deleted, creating new one:', {
+          userId,
+          deletedCustomerId: profile.stripe_customer_id,
+        })
+      } catch (error) {
+        // Customer doesn't exist (404) or other error
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        const stripeError = error as { type?: string; code?: string; message?: string }
+        
+        // If it's a "No such customer" error, create a new one
+        if (stripeError.code === 'resource_missing' || errorMessage.includes('No such customer')) {
+          console.warn('Stored Stripe customer does not exist, creating new one:', {
+            userId,
+            invalidCustomerId: profile.stripe_customer_id,
+            error: errorMessage,
+          })
+        } else {
+          // Some other error occurred, log it but still try to create a new customer
+          console.error('Error verifying Stripe customer, will create new one:', {
+            userId,
+            customerId: profile.stripe_customer_id,
+            error: errorMessage,
+            stripeErrorCode: stripeError.code,
+          })
+        }
+      }
+      
+      // Clear the invalid customer ID from the database
+      // We'll update it with the new customer ID after creation
+      await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: null })
+        .eq('id', userId)
     }
 
     // Create new Stripe customer

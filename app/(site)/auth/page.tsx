@@ -1,8 +1,18 @@
+import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/AuthForm";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Sign In",
+  description: "Sign in to Scoreboardtools to create and manage your live scoreboard overlays for streaming.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AuthPage({
   searchParams,

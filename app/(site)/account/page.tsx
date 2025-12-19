@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -6,6 +7,15 @@ import { syncSubscriptionFromCheckoutSessionId } from "@/lib/stripe/subscription
 import { formatDate } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Account Settings",
+  description: "Manage your Scoreboardtools account settings, subscription, and profile information.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AccountPage({
   searchParams,

@@ -56,3 +56,4 @@ export function GameTypeIndicator({ boardId, initialType }: Props) {
     </div>
   );
 }
+

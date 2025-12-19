@@ -20,13 +20,13 @@ export async function Navbar() {
       >
         <Image
           src={`${getSupabaseStorageUrl()}/logo.svg`}
-          alt="Scoreboard logo"
+          alt="Scoreboardtools logo"
           width={40}
           height={40}
           className="h-10 w-10 transition-transform duration-150 group-hover:scale-105"
         />
         <span className="leading-none">
-          Scoreboard
+          Scoreboardtools
           <span className="hidden sm:block text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500">
             Live overlays
           </span>

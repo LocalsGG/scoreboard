@@ -1,6 +1,16 @@
+import { Metadata } from "next";
 import { PasswordUpdate } from "@/components/PasswordUpdate";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Update Password",
+  description: "Update your Scoreboardtools account password securely.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function UpdatePasswordPage() {
   return (

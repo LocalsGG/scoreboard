@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -9,6 +10,15 @@ import { getSupabaseStorageUrl, GAME_CONFIGS } from "@/lib/assets";
 import type { ScoreboardType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Create New Scoreboard",
+  description: "Create a new live scoreboard overlay for streaming. Choose from Melee, Ultimate, Guilty Gear Strive, or Generic templates.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 type Template = {
   slug: string;

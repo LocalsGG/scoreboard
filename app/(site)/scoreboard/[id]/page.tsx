@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
@@ -152,6 +153,37 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   board.share_token = shareToken;
 
   return { board, ownerName, hasPaidSubscription };
+}
+
+export async function generateMetadata(
+  props: { params: Promise<{ id: string }> }
+): Promise<Metadata> {
+  const { id } = await props.params;
+  const { board } = await loadScoreboard(id);
+  
+  if (!board) {
+    return {
+      title: "Scoreboard Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const boardName = board.name || "Untitled Scoreboard";
+  const description = board.scoreboard_subtitle 
+    ? `${boardName} - ${board.scoreboard_subtitle} | Edit your live scoreboard overlay on Scoreboardtools`
+    : `Edit ${boardName} - Live scoreboard overlay editor on Scoreboardtools`;
+
+  return {
+    title: boardName,
+    description,
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
 }
 
 async function generateShareToken(formData: FormData) {
