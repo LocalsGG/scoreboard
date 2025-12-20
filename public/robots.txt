@@ -8,3 +8,4 @@ Allow: /share/
 
 # Update the sitemap URL below with your actual domain
 Sitemap: /sitemap.xml
+

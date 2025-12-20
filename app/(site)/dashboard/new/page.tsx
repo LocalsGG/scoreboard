@@ -8,6 +8,8 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ensureUserExists, getUserSubscription, getBoardLimit } from "@/lib/users";
 import { getSupabaseStorageUrl, GAME_CONFIGS } from "@/lib/assets";
 import type { ScoreboardType } from "@/lib/types";
+import { CreateBoardButton } from "@/components/CreateBoardButton";
+import { CreateBoardFormWrapper } from "@/components/CreateBoardFormWrapper";
 
 export const dynamic = "force-dynamic";
 
@@ -80,13 +82,17 @@ async function createBoard(formData: FormData) {
 
   const userId = session?.user?.id;
   const userEmail = session?.user?.email;
-  if (!userId || !userEmail) {
-    throw new Error("You must be signed in to create boards");
+  
+  // Allow anonymous users (users with session but no email) to create boards
+  if (!userId) {
+    // Redirect to auth page to sign in or create anonymous session
+    redirect("/auth?redirect=/dashboard/new");
   }
 
   // Ensure user exists in public.profiles table before creating scoreboard
   // This handles cases where the user exists in auth.users but not in public.profiles
-  const userCheck = await ensureUserExists(supabase, userId, userEmail);
+  // Allow null email for anonymous users
+  const userCheck = await ensureUserExists(supabase, userId, userEmail || null);
   if (!userCheck.success) {
     throw new Error(`Failed to ensure user exists: ${userCheck.error}`);
   }
@@ -147,30 +153,22 @@ async function createBoard(formData: FormData) {
 }
 
 export default async function NewScoreboardPage() {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  const userId = session?.user?.id;
-  const userEmail = session?.user?.email;
-  if (!userId || !userEmail) {
-    redirect("/auth");
-  }
+  // Allow unauthenticated users to access this page
+  // They will be prompted to sign in (or create anonymous session) when creating a board
 
   return (
     <div className="flex min-h-full justify-center px-6 py-16 font-sans">
       <main className="w-full max-w-5xl space-y-10 animate-fade-in">
         <div className="flex justify-start">
           <Link
-            href="/dashboard"
+            href="/"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 opacity-70 hover:opacity-100 active:scale-95"
-            aria-label="Back to dashboard"
+            aria-label="Back to home"
           >
             <span aria-hidden="true" className="text-lg leading-none">
               &larr;
             </span>
-            <span>Back to dashboard</span>
+            <span>Back to home</span>
           </Link>
         </div>
 
@@ -181,36 +179,20 @@ export default async function NewScoreboardPage() {
               Choose the game you want to make a scoreboard for. If your game isn&apos;t listed, just pick the generic option.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {getGameTemplates().map((template) => (
-              <form key={template.slug} action={createBoard} className="h-full">
-                <input type="hidden" name="name" value={`${template.name} Scoreboard`} />
-                <input type="hidden" name="scoreboard_type" value={template.slug} />
-                <button
-                  type="submit"
-                  className="group flex h-full w-full flex-col justify-between rounded-xl border border-zinc-200 bg-white p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] cursor-pointer"
-                >
-                  <div className="flex items-center gap-4">
-                    <Image
-                      src={template.icon}
-                      alt={`${template.name} icon`}
-                      width={32}
-                      height={32}
-                      className="h-8 w-8"
-                      unoptimized
-                    />
-                    <h3 className="text-lg font-semibold text-black">
-                      {template.name}
-                    </h3>
-                  </div>
-                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-black transition group-hover:translate-x-0.5">
-                    Start with this
-                    <span aria-hidden>→</span>
-                  </span>
-                </button>
-              </form>
-            ))}
-          </div>
+          <CreateBoardFormWrapper>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {getGameTemplates().map((template) => (
+                <form key={template.slug} action={createBoard} className="h-full">
+                  <input type="hidden" name="name" value={`${template.name} Scoreboard`} />
+                  <input type="hidden" name="scoreboard_type" value={template.slug} />
+                  <CreateBoardButton
+                    templateIcon={template.icon}
+                    templateName={template.name}
+                  />
+                </form>
+              ))}
+            </div>
+          </CreateBoardFormWrapper>
         </section>
       </main>
     </div>

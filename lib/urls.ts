@@ -73,25 +73,10 @@ export async function getSiteUrl(): Promise<string> {
 }
 
 /**
- * Gets the site URL synchronously (for client components only).
- * This should only be used in client components where window is available.
+ * Normalizes a base URL string, ensuring it has a protocol and returns the origin.
+ * Used internally by URL utility functions.
  */
-export function getSiteUrlSync(): string {
-  // First, check if NEXT_PUBLIC_SITE_URL is set
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL
-  if (envUrl) {
-    return envUrl.replace(/\/$/, '') // Remove trailing slash
-  }
-
-  // For client components, use window.location.origin
-  if (typeof window !== 'undefined') {
-    return window.location.origin
-  }
-
-  return ''
-}
-
-function normalizeBaseUrl(url: string | null | undefined, fallbackOrigin: string): string {
+export function normalizeBaseUrl(url: string | null | undefined, fallbackOrigin: string): string {
   if (!url) {
     return fallbackOrigin
   }

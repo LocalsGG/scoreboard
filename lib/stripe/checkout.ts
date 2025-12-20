@@ -1,6 +1,7 @@
 import { getStripeClient } from './client'
 import { validatePriceId, getPlanTypeFromPriceId } from './config'
 import { getOrCreateCustomerId } from './customers'
+import { normalizeBaseUrl } from '@/lib/urls'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 export interface CreateCheckoutSessionParams {
@@ -149,24 +150,11 @@ export async function createCheckoutSession(
   return { url: checkoutSession.url }
 }
 
-function normalizeBaseUrl(url: string | null | undefined, fallbackOrigin: string): string {
-  if (!url) {
-    return fallbackOrigin
-  }
-
-  const trimmed = url.trim().replace(/\/$/, '')
-  const hasProtocol = /^https?:\/\//i.test(trimmed)
-  const withProtocol = hasProtocol
-    ? trimmed
-    : `${process.env.NODE_ENV === 'development' ? 'http://' : 'https://'}${trimmed}`
-
-  try {
-    return new URL(withProtocol).origin
-  } catch {
-    return fallbackOrigin
-  }
-}
-
+/**
+ * Gets the base URL from a Request object (for API routes).
+ * This function prioritizes the actual request origin over NEXT_PUBLIC_SITE_URL
+ * to ensure dev/preview servers work correctly.
+ */
 export async function getBaseUrl(request: Request): Promise<string> {
   const { origin } = new URL(request.url)
   const forwardedHost = request.headers.get('x-forwarded-host')

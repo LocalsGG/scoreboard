@@ -15,11 +15,13 @@ interface AuthFormProps {
   redirectTo?: string
   plan?: string
   isAnnual?: boolean
+  finalRedirectTo?: string // The actual URL to redirect to after checkout (when redirectTo is 'pricing')
 }
 
 function getPricingCheckoutRedirectUrl(params: {
   plan: 'standard' | 'pro' | 'lifetime'
   isAnnual?: boolean
+  finalRedirectTo?: string
 }): string {
   const searchParams = new URLSearchParams({
     checkout: 'true',
@@ -28,10 +30,14 @@ function getPricingCheckoutRedirectUrl(params: {
   if (params.plan !== 'lifetime' && params.isAnnual) {
     searchParams.set('isAnnual', 'true')
   }
+  // Preserve the final redirect URL if provided
+  if (params.finalRedirectTo) {
+    searchParams.set('redirect', params.finalRedirectTo)
+  }
   return `/pricing?${searchParams.toString()}`
 }
 
-export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: AuthFormProps) {
+export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual, finalRedirectTo }: AuthFormProps) {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -58,16 +64,24 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
 
   useEffect(() => {
     let isMounted = true
+    let hasRedirected = false
+    
     void supabase.auth.getSession().then(({ data }) => {
-      if (!isMounted) return
+      if (!isMounted || hasRedirected) return
       const hasSession = !!data.session
       const isAnonymous = hasSession && !data.session?.user?.email
-      if (hasSession && !isAnonymous && !isConverting) {
+      
+      // Only redirect if user has email (not anonymous) and not converting
+      if (hasSession && !isAnonymous && !isConverting && data.session?.user?.email) {
+        hasRedirected = true
         if (redirectTo === 'pricing' && plan && (plan === 'standard' || plan === 'pro' || plan === 'lifetime')) {
           // Redirect back to pricing with plan info to trigger checkout
-          const params = new URLSearchParams({ plan, ...(plan !== 'lifetime' && isAnnual && { isAnnual: 'true' }) })
-          router.replace(`/pricing?checkout=true&${params.toString()}`)
-        } else {
+          router.replace(getPricingCheckoutRedirectUrl({ plan, isAnnual, finalRedirectTo }))
+        } else if (redirectTo && redirectTo.startsWith('/')) {
+          // If redirectTo is a URL path, redirect there
+          router.replace(redirectTo)
+        } else if (!redirectTo) {
+          // Only redirect to dashboard if no redirectTo is specified
           router.replace('/dashboard')
         }
       }
@@ -76,12 +90,21 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!isMounted || hasRedirected) return
       const hasSession = !!session
-      if (hasSession && session?.user?.email) {
+      const isAnonymous = hasSession && !session?.user?.email
+      
+      // Only redirect if user has email (not anonymous) and not converting
+      if (hasSession && !isAnonymous && !isConverting && session?.user?.email) {
+        hasRedirected = true
         if (redirectTo === 'pricing' && plan && (plan === 'standard' || plan === 'pro' || plan === 'lifetime')) {
           // Redirect back to pricing to trigger checkout (single-source)
-          router.replace(getPricingCheckoutRedirectUrl({ plan, isAnnual }))
-        } else {
+          router.replace(getPricingCheckoutRedirectUrl({ plan, isAnnual, finalRedirectTo }))
+        } else if (redirectTo && redirectTo.startsWith('/')) {
+          // If redirectTo is a URL path, redirect there
+          router.replace(redirectTo)
+        } else if (!redirectTo) {
+          // Only redirect to dashboard if no redirectTo is specified
           router.replace('/dashboard')
         }
       }
@@ -91,7 +114,7 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
       isMounted = false
       subscription.unsubscribe()
     }
-  }, [supabase, router, isConverting, redirectTo, plan, isAnnual])
+  }, [supabase, router, isConverting, redirectTo, plan, isAnnual, finalRedirectTo])
 
   async function handleSubmit() {
     if (view !== 'form') return
@@ -133,7 +156,7 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
     
     // If redirecting to checkout, redirect back to pricing (single-source)
     if (redirectTo === 'pricing' && plan && (plan === 'standard' || plan === 'pro' || plan === 'lifetime')) {
-      router.replace(getPricingCheckoutRedirectUrl({ plan, isAnnual }))
+      router.replace(getPricingCheckoutRedirectUrl({ plan, isAnnual, finalRedirectTo }))
     } else {
       router.push('/dashboard')
     }
@@ -185,6 +208,7 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual }: A
         redirect: 'pricing',
         plan,
         ...(plan !== 'lifetime' && isAnnual && { isAnnual: 'true' }),
+        ...(finalRedirectTo && { redirectTo: finalRedirectTo }),
       })
       finalRedirect = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback?${params.toString()}` : undefined
     }

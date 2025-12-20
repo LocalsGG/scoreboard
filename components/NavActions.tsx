@@ -110,7 +110,7 @@ export function NavActions({ email }: NavActionsProps) {
   if (!sessionEmail) {
     return (
       <Link
-        href="/auth"
+        href="/dashboard/new"
         className="inline-flex items-center gap-1.5 sm:gap-2 rounded-md bg-gradient-to-r from-black via-black to-zinc-800 px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base font-semibold text-white shadow-lg shadow-black/15 transition-transform duration-150 hover:-translate-y-0.5 active:scale-95"
       >
         <span>Get Started</span>

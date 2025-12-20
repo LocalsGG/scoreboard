@@ -57,15 +57,23 @@ const deleteBoard = async (boardId: string) => {
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
   
-  // Get the session - code exchange is handled by the callback route
+  // Get the user - use getUser() instead of getSession() for security
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const userId = session?.user?.id;
-  const userEmail = session?.user?.email;
-  if (!userId || !userEmail) {
+  const userId = user?.id;
+  const userEmail = user?.email;
+  const isAnonymous = userId && !userEmail; // Guest user (has session but no email)
+  
+  // Redirect to auth only if no user at all, or if anonymous user (they should use scoreboard pages directly)
+  if (!userId) {
     redirect("/auth");
+  }
+  
+  // For anonymous users, redirect them to home or allow them to view (they can't manage boards from dashboard)
+  if (isAnonymous) {
+    redirect("/");
   }
 
 

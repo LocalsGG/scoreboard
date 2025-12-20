@@ -17,22 +17,59 @@ export function PricingPageClient() {
   const hasAutoCheckoutFiredRef = useRef(false)
   const isCheckoutInFlightRef = useRef(false)
 
-  // Check authentication status
+  // Check authentication status and handle redirect
   useEffect(() => {
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession()
       setIsAuthenticated(!!session?.user)
+      
+      // If user is authenticated and there's a redirect param (but not checkout), redirect them
+      if (session?.user) {
+        const params = new URLSearchParams(window.location.search)
+        const redirectTo = params.get('redirect')
+        const shouldCheckout = params.get('checkout') === 'true'
+        
+        // Only redirect if not in checkout flow and redirect param exists
+        if (redirectTo && !shouldCheckout) {
+          // Clean up the redirect param
+          const newUrl = new URL(window.location.href)
+          newUrl.searchParams.delete('redirect')
+          window.history.replaceState({}, '', newUrl.toString())
+          
+          // Redirect to the original page
+          router.push(redirectTo)
+          return
+        }
+      }
     }
     checkAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session?.user)
+      
+      // If user just authenticated and there's a redirect param, redirect them
+      if (session?.user) {
+        const params = new URLSearchParams(window.location.search)
+        const redirectTo = params.get('redirect')
+        const shouldCheckout = params.get('checkout') === 'true'
+        
+        // Only redirect if not in checkout flow and redirect param exists
+        if (redirectTo && !shouldCheckout) {
+          // Clean up the redirect param
+          const newUrl = new URL(window.location.href)
+          newUrl.searchParams.delete('redirect')
+          window.history.replaceState({}, '', newUrl.toString())
+          
+          // Redirect to the original page
+          router.push(redirectTo)
+        }
+      }
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [supabase, router])
 
 
   // Check for checkout redirect after OAuth (when coming from callback)
@@ -163,10 +200,20 @@ export function PricingPageClient() {
     // Check if user is authenticated
     if (!isAuthenticated) {
       // Store the plan and pricing info in URL params for redirect after auth
+      const currentParams = new URLSearchParams(window.location.search)
+      const redirectTo = currentParams.get('redirect')
+      
       const params = new URLSearchParams({
         plan,
         ...(plan !== 'lifetime' && { isAnnual: isAnnual.toString() }),
       })
+      
+      // If there's a redirect param, preserve it in the auth redirect
+      // We'll pass it as redirectTo so AuthForm can handle it after checkout
+      if (redirectTo) {
+        params.set('redirectTo', redirectTo)
+      }
+      
       router.push(`/auth?redirect=pricing&${params.toString()}`)
       return
     }

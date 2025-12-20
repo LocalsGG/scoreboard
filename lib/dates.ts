@@ -15,9 +15,3 @@ export function formatDate(
   if (!parsed) return null;
   return parsed.toLocaleDateString(undefined, options);
 }
-
-export function formatDateTime(value: DateInput, options?: Intl.DateTimeFormatOptions) {
-  const parsed = parseDate(value);
-  if (!parsed) return null;
-  return parsed.toLocaleString(undefined, options);
-}

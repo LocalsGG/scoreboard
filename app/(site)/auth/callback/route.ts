@@ -88,6 +88,7 @@ export async function GET(request: Request) {
     }
 
     if (redirect === 'pricing' && plan) {
+      const redirectTo = searchParams.get('redirectTo')
       const params = new URLSearchParams({
         plan,
         ...(plan !== 'lifetime' && isAnnual && { isAnnual }),
@@ -95,6 +96,10 @@ export async function GET(request: Request) {
       const pricingUrl = new URL('/pricing', baseUrl)
       pricingUrl.searchParams.set('checkout', 'true')
       params.forEach((value, key) => pricingUrl.searchParams.set(key, value))
+      // Preserve the final redirect URL if provided
+      if (redirectTo) {
+        pricingUrl.searchParams.set('redirect', redirectTo)
+      }
       return NextResponse.redirect(pricingUrl)
     }
 

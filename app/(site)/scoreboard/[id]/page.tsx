@@ -14,6 +14,7 @@ import { ResetPositionsButton } from "@/components/ResetPositionsButton";
 import { CharacterIconSelector } from "@/components/CharacterIconSelector";
 import { LogoSelector } from "@/components/LogoSelector";
 import { GameTypeIndicator } from "@/components/GameTypeIndicator";
+import { PricingRedirectButton } from "@/components/PricingRedirectButton";
 import { ensureShareToken, createShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getBaseUrlFromRequest } from "@/lib/urls";
@@ -48,6 +49,9 @@ type LoadScoreboardResult = {
   board: Scoreboard | null;
   ownerName: string;
   hasPaidSubscription: boolean;
+  isAuthenticated: boolean;
+  isGuest: boolean; // true if user is anonymous (has session but no email)
+  userId: string | null;
 };
 
 async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
@@ -63,55 +67,61 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   const supabase = await createServerSupabaseClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
   
-  // Handle authentication errors - if user doesn't exist, redirect to auth
-  if (userError) {
-    const errorMsg = userError.message || '';
-    if (errorMsg.includes('does not exist') || errorMsg.includes('JWT')) {
-      redirect("/auth");
-    }
-    throw new Error(errorMsg);
+  // Allow unauthenticated users to view scoreboards
+  const user = userData?.user;
+  const isAuthenticated = !!user;
+  const userId = user?.id || null;
+  const isGuest = isAuthenticated && !user?.email; // Guest = has session but no email
+
+  let ownerName = "you";
+  let hasPaidSubscription = false;
+
+  if (isAuthenticated) {
+    const metadata = (user.user_metadata ?? {}) as Record<string, unknown>;
+    ownerName =
+      (typeof metadata.full_name === "string" && metadata.full_name.trim()) ||
+      (typeof metadata.name === "string" && metadata.name.trim()) ||
+      user.email ||
+      "you";
+
+    // Fetch user subscription status
+    const subscription = await getUserSubscription(supabase, user.id);
+    const planType = subscription?.plan_type || "base";
+    hasPaidSubscription = planType === "pro" || planType === "standard" || planType === "lifetime";
   }
-  const user = userData.user;
-
-  // Require authenticated user with email
-  if (!user || !user.email) {
-    redirect("/auth");
-  }
-
-  const metadata = (user.user_metadata ?? {}) as Record<string, unknown>;
-  const ownerName =
-    (typeof metadata.full_name === "string" && metadata.full_name.trim()) ||
-    (typeof metadata.name === "string" && metadata.name.trim()) ||
-    user.email ||
-    "you";
-
-  // Fetch user subscription status
-  const subscription = await getUserSubscription(supabase, user.id);
-  const planType = subscription?.plan_type || "base";
-  const hasPaidSubscription = planType === "pro" || planType === "standard" || planType === "lifetime";
 
   // Select all columns, but handle element_positions gracefully if it doesn't exist
   let board: Scoreboard | null = null;
   let boardError: Error | null = null;
   
   try {
-    const result = await supabase
+    // If authenticated, filter by owner_id. Otherwise, just get by ID/share_token
+    let query = supabase
       .from("scoreboards")
       .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url, scoreboard_type")
-      .eq(isUuid ? "id" : "share_token", boardId)
-      .eq("owner_id", user.id)
-      .maybeSingle<Scoreboard>();
+      .eq(isUuid ? "id" : "share_token", boardId);
+    
+    // Only filter by owner_id if user is authenticated
+    if (isAuthenticated && userId) {
+      query = query.eq("owner_id", userId);
+    }
+    
+    const result = await query.maybeSingle<Scoreboard>();
     
     if (result.error) {
       const errorMsg = result.error.message || '';
       if (errorMsg.includes("element_positions") || errorMsg.includes("column")) {
         // Try without element_positions and icon columns
-        const resultWithoutPos = await supabase
+        let queryWithoutPos = supabase
           .from("scoreboards")
           .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url, scoreboard_type")
-          .eq(isUuid ? "id" : "share_token", boardId)
-          .eq("owner_id", user.id)
-          .maybeSingle<Omit<Scoreboard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
+          .eq(isUuid ? "id" : "share_token", boardId);
+        
+        if (isAuthenticated && userId) {
+          queryWithoutPos = queryWithoutPos.eq("owner_id", userId);
+        }
+        
+        const resultWithoutPos = await queryWithoutPos.maybeSingle<Omit<Scoreboard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
         
         if (resultWithoutPos.error) {
           boardError = new Error(resultWithoutPos.error.message || 'Unknown error');
@@ -139,20 +149,23 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
   }
 
   if (!board) {
-    return { board: null, ownerName, hasPaidSubscription };
+    return { board: null, ownerName, hasPaidSubscription, isAuthenticated, isGuest, userId };
   }
 
-  // Ensure a share token exists for this board while keeping the logic in one place.
-  const shareToken = await ensureShareToken({
-    supabase,
-    boardId: board.id,
-    ownerId: user.id,
-    existingToken: board.share_token,
-  });
+  // Only ensure share token exists if user is authenticated (not guest) and owns the board
+  // But keep existing token visible for all users (including guests) if it exists
+  if (isAuthenticated && !isGuest && userId && board.owner_id === userId) {
+    const shareToken = await ensureShareToken({
+      supabase,
+      boardId: board.id,
+      ownerId: userId,
+      existingToken: board.share_token,
+    });
+    board.share_token = shareToken;
+  }
+  // Don't hide share token - keep it visible if it exists (for guests to see but not use)
 
-  board.share_token = shareToken;
-
-  return { board, ownerName, hasPaidSubscription };
+  return { board, ownerName, hasPaidSubscription, isAuthenticated, isGuest, userId };
 }
 
 export async function generateMetadata(
@@ -240,7 +253,7 @@ async function generateShareToken(formData: FormData) {
 
 export default async function ScoreboardPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
-  const { board, hasPaidSubscription } = await loadScoreboard(id);
+  const { board, hasPaidSubscription, isAuthenticated, isGuest, userId } = await loadScoreboard(id);
 
   if (!board) {
     return (
@@ -256,19 +269,32 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
             Double-check the link or open it from your dashboard.
           </p>
           <div className="flex justify-center">
-            <Link
-              href="/dashboard"
-              className="rounded-md border border-black/20 px-4 py-2 text-sm font-semibold text-black transition hover:border-black/40 hover:bg-white"
-            >
-              Back to dashboard
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/dashboard"
+                className="rounded-md border border-black/20 px-4 py-2 text-sm font-semibold text-black transition hover:border-black/40 hover:bg-white"
+              >
+                Back to dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/auth"
+                className="rounded-md border border-black/20 px-4 py-2 text-sm font-semibold text-black transition hover:border-black/40 hover:bg-white"
+              >
+                Sign in
+              </Link>
+            )}
           </div>
         </main>
       </div>
     );
   }
 
+  // Only show share URLs if user is authenticated (not guest), has paid subscription, and owns the board
+  const canShare = isAuthenticated && !isGuest && userId && board.owner_id === userId && board.share_token && hasPaidSubscription;
+  
   const baseUrl = await getBaseUrlFromRequest();
+  // Always generate share URLs if board has a token (for display), but only allow use if canShare
   const sharePath = board.share_token ? `/share/${board.share_token}` : null;
   const shareUrl = sharePath
     ? baseUrl
@@ -288,14 +314,25 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
         {/* Header Navigation */}
         <header className="flex items-center gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-black hover:text-zinc-700 transition-colors whitespace-nowrap"
-            >
-              <span aria-hidden="true">←</span>
-              <span className="hidden sm:inline">Back to dashboard</span>
-              <span className="sm:hidden">Back</span>
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-black hover:text-zinc-700 transition-colors whitespace-nowrap"
+              >
+                <span aria-hidden="true">←</span>
+                <span className="hidden sm:inline">Back to dashboard</span>
+                <span className="sm:hidden">Back</span>
+              </Link>
+            ) : (
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-black hover:text-zinc-700 transition-colors whitespace-nowrap"
+              >
+                <span aria-hidden="true">←</span>
+                <span className="hidden sm:inline">Back to home</span>
+                <span className="sm:hidden">Back</span>
+              </Link>
+            )}
             <div className="h-4 w-px bg-black/20" />
             <UndoRedoControlsWrapper />
             <div className="h-4 w-px bg-black/20" />
@@ -306,35 +343,60 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
           <div className="flex-1 min-w-0">
             {shareUrl ? (
               <div className="relative w-full">
+                {/* Always show the input field with the share URL */}
                 <input
                   readOnly
                   value={shareUrl}
                   className="w-full truncate rounded-lg border border-black/15 bg-white px-3 py-1.5 pr-40 text-xs font-semibold text-black shadow-inner shadow-black/5"
                 />
-                <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-1">
-                  <CopyButton
-                    value={shareUrl}
-                    label="Copy"
-                    className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                  />
-                  <a
-                    href={shareUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                    aria-label="Open link in new tab"
-                    title="Go Live"
-                  >
-                    Go Live
-                  </a>
-                  {controlsShareUrl && (
+                {/* Buttons overlay - redirect to pricing for guests, normal behavior for authenticated paid users */}
+                <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-1 z-10">
+                  {canShare ? (
                     <>
-                      <div className="h-4 w-px bg-black/20 mx-0.5" />
                       <CopyButton
-                        value={controlsShareUrl}
-                        label="Share Scorekeeping"
-                        maintainSize={true}
+                        value={shareUrl}
+                        label="Copy"
                         className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                      />
+                      <a
+                        href={shareUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                        aria-label="Open link in new tab"
+                        title="Go Live"
+                      >
+                        Go Live
+                      </a>
+                      {controlsShareUrl && (
+                        <>
+                          <div className="h-4 w-px bg-black/20 mx-0.5" />
+                          <CopyButton
+                            value={controlsShareUrl}
+                            label="Share Scorekeeping"
+                            maintainSize={true}
+                            className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                          />
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <PricingRedirectButton
+                        label="Copy"
+                        redirectPath={`/scoreboard/${id}`}
+                        className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                      />
+                      <PricingRedirectButton
+                        label="Go Live"
+                        redirectPath={`/scoreboard/${id}`}
+                        className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                      />
+                      <div className="h-4 w-px bg-black/20 mx-0.5" />
+                      <PricingRedirectButton
+                        label="Share Scorekeeping"
+                        redirectPath={`/scoreboard/${id}`}
+                        className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
                       />
                     </>
                   )}
@@ -342,26 +404,54 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <p className="text-xs font-medium text-black whitespace-nowrap">
-                  Generate token
-                </p>
-                {hasPaidSubscription ? (
-                  <form action={generateShareToken} className="flex-shrink-0">
-                    <input type="hidden" name="boardId" value={board.id} />
-                    <button
-                      type="submit"
-                      className="inline-flex items-center justify-center rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                    >
-                      Generate
-                    </button>
-                  </form>
+                {isAuthenticated && !isGuest ? (
+                  <>
+                    <p className="text-xs font-medium text-black whitespace-nowrap">
+                      Generate token
+                    </p>
+                    {hasPaidSubscription ? (
+                      <form action={generateShareToken} className="flex-shrink-0">
+                        <input type="hidden" name="boardId" value={board.id} />
+                        <button
+                          type="submit"
+                          className="inline-flex items-center justify-center rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                        >
+                          Generate
+                        </button>
+                      </form>
+                    ) : (
+                      <Link
+                        href="/pricing"
+                        className="inline-flex items-center justify-center rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
+                      >
+                        Generate
+                      </Link>
+                    )}
+                  </>
                 ) : (
-                  <Link
-                    href="/pricing"
-                    className="inline-flex items-center justify-center rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                  >
-                    Generate
-                  </Link>
+                  // Show pricing buttons for guests and unauthenticated users
+                  <div className="flex items-center gap-2 w-full">
+                    <Link
+                      href={`/pricing?redirect=${encodeURIComponent(`/scoreboard/${id}`)}`}
+                      className="inline-flex items-center justify-center gap-2 rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                    >
+                      Go Live
+                    </Link>
+                    <div className="h-4 w-px bg-black/20" />
+                    <Link
+                      href={`/pricing?redirect=${encodeURIComponent(`/scoreboard/${id}`)}`}
+                      className="inline-flex items-center justify-center gap-2 rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                    >
+                      Copy
+                    </Link>
+                    <div className="h-4 w-px bg-black/20" />
+                    <Link
+                      href={`/pricing?redirect=${encodeURIComponent(`/scoreboard/${id}`)}`}
+                      className="inline-flex items-center justify-center gap-2 rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                    >
+                      Share Scorekeeping
+                    </Link>
+                  </div>
                 )}
               </div>
             )}

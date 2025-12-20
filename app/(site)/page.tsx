@@ -14,19 +14,19 @@ const getOBSOverlayExamples = () => {
       title: "Live overlay in OBS",
       description:
         "Drop the Scoreboardtools link straight into OBS and the overlay updates the second you change the score.",
-      src: `${baseUrl}/gif1.gif`,
+      src: `${baseUrl}/1.webp`,
     },
     {
       title: "Add language + context",
       description:
         "Customize labels, languages, and team details from any browser so viewers always know what they are watching.",
-      src: `${baseUrl}/gif2.gif`,
+      src: `${baseUrl}/2.webp`,
     },
     {
       title: "Brand it with your logo",
       description:
         "Layer in team or sponsor logos right inside OBS while keeping the overlay synced to the live game.",
-      src: `${baseUrl}/gif3.gif`,
+      src: `${baseUrl}/3.webp`,
     },
   ];
 };
@@ -89,18 +89,19 @@ export async function generateMetadata(): Promise<Metadata> {
 const splashImagePaddingTop =
   process.env.NEXT_PUBLIC_SPLASH_IMAGE_PADDING_TOP ?? "0px";
 export default async function Home() {
-  let session = null;
+  let user = null;
 
   if (
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   ) {
     const supabase = await createServerSupabaseClient();
-    const sessionResponse = await supabase.auth.getSession();
-    session = sessionResponse.data.session;
+    const userResponse = await supabase.auth.getUser();
+    user = userResponse.data.user;
   }
 
-  if (session) {
+  // Only redirect to dashboard if user has email (authenticated, not anonymous)
+  if (user && user.email) {
     redirect("/dashboard");
   }
 
@@ -176,7 +177,7 @@ export default async function Home() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <Link
-                href="/auth"
+                href="/dashboard/new"
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-black via-black to-zinc-800 px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold uppercase tracking-wide text-white shadow-[0_15px_45px_rgba(12,18,36,0.18)] transition duration-150 hover:-translate-y-0.5 active:scale-95"
               >
                 Create a Scoreboard for free
@@ -222,201 +223,6 @@ export default async function Home() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="w-full rounded-2xl sm:rounded-3xl border border-black/5 bg-white/80 px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 shadow-xl shadow-black/10 backdrop-blur">
-          <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 sm:gap-8 lg:gap-10 text-center">
-            <div className="space-y-2 sm:space-y-3">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-black">
-                Choose Your Plan
-              </h2>
-              <p className="text-sm sm:text-base lg:text-lg text-zinc-700 px-2">
-                Start free, upgrade anytime. All plans include no ads and real-time updates.
-              </p>
-            </div>
-            <div className="grid gap-4 sm:gap-6 lg:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-              {/* Base Tier */}
-              <div className="flex flex-col gap-4 sm:gap-6 rounded-lg border border-zinc-200 bg-white p-4 sm:p-6 lg:p-8">
-                <div className="space-y-2 sm:space-y-3">
-                  <h3 className="text-xl sm:text-2xl font-black text-black">Base</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl sm:text-4xl font-black text-black">Free</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-zinc-600">
-                    Always free
-                  </p>
-                </div>
-                <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Create up to 1 board</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <span className="text-zinc-700">Match your brand with custom colors</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <span className="text-zinc-700">Add team and sponsor logos</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <svg className="text-red-600 mt-0.5 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <span className="text-zinc-700">Invite team members to collaborate</span>
-                  </li>
-                </ul>
-                <Link
-                  href="/auth"
-                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-black px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-                >
-                  Get Started
-                </Link>
-              </div>
-
-              {/* Pro Tier - Center */}
-              <div className="flex flex-col gap-4 sm:gap-6 rounded-lg border-2 border-black bg-black p-4 sm:p-6 lg:p-8 relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-orange-500 text-white text-xs font-bold uppercase">
-                  Popular
-                </div>
-                <div className="space-y-2 sm:space-y-3">
-                  <h3 className="text-xl sm:text-2xl font-black text-white">Pro</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl sm:text-4xl font-black text-white">$40</span>
-                    <span className="text-sm sm:text-base text-zinc-300">/ month</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-zinc-300">
-                    Billed monthly, cancel anytime
-                  </p>
-                </div>
-                <p className="text-xs sm:text-sm text-zinc-300 mb-2">
-                  Everything in Standard, and
-                </p>
-                <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-400 font-bold mt-0.5">✔</span>
-                    <span className="text-white">Create up to 200 scoreboards</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-400 font-bold mt-0.5">✔</span>
-                    <span className="text-white">No ads, ever - clean viewing experience</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-400 font-bold mt-0.5">✔</span>
-                    <span className="text-white">Match your brand with custom colors</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-400 font-bold mt-0.5">✔</span>
-                    <span className="text-white">Add team and sponsor logos</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-400 font-bold mt-0.5">✔</span>
-                    <span className="text-white">Invite team members to collaborate</span>
-                  </li>
-                </ul>
-                <Link
-                  href="/pricing"
-                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-black transition-colors hover:bg-zinc-100"
-                >
-                  Get Started
-                </Link>
-              </div>
-
-              {/* Standard Tier */}
-              <div className="flex flex-col gap-4 sm:gap-6 rounded-lg border border-zinc-200 bg-white p-4 sm:p-6 lg:p-8">
-                <div className="space-y-2 sm:space-y-3">
-                  <h3 className="text-xl sm:text-2xl font-black text-black">Standard</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl sm:text-4xl font-black text-black">$20</span>
-                    <span className="text-sm sm:text-base text-zinc-600">/ month</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-zinc-600">
-                    Billed monthly, cancel anytime
-                  </p>
-                </div>
-                <p className="text-xs sm:text-sm text-zinc-600 mb-2">
-                  Everything in Base, and
-                </p>
-                <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Create up to 20 scoreboards</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">No ads, ever - clean viewing experience</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Match your brand with custom colors</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Add team and sponsor logos</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Invite team members to collaborate</span>
-                  </li>
-                </ul>
-                <Link
-                  href="/pricing"
-                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-black px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-                >
-                  Get Started
-                </Link>
-              </div>
-
-              {/* Enterprise Tier */}
-              <div className="flex flex-col gap-4 sm:gap-6 rounded-lg border border-zinc-200 bg-white p-4 sm:p-6 lg:p-8">
-                <div className="space-y-2 sm:space-y-3">
-                  <h3 className="text-xl sm:text-2xl font-black text-black">Enterprise</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-black">Let&apos;s talk</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-zinc-600">
-                    Custom solutions for your team
-                  </p>
-                </div>
-                <ul className="flex flex-col gap-3 sm:gap-4 text-sm sm:text-base">
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Unlimited scoreboards</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Everything in Pro</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Custom integrations</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">Dedicated support</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-0.5">✔</span>
-                    <span className="text-zinc-700">SLA guarantees</span>
-                  </li>
-                </ul>
-                <Link
-                  href="mailto:contact@locals.gg"
-                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full border-2 border-black bg-white px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-black transition-colors hover:bg-zinc-50"
-                >
-                  Contact Us
-                </Link>
-              </div>
             </div>
           </div>
         </section>
