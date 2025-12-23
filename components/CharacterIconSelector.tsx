@@ -91,7 +91,6 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
             const { data, timestamp } = JSON.parse(cached);
             const now = Date.now();
             if (now - timestamp < CHARACTERS_CACHE_EXPIRY) {
-              console.log("Using cached characters:", data.length);
               setCharacters(data);
               setLoading(false);
               return;
@@ -113,7 +112,6 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
         const data = await response.json();
         
         if (data.characters && data.characters.length > 0) {
-          console.log("Found characters:", data.characters.length);
           setCharacters(data.characters);
           
           // Cache the result
@@ -126,7 +124,6 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
             // Ignore cache errors
           }
         } else {
-          console.log("No character files found");
           setError("No character icons found in storage");
         }
       } catch (err) {

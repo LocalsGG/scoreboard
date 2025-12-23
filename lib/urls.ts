@@ -69,7 +69,8 @@ export async function getSiteUrl(): Promise<string> {
     return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
   }
 
-  return ''
+  // Default to production domain for SEO
+  return 'https://scoreboardtools.com'
 }
 
 /**

@@ -97,7 +97,6 @@ export async function getOrCreateCustomerId(
           supabase_user_id: userId,
         },
       })
-      console.log('Successfully created Stripe customer:', customer.id)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
       const stripeError = error as { type?: string; code?: string; param?: string; message?: string }
@@ -169,12 +168,8 @@ export async function getOrCreateCustomerId(
         // But we still return the customer ID since Stripe customer was created successfully
         // The customer ID will be stored on next attempt or via webhook
       } else {
-        console.log('Successfully upserted Stripe customer ID in profile')
       }
     } else {
-      console.log('Successfully updated Stripe customer ID in profile', {
-        rowsUpdated: updatedRows?.length || count,
-      })
     }
 
     return customer.id

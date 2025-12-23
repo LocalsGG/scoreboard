@@ -105,10 +105,12 @@ export default async function Home() {
     redirect("/dashboard");
   }
 
+  const siteUrl = await getSiteUrl();
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "Scoreboardtools - Live Scoreboard Overlays",
+    url: siteUrl || "https://scoreboardtools.com",
     applicationCategory: "MultimediaApplication",
     operatingSystem: "Web Browser",
     offers: {

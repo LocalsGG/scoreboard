@@ -171,24 +171,6 @@ export function PricingPageClient() {
         : process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY
     }
     
-    // Debug logging - compare with working standard annual
-    if (priceId) {
-      const standardAnnualId = process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL
-      console.log('Price ID lookup:', {
-        plan,
-        isAnnual,
-        priceId,
-        standardAnnualId, // Working example
-        matchesStandardAnnual: priceId === standardAnnualId,
-        allEnvVars: {
-          STANDARD_ANNUAL: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL,
-          STANDARD_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_MONTHLY,
-          PRO_ANNUAL: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL,
-          PRO_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY,
-          LIFETIME: process.env.NEXT_PUBLIC_STRIPE_PRICE_LIFETIME,
-        }
-      })
-    }
     
     return priceId || null
   }
@@ -219,21 +201,6 @@ export function PricingPageClient() {
     }
 
     const priceId = getPriceId(plan)
-    
-    console.log('Attempting checkout:', {
-      plan,
-      isAnnual,
-      priceId,
-      priceIdType: typeof priceId,
-      standardAnnualId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL,
-      allClientEnvVars: {
-        STANDARD_ANNUAL: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_ANNUAL,
-        STANDARD_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD_MONTHLY,
-        PRO_ANNUAL: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL,
-        PRO_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY,
-        LIFETIME: process.env.NEXT_PUBLIC_STRIPE_PRICE_LIFETIME,
-      }
-    })
     
     if (!priceId) {
       console.error('No price ID found for plan:', { plan, isAnnual })
@@ -266,23 +233,12 @@ export function PricingPageClient() {
       const data = await response.json()
 
       if (!response.ok) {
-        // Include debug info in error message if available
         const errorMsg = data.error || 'Failed to create checkout session'
-        const debugInfo = data.debug ? `\n\nDebug info: ${JSON.stringify(data.debug, null, 2)}` : ''
-        const receivedInfo = data.received ? `\n\nReceived price ID: ${data.received}` : ''
-        const validIdsInfo = data.validIds ? `\n\nValid price IDs: ${JSON.stringify(data.validIds, null, 2)}` : ''
-        const workingExample = data.workingExample ? `\n\nWorking example (Standard Annual): ${data.workingExample}` : ''
-        
         console.error('Checkout API error:', {
           status: response.status,
           error: errorMsg,
-          received: data.received,
-          validIds: data.validIds,
-          workingExample: data.workingExample,
-          debug: data.debug,
         })
-        
-        throw new Error(errorMsg + receivedInfo + validIdsInfo + workingExample + debugInfo)
+        throw new Error(errorMsg)
       }
 
       if (data.url) {

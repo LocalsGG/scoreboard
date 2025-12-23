@@ -4,11 +4,10 @@
  */
 export function getSupabaseStorageUrl(): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (supabaseUrl) {
-    return `${supabaseUrl}/storage/v1/object/public/public%20images`;
+  if (!supabaseUrl) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL environment variable is not set');
   }
-  // Fallback for backwards compatibility
-  return "https://xhfowpcbsriitbtxmjob.supabase.co/storage/v1/object/public/public%20images";
+  return `${supabaseUrl}/storage/v1/object/public/public%20images`;
 }
 
 const SUPABASE_PUBLIC_IMAGE_BASE = getSupabaseStorageUrl();
@@ -20,8 +19,6 @@ export const HERO_SCOREBOARD_IMAGES = [
 ];
 
 export const SCOREBOARD_OVERLAY_IMAGE = `${SUPABASE_PUBLIC_IMAGE_BASE}/scoreboard1.svg`;
-
-export const TOURNAMENT_EXAMPLE_IMAGE = `${SUPABASE_PUBLIC_IMAGE_BASE}/tournamentexample.png`;
 
 // Game configuration mapping
 export const GAME_CONFIGS = {
@@ -89,20 +86,3 @@ export function getGameIcon(boardName: string | null): string {
   return `${SUPABASE_PUBLIC_IMAGE_BASE}/${GAME_CONFIGS.generic.icon}`;
 }
 
-/**
- * Checks if the board is a Super Smash Bros game (Melee or Ultimate).
- * Returns true only for Smash Bros games, false for others.
- */
-export function isSmashBrosGame(boardName: string | null): boolean {
-  if (!boardName) {
-    return false;
-  }
-
-  const name = boardName.toLowerCase();
-  
-  // Check if it's melee or ultimate
-  return (
-    GAME_CONFIGS.melee.keywords.some(keyword => name.includes(keyword)) ||
-    GAME_CONFIGS.ultimate.keywords.some(keyword => name.includes(keyword))
-  );
-}

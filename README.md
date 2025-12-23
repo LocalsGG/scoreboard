@@ -144,6 +144,17 @@ Run the SQL migration file `supabase/migrations/create_subscriptions_table.sql` 
 
 The migration file includes all necessary indexes, RLS policies, and triggers.
 
+### Performance and Security Optimizations
+
+Run the SQL migration file `supabase/migrations/fix_rls_performance_and_security.sql` to optimize database performance and security:
+
+- **RLS Performance**: Optimizes Row Level Security policies by using `(select auth.uid())` instead of `auth.uid()` to prevent re-evaluation for each row
+- **Missing Indexes**: Adds indexes on foreign keys and frequently queried columns
+- **Function Security**: Sets `search_path` on all database functions to prevent security vulnerabilities
+- **Policy Consolidation**: Consolidates multiple permissive policies to improve query performance
+
+This migration addresses all Supabase advisor warnings for security and performance.
+
 ## Email/password auth
 
 1) Ensure `.env.local` has your publishable key + URL.

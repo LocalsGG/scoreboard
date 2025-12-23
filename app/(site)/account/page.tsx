@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getUserSubscription } from "@/lib/users";
 import { syncSubscriptionFromCheckoutSessionId } from "@/lib/stripe/subscriptions";
 import { formatDate } from "@/lib/dates";
+import { SubscriptionManagement } from "@/components/SubscriptionManagement";
 
 export const dynamic = "force-dynamic";
 
@@ -190,6 +191,13 @@ export default async function AccountPage({
                 </div>
               )}
             </div>
+          </section>
+        )}
+
+        {!isAnonymous && subscription && subscription.plan_type !== 'base' && (
+          <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm animate-rise">
+            <h2 className="text-2xl font-extrabold text-black">Manage Subscription</h2>
+            <SubscriptionManagement subscription={subscription} />
           </section>
         )}
       </main>

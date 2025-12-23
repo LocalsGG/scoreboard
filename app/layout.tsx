@@ -36,10 +36,14 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  alternates: {
+    canonical: "https://scoreboardtools.com",
+  },
   openGraph: {
     type: "website",
     siteName: "Scoreboardtools",
     locale: "en_US",
+    url: "https://scoreboardtools.com",
   },
   twitter: {
     card: "summary_large_image",

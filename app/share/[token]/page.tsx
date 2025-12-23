@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSiteUrl } from "@/lib/urls";
 import type { ElementPositions } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -101,6 +102,9 @@ export async function generateMetadata(
     };
   }
 
+  const siteUrl = await getSiteUrl() || "https://scoreboardtools.com";
+  const shareUrl = `${siteUrl}/share/${token}`;
+
   const boardName = board.name || "Live Scoreboard";
   const description = board.scoreboard_subtitle 
     ? `${boardName} - ${board.scoreboard_subtitle} | Live scoreboard overlay on Scoreboardtools`
@@ -109,10 +113,14 @@ export async function generateMetadata(
   return {
     title: boardName,
     description,
+    alternates: {
+      canonical: shareUrl,
+    },
     openGraph: {
       title: boardName,
       description,
       type: "website",
+      url: shareUrl,
       siteName: "Scoreboardtools",
     },
     twitter: {

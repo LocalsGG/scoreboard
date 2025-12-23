@@ -11,10 +11,15 @@ export const metadata: Metadata = {
     "scoreboard subscription",
     "esports scoreboard pricing",
   ],
+  alternates: {
+    canonical: "https://scoreboardtools.com/pricing",
+  },
   openGraph: {
     title: "Pricing | Scoreboardtools",
     description: "Choose the plan that fits your needs. Free plan available with up to 1 scoreboard. Upgrade to Standard or Pro for more features.",
     type: "website",
+    url: "https://scoreboardtools.com/pricing",
+    siteName: "Scoreboardtools",
   },
   twitter: {
     card: "summary",
