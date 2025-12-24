@@ -9,7 +9,7 @@ import { usePreviewState } from "./scoreboard-preview/usePreviewState";
 import { usePreviewSubscriptions } from "./scoreboard-preview/usePreviewSubscriptions";
 import type { PreviewState } from "./scoreboard-preview/types";
 
-type Props = ScoreboardPreviewProps & { isLocal?: boolean; isAuthenticated?: boolean };
+type Props = ScoreboardPreviewProps & { isAuthenticated?: boolean };
 
 export function ScoreboardPreview({
   boardId,
@@ -30,7 +30,6 @@ export function ScoreboardPreview({
   initialScoreboardType,
   readOnly = false,
   onUndoRedoReady,
-  isLocal = false,
   isAuthenticated = false,
 }: Props) {
   const [state, setState] = useState<PreviewState>({
@@ -96,7 +95,7 @@ export function ScoreboardPreview({
   // Save positions to database
   const savePositions = useCallback(
     async (newPositions: ElementPositions) => {
-      if (!boardId || readOnly || isLocal) return;
+      if (!boardId || readOnly) return;
 
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);

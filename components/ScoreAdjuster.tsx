@@ -8,13 +8,12 @@ type Props = {
   column: "a_score" | "b_score";
   initialValue: number | null;
   initialPositions?: unknown;
-  isLocal?: boolean;
   isAuthenticated?: boolean;
 };
 
 const DEBOUNCE_MS = 400;
 
-export function ScoreAdjuster({ boardId, column, initialValue, isLocal = false, isAuthenticated = false }: Props) {
+export function ScoreAdjuster({ boardId, column, initialValue, isAuthenticated = false }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [value, setValue] = useState<number>(initialValue ?? 0);
   const [saving, setSaving] = useState(false);
@@ -37,7 +36,7 @@ export function ScoreAdjuster({ boardId, column, initialValue, isLocal = false, 
     const next = Math.max(0, (value ?? 0) + delta);
     setValue(next);
     broadcastLocal(next);
-    if (isLocal || !isAuthenticated) {
+    if (!isAuthenticated) {
       setError(null);
       return;
     }

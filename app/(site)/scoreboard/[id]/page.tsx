@@ -76,14 +76,6 @@ async function loadScoreboard(
   const userId = user?.id || null;
   const isGuest = isAuthenticated && !user?.email; // Guest = has session but no email
 
-  const localFlag = params && typeof params.local === "string" && params.local === "true";
-  const isLocal = localFlag || boardId.startsWith("local-");
-  const getParam = (key: string) => {
-    const value = params?.[key];
-    if (!value) return undefined;
-    return Array.isArray(value) ? value[0] : value;
-  };
-
   let ownerName = "you";
   let hasPaidSubscription = false;
 
@@ -101,30 +93,9 @@ async function loadScoreboard(
     hasPaidSubscription = planType === "pro" || planType === "standard" || planType === "lifetime";
   }
 
-  if (isLocal) {
-    const now = new Date().toISOString();
-    const board: Scoreboard = {
-      id: boardId,
-      name: getParam("name") || "New Scoreboard",
-      scoreboard_subtitle: null,
-      created_at: now,
-      share_token: null,
-      owner_id: null,
-      a_side: "A",
-      b_side: "B",
-      a_score: 0,
-      b_score: 0,
-      updated_at: now,
-      scoreboard_style: null,
-      element_positions: null,
-      title_visible: true,
-      a_side_icon: null,
-      b_side_icon: null,
-      center_text_color: null,
-      custom_logo_url: getParam("customLogoUrl") || null,
-      scoreboard_type: getParam("scoreboard_type") || null,
-    };
-    return { board, ownerName, hasPaidSubscription: false, isAuthenticated, isGuest, userId };
+  // Local boards are no longer supported
+  if (boardId.startsWith("local-")) {
+    return { board: null, ownerName, hasPaidSubscription, isAuthenticated, isGuest, userId };
   }
 
   // Select all columns, but handle element_positions gracefully if it doesn't exist
@@ -202,16 +173,21 @@ async function loadScoreboard(
     }
   }
 
-  // Only ensure share token exists if user is authenticated (not guest) and owns the board
+  // Only ensure share token exists if user is authenticated (not guest), owns the board, and has paid subscription
   // But keep existing token visible for all users (including guests) if it exists
-  if (isAuthenticated && !isGuest && userId && board.owner_id === userId) {
-    const shareToken = await ensureShareToken({
-      supabase,
-      boardId: board.id,
-      ownerId: userId,
-      existingToken: board.share_token,
-    });
-    board.share_token = shareToken;
+  if (isAuthenticated && !isGuest && userId && board.owner_id === userId && hasPaidSubscription) {
+    try {
+      const shareToken = await ensureShareToken({
+        supabase,
+        boardId: board.id,
+        ownerId: userId,
+        existingToken: board.share_token,
+      });
+      board.share_token = shareToken;
+    } catch (error) {
+      console.error("Failed to ensure share token:", error);
+      // Continue without share token if it fails
+    }
   }
   // Don't hide share token - keep it visible if it exists (for guests to see but not use)
 
@@ -348,10 +324,8 @@ export default async function ScoreboardPage(props: {
     );
   }
 
-  const isLocalBoard =
-    board.id.startsWith("local-") || (searchParams && searchParams.local === "true");
   const isOwner = userId && board.owner_id === userId;
-  const canEdit = isLocalBoard || Boolean(isAuthenticated && !isGuest && isOwner);
+  const canEdit = Boolean(isAuthenticated && !isGuest && isOwner);
   const authRedirect = `/auth?redirect=${encodeURIComponent(`/scoreboard/${id}`)}`;
 
   // Only show share URLs if user is authenticated (not guest), has paid subscription, and owns the board
@@ -535,7 +509,6 @@ export default async function ScoreboardPage(props: {
             initialCustomLogoUrl={board.custom_logo_url}
             initialScoreboardType={board.scoreboard_type as "melee" | "ultimate" | "guilty-gear" | "generic" | null}
             readOnly={!canEdit}
-            isLocal={isLocalBoard}
             isAuthenticated={isAuthenticated && !isGuest}
           />
         </div>
@@ -545,7 +518,7 @@ export default async function ScoreboardPage(props: {
           {/* Score Controls - Single Panel */}
           <div className="rounded-2xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] relative">
             <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
-              <SaveStatusIndicator isLocal={isLocalBoard || !(isAuthenticated && !isGuest)} />
+              <SaveStatusIndicator isAuthenticated={isAuthenticated && !isGuest} />
             </div>
             <div className="space-y-6">
               {/* Scoreboard Name - Centered above logo */}
@@ -559,7 +532,6 @@ export default async function ScoreboardPage(props: {
                     align="center" 
                     showLabel={false}
                     initialPositions={board.element_positions}
-                    isLocal={isLocalBoard}
                     isAuthenticated={isAuthenticated && !isGuest}
                   />
                 </div>
@@ -586,8 +558,7 @@ export default async function ScoreboardPage(props: {
                         column="a_side"
                         placeholder="A Side Name"
                         initialPositions={board.element_positions}
-                        isLocal={isLocalBoard}
-                        isAuthenticated={isAuthenticated && !isGuest}
+                    isAuthenticated={isAuthenticated && !isGuest}
                       />
                     </div>
                   </div>
@@ -595,7 +566,7 @@ export default async function ScoreboardPage(props: {
 
                 {/* A Side Score - Left Counter */}
                 <div className="space-y-2 min-w-0">
-                  <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} initialPositions={board.element_positions} isLocal={isLocalBoard} isAuthenticated={isAuthenticated && !isGuest} />
+                  <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} initialPositions={board.element_positions} isAuthenticated={isAuthenticated && !isGuest} />
                 </div>
 
                 {/* Logo */}
@@ -610,7 +581,7 @@ export default async function ScoreboardPage(props: {
 
                 {/* B Side Score - Right Counter */}
                 <div className="space-y-2 min-w-0">
-                  <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} initialPositions={board.element_positions} isLocal={isLocalBoard} isAuthenticated={isAuthenticated && !isGuest} />
+                  <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} initialPositions={board.element_positions} isAuthenticated={isAuthenticated && !isGuest} />
                 </div>
 
                 {/* B Side Name */}
@@ -632,8 +603,7 @@ export default async function ScoreboardPage(props: {
                         column="b_side"
                         placeholder="B Side Name"
                         initialPositions={board.element_positions}
-                        isLocal={isLocalBoard}
-                        isAuthenticated={isAuthenticated && !isGuest}
+                    isAuthenticated={isAuthenticated && !isGuest}
                       />
                     </div>
                   </div>
@@ -646,7 +616,6 @@ export default async function ScoreboardPage(props: {
                   <CompactStyleSelector
                     boardId={board.id}
                     initialStyle={board.scoreboard_style}
-                    isLocal={isLocalBoard}
                     isAuthenticated={isAuthenticated && !isGuest}
                   />
                 </div>
@@ -658,7 +627,6 @@ export default async function ScoreboardPage(props: {
                     placeholder="Subtitle"
                     align="center"
                     initialPositions={board.element_positions}
-                    isLocal={isLocalBoard}
                     isAuthenticated={isAuthenticated && !isGuest}
                   />
                   </div>

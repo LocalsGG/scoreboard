@@ -7,7 +7,6 @@ import { createClient } from "@/lib/supabase/client";
 type Props = {
   boardId: string;
   initialStyle: string | null;
-  isLocal?: boolean;
   isAuthenticated?: boolean;
 };
 
@@ -31,7 +30,7 @@ const STYLE_OPTIONS = [
   },
 ];
 
-export function CompactStyleSelector({ boardId, initialStyle, isLocal = false, isAuthenticated = true }: Props) {
+export function CompactStyleSelector({ boardId, initialStyle, isAuthenticated = true }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [selectedStyle, setSelectedStyle] = useState<string>(
     initialStyle || SCOREBOARD_OVERLAY_IMAGE
@@ -55,7 +54,7 @@ export function CompactStyleSelector({ boardId, initialStyle, isLocal = false, i
       // Always notify preview locally
       window.dispatchEvent(new CustomEvent(`style-local-${boardId}`, { detail: selectedStyle }));
 
-      if (isLocal || !isAuthenticated) {
+      if (!isAuthenticated) {
         setSaving(false);
         return;
       }

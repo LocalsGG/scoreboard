@@ -2,11 +2,12 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { randomUUID } from "crypto";
 import { getSupabaseStorageUrl, GAME_CONFIGS } from "@/lib/assets";
 import type { ScoreboardType } from "@/lib/types";
 import { CreateBoardButton } from "@/components/CreateBoardButton";
 import { CreateBoardFormWrapper } from "@/components/CreateBoardFormWrapper";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getUserSubscription, getBoardLimit } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
@@ -72,6 +73,33 @@ const getGameTemplates = (): Template[] => {
 async function createBoard(formData: FormData) {
   "use server";
 
+  const supabase = await createServerSupabaseClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  // Require authentication
+  if (userError || !userData?.user || !userData.user.email) {
+    redirect("/auth?redirect=" + encodeURIComponent("/dashboard/new"));
+  }
+
+  const user = userData.user;
+  const userId = user.id;
+
+  // Check board limit
+  const subscription = await getUserSubscription(supabase, userId);
+  const planType = subscription?.plan_type || "base";
+  const boardLimit = getBoardLimit(planType);
+
+  // Count existing boards
+  const { count } = await supabase
+    .from("scoreboards")
+    .select("*", { count: "exact", head: true })
+    .eq("owner_id", userId);
+
+  const currentBoardCount = count || 0;
+  if (currentBoardCount >= boardLimit) {
+    redirect("/dashboard");
+  }
+
   const rawName = (formData.get("name") as string | null) ?? "";
   const name = rawName.trim() || "Generic Scoreboard";
   
@@ -82,23 +110,58 @@ async function createBoard(formData: FormData) {
   // Get default logo URL based on game type
   const customLogoUrl = getDefaultLogoUrl(scoreboardType);
 
-  const localId = `local-${randomUUID()}`;
-  const params = new URLSearchParams();
-  params.set("local", "true");
-  params.set("name", name);
-  if (scoreboardType) {
-    params.set("scoreboard_type", scoreboardType);
-  }
-  if (customLogoUrl) {
-    params.set("customLogoUrl", customLogoUrl);
+  // Create scoreboard in database
+  const { data: newBoard, error: insertError } = await supabase
+    .from("scoreboards")
+    .insert({
+      name,
+      owner_id: userId,
+      scoreboard_type: scoreboardType,
+      custom_logo_url: customLogoUrl,
+      a_side: "A",
+      b_side: "B",
+      a_score: 0,
+      b_score: 0,
+    })
+    .select("id")
+    .single();
+
+  if (insertError || !newBoard) {
+    throw new Error(insertError?.message || "Failed to create scoreboard");
   }
 
-  redirect(`/scoreboard/${localId}?${params.toString()}`);
+  redirect(`/scoreboard/${newBoard.id}`);
 }
 
 export default async function NewScoreboardPage() {
-  // Allow unauthenticated users to access and create a previewable board.
-  // Editing will require signing in on the scoreboard page.
+  const supabase = await createServerSupabaseClient();
+  const { data: userData } = await supabase.auth.getUser();
+
+  // Require authentication
+  if (!userData?.user || !userData.user.email) {
+    redirect("/auth?redirect=" + encodeURIComponent("/dashboard/new"));
+  }
+
+  const userId = userData.user.id;
+
+  // Check board limit
+  const subscription = await getUserSubscription(supabase, userId);
+  const planType = subscription?.plan_type || "base";
+  const boardLimit = getBoardLimit(planType);
+
+  // Count existing boards
+  const { count } = await supabase
+    .from("scoreboards")
+    .select("*", { count: "exact", head: true })
+    .eq("owner_id", userId);
+
+  const currentBoardCount = count || 0;
+  const canCreateMore = currentBoardCount < boardLimit;
+
+  // Redirect to dashboard if at limit
+  if (!canCreateMore) {
+    redirect("/dashboard");
+  }
 
   return (
     <div className="flex min-h-full justify-center px-6 py-16 font-sans">

@@ -3,11 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 
 type Props = {
-  isLocal?: boolean;
   isAuthenticated?: boolean;
 };
 
-export function SaveStatusIndicator({ isLocal = false, isAuthenticated = true }: Props) {
+export function SaveStatusIndicator({ isAuthenticated = true }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const saveCountRef = useRef(0);
 
@@ -34,7 +33,7 @@ export function SaveStatusIndicator({ isLocal = false, isAuthenticated = true }:
     };
   }, []);
 
-  const label = isLocal || !isAuthenticated ? "Sign in to save" : isSaving ? "Saving…" : "Saved";
+  const label = !isAuthenticated ? "Sign in to save" : isSaving ? "Saving…" : "Saved";
 
   return <div className="text-xs font-semibold text-black/60">{label}</div>;
 }

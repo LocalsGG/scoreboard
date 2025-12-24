@@ -9,7 +9,6 @@ type Props = {
   placeholder?: string;
   align?: "left" | "center";
   initialPositions?: unknown;
-  isLocal?: boolean;
   isAuthenticated?: boolean;
 };
 
@@ -20,7 +19,6 @@ export function BoardSubtitleEditor({
   initialValue,
   placeholder = "Subtitle",
   align = "left",
-  isLocal = false,
   isAuthenticated = false,
 }: Props) {
   const supabase = useMemo(() => createClient(), []);
@@ -48,7 +46,7 @@ export function BoardSubtitleEditor({
     if (!boardId) return;
 
     const handler = setTimeout(async () => {
-      if (isLocal || !isAuthenticated) {
+      if (!isAuthenticated) {
         setSaving(false);
         setError(null);
         return;

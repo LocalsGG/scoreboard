@@ -46,6 +46,7 @@ async function loadSharedBoard(token: string) {
       .maybeSingle<SharedBoard>();
     
     if (result.error) {
+      console.error("Error loading shared board:", result.error);
       // If error is about missing column, try without it
       if (result.error.message?.includes("element_positions") || result.error.message?.includes("column")) {
         const resultWithoutPos = await supabase
@@ -55,6 +56,7 @@ async function loadSharedBoard(token: string) {
           .maybeSingle<Omit<SharedBoard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
         
         if (resultWithoutPos.error) {
+          console.error("Error loading shared board (without positions):", resultWithoutPos.error);
           boardError = new Error(resultWithoutPos.error.message);
         } else {
           board = { 
@@ -72,14 +74,17 @@ async function loadSharedBoard(token: string) {
       board = result.data;
     }
   } catch (err) {
+    console.error("Exception loading shared board:", err);
     boardError = err instanceof Error ? err : new Error("Unknown error");
   }
 
   if (boardError) {
+    console.error("Board error for token:", token, boardError);
     throw boardError;
   }
 
   if (!board) {
+    console.error("Board not found for token:", token);
     notFound();
   }
 

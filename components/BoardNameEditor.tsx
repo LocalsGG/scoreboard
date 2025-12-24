@@ -14,7 +14,6 @@ type Props = {
   align?: "left" | "center";
   showLabel?: boolean;
   initialPositions?: unknown;
-  isLocal?: boolean;
   isAuthenticated?: boolean;
 };
 
@@ -42,7 +41,6 @@ export function BoardNameEditor({
   align = "left",
   showLabel = false,
   initialPositions,
-  isLocal = false,
   isAuthenticated = false,
 }: Props) {
   const supabase = useMemo(() => createClient(), []);
@@ -86,7 +84,7 @@ export function BoardNameEditor({
     if (!boardId) return;
 
     const handler = setTimeout(async () => {
-      if (isLocal || !isAuthenticated) {
+      if (!isAuthenticated) {
         setSaving(false);
         setError(null);
         return;
@@ -129,7 +127,7 @@ export function BoardNameEditor({
     const eventName = `title-visibility-${boardId}`;
     window.dispatchEvent(new CustomEvent(eventName, { detail: newVisible }));
 
-    if (isLocal || !isAuthenticated) {
+    if (!isAuthenticated) {
       setSavingVisibility(false);
       window.dispatchEvent(new CustomEvent("scoreboard-saving-end"));
       return;
@@ -172,7 +170,7 @@ export function BoardNameEditor({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (isLocal) {
+    if (!isAuthenticated) {
       setLogoError("Sign in to upload a logo");
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
