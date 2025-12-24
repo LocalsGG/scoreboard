@@ -9,11 +9,12 @@ type Props = {
   initialValue: number | null;
   initialPositions?: unknown;
   isAuthenticated?: boolean;
+  disabled?: boolean;
 };
 
 const DEBOUNCE_MS = 400;
 
-export function ScoreAdjuster({ boardId, column, initialValue, isAuthenticated = false }: Props) {
+export function ScoreAdjuster({ boardId, column, initialValue, isAuthenticated = false, disabled = false }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [value, setValue] = useState<number>(initialValue ?? 0);
   const [saving, setSaving] = useState(false);
@@ -31,7 +32,7 @@ export function ScoreAdjuster({ boardId, column, initialValue, isAuthenticated =
   };
 
   const adjust = async (delta: number) => {
-    if (!boardId || saving) return;
+    if (!boardId || saving || disabled) return;
     const previous = value;
     const next = Math.max(0, (value ?? 0) + delta);
     setValue(next);
@@ -62,11 +63,13 @@ export function ScoreAdjuster({ boardId, column, initialValue, isAuthenticated =
 
   return (
     <div className="space-y-2 w-full">
-      <div className="flex items-center justify-between rounded-md border border-black/20 bg-white px-2 sm:px-3 py-2 text-sm font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40">
+      <div className={`flex items-center justify-between rounded-md border border-black/20 bg-white px-2 sm:px-3 py-2 text-sm font-semibold text-black transition-all duration-150 ${
+        disabled ? "opacity-60 cursor-not-allowed" : "hover:-translate-y-0.5 hover:border-black/40"
+      }`}>
         <button
           type="button"
           onClick={() => adjust(-1)}
-          disabled={saving}
+          disabled={saving || disabled}
           className="cursor-pointer rounded-md border border-black/20 px-2 sm:px-3 py-1 text-xs uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 flex-shrink-0"
         >
           -1
@@ -75,7 +78,7 @@ export function ScoreAdjuster({ boardId, column, initialValue, isAuthenticated =
         <button
           type="button"
           onClick={() => adjust(1)}
-          disabled={saving}
+          disabled={saving || disabled}
           className="cursor-pointer rounded-md border border-black/20 px-2 sm:px-3 py-1 text-xs uppercase tracking-[0.14em] text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 flex-shrink-0"
         >
           +1

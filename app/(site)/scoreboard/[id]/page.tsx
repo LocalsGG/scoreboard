@@ -5,16 +5,14 @@ import { notFound, redirect } from "next/navigation";
 import { CopyButton } from "@/components/CopyButton";
 import { BoardNameEditor } from "@/components/BoardNameEditor";
 import { BoardSubtitleEditor } from "@/components/BoardSubtitleEditor";
-import { ScoreAdjuster } from "@/components/ScoreAdjuster";
-import { SideNameEditor } from "@/components/SideNameEditor";
 import { ScoreboardWithControls, UndoRedoControlsWrapper } from "@/components/ScoreboardWithControls";
-import { CompactStyleSelector } from "@/components/CompactStyleSelector";
-import { SaveStatusIndicator } from "@/components/SaveStatusIndicator";
 import { ResetPositionsButton } from "@/components/ResetPositionsButton";
-import { CharacterIconSelector } from "@/components/CharacterIconSelector";
-import { LogoSelector } from "@/components/LogoSelector";
-import { GameTypeIndicator } from "@/components/GameTypeIndicator";
+import { ScoreControlsPanel } from "@/components/ScoreControlsPanel";
+import { LivestreamWrapper } from "@/components/LivestreamWrapper";
 import { PricingRedirectButton } from "@/components/PricingRedirectButton";
+import { LivestreamLink } from "@/components/LivestreamLink";
+import { ShareScorekeepingButton } from "@/components/ShareScorekeepingButton";
+import { DisplayScoreboardButton } from "@/components/DisplayScoreboardButton";
 import { ensureShareToken, createShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getBaseUrlFromRequest } from "@/lib/urls";
@@ -43,6 +41,8 @@ type Scoreboard = {
   center_text_color: string | null;
   custom_logo_url: string | null;
   scoreboard_type: string | null;
+  livestream_url: string | null;
+  livestream_enabled: boolean | null;
 };
 
 type LoadScoreboardResult = {
@@ -106,7 +106,7 @@ async function loadScoreboard(
     // If authenticated, filter by owner_id. Otherwise, just get by ID/share_token
     let query = supabase
       .from("scoreboards")
-      .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url, scoreboard_type")
+      .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url, scoreboard_type, livestream_url, livestream_enabled")
       .eq(isUuid ? "id" : "share_token", boardId);
     
     // Only filter by owner_id if user is authenticated
@@ -122,7 +122,7 @@ async function loadScoreboard(
         // Try without element_positions and icon columns
         let queryWithoutPos = supabase
           .from("scoreboards")
-          .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url, scoreboard_type")
+          .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url, scoreboard_type, livestream_url, livestream_enabled")
           .eq(isUuid ? "id" : "share_token", boardId);
         
         if (isAuthenticated && userId) {
@@ -405,26 +405,20 @@ export default async function ScoreboardPage(props: {
                     <>
                       <CopyButton
                         value={shareUrl}
-                        label="Copy"
+                        label="Copy Link"
+                        showIcon={false}
                         className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
                       />
-                      <a
-                        href={shareUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <div className="h-4 w-px bg-black/20 mx-0.5" />
+                      <DisplayScoreboardButton
+                        shareUrl={shareUrl}
                         className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                        aria-label="Open link in new tab"
-                        title="Go Live"
-                      >
-                        Go Live
-                      </a>
+                      />
                       {controlsShareUrl && (
                         <>
                           <div className="h-4 w-px bg-black/20 mx-0.5" />
-                          <CopyButton
-                            value={controlsShareUrl}
-                            label="Share Scorekeeping"
-                            maintainSize={true}
+                          <ShareScorekeepingButton
+                            shareUrl={controlsShareUrl}
                             className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
                           />
                         </>
@@ -489,157 +483,76 @@ export default async function ScoreboardPage(props: {
           </div>
         </header>
 
-        {/* Scoreboard Preview */}
-        <div className="relative z-0 -my-4 sm:-my-6 lg:-my-8">
-          <ScoreboardWithControls
-            boardId={board.id}
-            initialName={board.name}
-            initialSubtitle={board.scoreboard_subtitle}
-            initialASide={board.a_side}
-            initialBSide={board.b_side}
-            initialAScore={board.a_score}
-            initialBScore={board.b_score}
-            initialUpdatedAt={board.updated_at}
-            initialStyle={board.scoreboard_style}
-            initialPositions={board.element_positions}
-            initialTitleVisible={board.title_visible}
-            initialASideIcon={board.a_side_icon}
-            initialBSideIcon={board.b_side_icon}
-            initialCenterTextColor={board.center_text_color}
-            initialCustomLogoUrl={board.custom_logo_url}
-            initialScoreboardType={board.scoreboard_type as "melee" | "ultimate" | "guilty-gear" | "generic" | null}
-            readOnly={!canEdit}
-            isAuthenticated={isAuthenticated && !isGuest}
-          />
-        </div>
-
-        {/* Controls Section */}
-        <section className="space-y-6 sm:space-y-8">
-          {/* Score Controls - Single Panel */}
-          <div className="rounded-2xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] relative">
-            <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
-              <SaveStatusIndicator isAuthenticated={isAuthenticated && !isGuest} />
-            </div>
-            <div className="space-y-6">
-              {/* Scoreboard Name - Centered above logo */}
-              <div className="flex flex-col items-center">
-                <div className="w-full max-w-md">
-                  <BoardNameEditor 
-                    boardId={board.id} 
-                    initialName={board.name} 
-                    initialTitleVisible={board.title_visible ?? true}
-                    initialCustomLogoUrl={board.custom_logo_url}
-                    align="center" 
-                    showLabel={false}
-                    initialPositions={board.element_positions}
-                    isAuthenticated={isAuthenticated && !isGuest}
-                  />
-                </div>
-              </div>
-
-              {/* Top Row: A Side Name | A Side Score | Logo | B Side Score | B Side Name */}
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 sm:gap-3 items-start">
-                {/* A Side Name */}
-                <div className="space-y-2 min-w-0">
-                  <div className="flex items-start gap-2">
-                    {(board.scoreboard_type === "melee" || board.scoreboard_type === "ultimate") && (
-                      <CharacterIconSelector
-                        boardId={board.id}
-                        initialValue={board.a_side_icon}
-                        column="a_side_icon"
-                        placeholder="Select character icon"
-                        compact={true}
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <SideNameEditor
-                        boardId={board.id}
-                        initialValue={board.a_side}
-                        column="a_side"
-                        placeholder="A Side Name"
-                        initialPositions={board.element_positions}
-                    isAuthenticated={isAuthenticated && !isGuest}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* A Side Score - Left Counter */}
-                <div className="space-y-2 min-w-0">
-                  <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} initialPositions={board.element_positions} isAuthenticated={isAuthenticated && !isGuest} />
-                </div>
-
-                {/* Logo */}
-                <div className="space-y-2 flex flex-col items-center min-w-0">
-                  <LogoSelector
-                    boardId={board.id}
-                    initialCustomLogoUrl={board.custom_logo_url}
-                    initialScoreboardType={board.scoreboard_type as ScoreboardType | null}
-                    initialPositions={board.element_positions}
-                  />
-                </div>
-
-                {/* B Side Score - Right Counter */}
-                <div className="space-y-2 min-w-0">
-                  <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} initialPositions={board.element_positions} isAuthenticated={isAuthenticated && !isGuest} />
-                </div>
-
-                {/* B Side Name */}
-                <div className="space-y-2 min-w-0">
-                  <div className="flex items-start gap-2">
-                    {(board.scoreboard_type === "melee" || board.scoreboard_type === "ultimate") && (
-                      <CharacterIconSelector
-                        boardId={board.id}
-                        initialValue={board.b_side_icon}
-                        column="b_side_icon"
-                        placeholder="Select character icon"
-                        compact={true}
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <SideNameEditor
-                        boardId={board.id}
-                        initialValue={board.b_side}
-                        column="b_side"
-                        placeholder="B Side Name"
-                        initialPositions={board.element_positions}
-                    isAuthenticated={isAuthenticated && !isGuest}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Row: Style Selector, Subtitle, and Game Type */}
-              <div className="grid grid-cols-3 items-end gap-4">
-                <div className="flex justify-start">
-                  <CompactStyleSelector
-                    boardId={board.id}
-                    initialStyle={board.scoreboard_style}
-                    isAuthenticated={isAuthenticated && !isGuest}
-                  />
-                </div>
-                <div className="space-y-2 flex flex-col items-center">
-                  <div className="w-full max-w-[200px]">
-                  <BoardSubtitleEditor
-                    boardId={board.id}
-                    initialValue={board.scoreboard_subtitle}
-                    placeholder="Subtitle"
-                    align="center"
-                    initialPositions={board.element_positions}
-                    isAuthenticated={isAuthenticated && !isGuest}
-                  />
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <GameTypeIndicator 
-                    boardId={board.id} 
-                    initialType={board.scoreboard_type as ScoreboardType | null} 
-                  />
-                </div>
-              </div>
-            </div>
+        {/* Scoreboard Preview and Controls Wrapped */}
+        <LivestreamWrapper
+          boardId={board.id}
+          initialLivestreamEnabled={board.livestream_enabled}
+        >
+          {/* Scoreboard Preview */}
+          <div className="relative z-0 -my-4 sm:-my-6 lg:-my-8">
+            <ScoreboardWithControls
+              boardId={board.id}
+              initialName={board.name}
+              initialSubtitle={board.scoreboard_subtitle}
+              initialASide={board.a_side}
+              initialBSide={board.b_side}
+              initialAScore={board.a_score}
+              initialBScore={board.b_score}
+              initialUpdatedAt={board.updated_at}
+              initialStyle={board.scoreboard_style}
+              initialPositions={board.element_positions}
+              initialTitleVisible={board.title_visible}
+              initialASideIcon={board.a_side_icon}
+              initialBSideIcon={board.b_side_icon}
+              initialCenterTextColor={board.center_text_color}
+              initialCustomLogoUrl={board.custom_logo_url}
+              initialScoreboardType={board.scoreboard_type as "melee" | "ultimate" | "guilty-gear" | "generic" | null}
+              readOnly={!canEdit}
+              isAuthenticated={isAuthenticated && !isGuest}
+              livestreamEnabled={board.livestream_enabled}
+            />
           </div>
+
+          {/* Controls Section */}
+          <section className="space-y-6 sm:space-y-8 mt-6 sm:mt-8">
+            {/* Score Controls - Single Panel */}
+            <ScoreControlsPanel
+              boardId={board.id}
+              initialLivestreamEnabled={board.livestream_enabled}
+              isAuthenticated={isAuthenticated && !isGuest}
+              name={board.name}
+              scoreboardSubtitle={board.scoreboard_subtitle}
+              aSide={board.a_side}
+              bSide={board.b_side}
+              aScore={board.a_score}
+              bScore={board.b_score}
+              scoreboardStyle={board.scoreboard_style}
+              elementPositions={board.element_positions}
+              titleVisible={board.title_visible}
+              aSideIcon={board.a_side_icon}
+              bSideIcon={board.b_side_icon}
+              customLogoUrl={board.custom_logo_url}
+              scoreboardType={board.scoreboard_type as ScoreboardType | null}
+            />
+          </section>
+        </LivestreamWrapper>
+
+        {/* Livestream Link Section */}
+        <section className="space-y-6 sm:space-y-8">
+          {canEdit && (
+            <div className="rounded-2xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] relative">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  Link your livestream and update the score automatically
+                </h3>
+                <LivestreamLink
+                  boardId={board.id}
+                  initialUrl={board.livestream_url}
+                  initialEnabled={board.livestream_enabled}
+                />
+              </div>
+            </div>
+          )}
         </section>
       </main>
     </div>

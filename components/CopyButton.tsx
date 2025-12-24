@@ -7,9 +7,10 @@ type CopyButtonProps = {
   label?: string
   className?: string
   maintainSize?: boolean
+  showIcon?: boolean
 }
 
-export function CopyButton({ value, label = 'Copy', className, maintainSize = false }: CopyButtonProps) {
+export function CopyButton({ value, label = 'Copy', className, maintainSize = false, showIcon = true }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const [minWidth, setMinWidth] = useState<number | undefined>(undefined)
@@ -43,7 +44,7 @@ export function CopyButton({ value, label = 'Copy', className, maintainSize = fa
       }
     >
       <span>{copied ? 'Copied' : label}</span>
-      <span aria-hidden className="text-xs">{copied ? '✓' : '⧉'}</span>
+      {showIcon && <span aria-hidden className="text-xs">{copied ? '✓' : '⧉'}</span>}
     </button>
   )
 }

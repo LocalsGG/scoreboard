@@ -9,7 +9,10 @@ import { usePreviewState } from "./scoreboard-preview/usePreviewState";
 import { usePreviewSubscriptions } from "./scoreboard-preview/usePreviewSubscriptions";
 import type { PreviewState } from "./scoreboard-preview/types";
 
-type Props = ScoreboardPreviewProps & { isAuthenticated?: boolean };
+type Props = ScoreboardPreviewProps & { 
+  isAuthenticated?: boolean;
+  livestreamEnabled?: boolean | null;
+};
 
 export function ScoreboardPreview({
   boardId,
@@ -31,6 +34,7 @@ export function ScoreboardPreview({
   readOnly = false,
   onUndoRedoReady,
   isAuthenticated = false,
+  livestreamEnabled: initialLivestreamEnabled = false,
 }: Props) {
   const [state, setState] = useState<PreviewState>({
     name: initialName,
@@ -48,6 +52,8 @@ export function ScoreboardPreview({
     customLogoUrl: initialCustomLogoUrl ?? null,
     scoreboardType: initialScoreboardType ?? null,
   });
+
+  const [livestreamEnabledState, setLivestreamEnabledState] = useState<boolean>(initialLivestreamEnabled ?? false);
 
   const [positions, setPositions] = useState<ElementPositions>(
     getMergedPositions(initialPositions, initialScoreboardType)
@@ -404,6 +410,11 @@ export function ScoreboardPreview({
               : state.scoreboardType;
             const newPositions = getMergedPositions(next.element_positions as ElementPositions, scoreboardType);
             setPositions(newPositions);
+          }
+
+          // Update livestream enabled state
+          if (typeof next.livestream_enabled === "boolean") {
+            setLivestreamEnabledState(next.livestream_enabled);
           }
         }
       )
