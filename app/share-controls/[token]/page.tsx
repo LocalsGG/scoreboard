@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
 import { BoardNameEditor } from "@/components/BoardNameEditor";
 import { BoardSubtitleEditor } from "@/components/BoardSubtitleEditor";
@@ -33,6 +33,7 @@ type SharedBoard = {
   center_text_color: string | null;
   custom_logo_url: string | null;
   scoreboard_type: string | null;
+  owner_id: string | null;
 };
 
 async function loadSharedBoard(token: string) {
@@ -49,7 +50,7 @@ async function loadSharedBoard(token: string) {
   try {
     const result = await supabase
       .from("scoreboards")
-      .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url, scoreboard_type")
+      .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url, scoreboard_type, owner_id")
       .eq("share_token", token)
       .maybeSingle<SharedBoard>();
     
@@ -58,7 +59,7 @@ async function loadSharedBoard(token: string) {
       if (result.error.message?.includes("element_positions") || result.error.message?.includes("column")) {
         const resultWithoutPos = await supabase
           .from("scoreboards")
-          .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url, scoreboard_type")
+          .select("id, name, scoreboard_subtitle, created_at, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url, scoreboard_type, owner_id")
           .eq("share_token", token)
           .maybeSingle<Omit<SharedBoard, "element_positions" | "a_side_icon" | "b_side_icon"> & { element_positions?: null; a_side_icon?: null; b_side_icon?: null }>();
         
@@ -125,7 +126,26 @@ export async function generateMetadata(
 
 export default async function SharedControlsPage(props: { params: Promise<{ token: string }> }) {
   const { token } = await props.params;
+
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user || !session.user.email) {
+    redirect(`/auth?redirect=${encodeURIComponent(`/share-controls/${token}`)}`);
+  }
+
   const { board } = await loadSharedBoard(token);
+
+  if (!board.owner_id) {
+    await supabase
+      .from("scoreboards")
+      .update({ owner_id: session.user.id })
+      .eq("id", board.id)
+      .is("owner_id", null);
+    board.owner_id = session.user.id;
+  }
 
   return (
     <div className="relative flex min-h-full justify-center px-4 sm:px-6 py-6 sm:py-8 lg:py-12 font-sans">

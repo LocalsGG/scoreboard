@@ -9,11 +9,13 @@ type Props = {
   column: "a_side" | "b_side";
   placeholder?: string;
   initialPositions?: unknown;
+  isLocal?: boolean;
+  isAuthenticated?: boolean;
 };
 
 const DEBOUNCE_MS = 400;
 
-export function SideNameEditor({ boardId, initialValue, column, placeholder }: Props) {
+export function SideNameEditor({ boardId, initialValue, column, placeholder, isLocal = false, isAuthenticated = false }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [value, setValue] = useState(initialValue ?? "");
   const [saving, setSaving] = useState(false);
@@ -34,6 +36,12 @@ export function SideNameEditor({ boardId, initialValue, column, placeholder }: P
     if (!boardId) return;
 
     const handler = setTimeout(async () => {
+      if (isLocal || !isAuthenticated) {
+        setSaving(false);
+        setError(null);
+        return;
+      }
+
       setSaving(true);
       window.dispatchEvent(new CustomEvent("scoreboard-saving-start"));
       const trimmed = value.trim();

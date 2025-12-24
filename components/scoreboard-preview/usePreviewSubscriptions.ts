@@ -106,6 +106,13 @@ export function usePreviewSubscriptions({
       setState((prev) => ({ ...prev, scoreboardType: detail ?? null }));
     };
 
+    const handleStyle = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (typeof detail === "string") {
+        setState((prev) => ({ ...prev, style: detail }));
+      }
+    };
+
     const handleResetPositions = () => {
       resetPositions();
     };
@@ -122,6 +129,7 @@ export function usePreviewSubscriptions({
     window.addEventListener(`center-text-color-local-${boardId}`, handleCenterTextColor);
     window.addEventListener(`custom-logo-local-${boardId}`, handleCustomLogo);
     window.addEventListener(`scoreboard-type-local-${boardId}`, handleScoreboardType);
+    window.addEventListener(`style-local-${boardId}`, handleStyle);
 
     return () => {
       supabase.removeChannel(channel);
@@ -134,6 +142,7 @@ export function usePreviewSubscriptions({
       window.removeEventListener(`center-text-color-local-${boardId}`, handleCenterTextColor);
       window.removeEventListener(`custom-logo-local-${boardId}`, handleCustomLogo);
       window.removeEventListener(`scoreboard-type-local-${boardId}`, handleScoreboardType);
+      window.removeEventListener(`style-local-${boardId}`, handleStyle);
     };
   }, [boardId, supabase, resetPositions, setState, setPositions]);
 }

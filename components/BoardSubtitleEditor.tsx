@@ -9,6 +9,8 @@ type Props = {
   placeholder?: string;
   align?: "left" | "center";
   initialPositions?: unknown;
+  isLocal?: boolean;
+  isAuthenticated?: boolean;
 };
 
 const DEBOUNCE_MS = 400;
@@ -18,6 +20,8 @@ export function BoardSubtitleEditor({
   initialValue,
   placeholder = "Subtitle",
   align = "left",
+  isLocal = false,
+  isAuthenticated = false,
 }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [value, setValue] = useState(initialValue ?? "");
@@ -44,6 +48,12 @@ export function BoardSubtitleEditor({
     if (!boardId) return;
 
     const handler = setTimeout(async () => {
+      if (isLocal || !isAuthenticated) {
+        setSaving(false);
+        setError(null);
+        return;
+      }
+
       setSaving(true);
       window.dispatchEvent(new CustomEvent("scoreboard-saving-start"));
       const trimmed = value.trim();

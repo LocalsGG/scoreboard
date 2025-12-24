@@ -14,6 +14,8 @@ type Props = {
   align?: "left" | "center";
   showLabel?: boolean;
   initialPositions?: unknown;
+  isLocal?: boolean;
+  isAuthenticated?: boolean;
 };
 
 const DEBOUNCE_MS = 400;
@@ -40,6 +42,8 @@ export function BoardNameEditor({
   align = "left",
   showLabel = false,
   initialPositions,
+  isLocal = false,
+  isAuthenticated = false,
 }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [value, setValue] = useState(initialName ?? "");
@@ -82,6 +86,12 @@ export function BoardNameEditor({
     if (!boardId) return;
 
     const handler = setTimeout(async () => {
+      if (isLocal || !isAuthenticated) {
+        setSaving(false);
+        setError(null);
+        return;
+      }
+
       setSaving(true);
       window.dispatchEvent(new CustomEvent("scoreboard-saving-start"));
       const trimmed = value.trim();
@@ -119,7 +129,12 @@ export function BoardNameEditor({
     const eventName = `title-visibility-${boardId}`;
     window.dispatchEvent(new CustomEvent(eventName, { detail: newVisible }));
 
-    // Save to database
+    if (isLocal || !isAuthenticated) {
+      setSavingVisibility(false);
+      window.dispatchEvent(new CustomEvent("scoreboard-saving-end"));
+      return;
+    }
+
     const { error: updateError } = await supabase
       .from("scoreboards")
       .update({ title_visible: newVisible })
@@ -127,7 +142,6 @@ export function BoardNameEditor({
 
     if (updateError) {
       console.error("Failed to update title visibility:", updateError);
-      // Revert on error
       setTitleVisible(titleVisible);
     }
     setSavingVisibility(false);
@@ -157,6 +171,14 @@ export function BoardNameEditor({
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (isLocal) {
+      setLogoError("Sign in to upload a logo");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
 
     setLogoError(null);
 

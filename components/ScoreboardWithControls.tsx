@@ -12,7 +12,9 @@ type UndoRedoHandlers = {
   canRedo: boolean;
 };
 
-export function ScoreboardWithControls(props: ScoreboardPreviewProps) {
+type Props = ScoreboardPreviewProps & { isLocal?: boolean; isAuthenticated?: boolean };
+
+export function ScoreboardWithControls(props: Props) {
   const [undoRedoHandlers, setUndoRedoHandlers] = useState<UndoRedoHandlers | null>(null);
   const prevStateRef = useRef<{ canUndo: boolean; canRedo: boolean } | null>(null);
 

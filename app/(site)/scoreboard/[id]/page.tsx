@@ -54,7 +54,10 @@ type LoadScoreboardResult = {
   userId: string | null;
 };
 
-async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
+async function loadScoreboard(
+  boardId: string,
+  params?: Record<string, string | string[] | undefined>
+): Promise<LoadScoreboardResult> {
   if (!boardId) {
     notFound();
   }
@@ -65,13 +68,21 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
     );
 
   const supabase = await createServerSupabaseClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
+  const { data: userData } = await supabase.auth.getUser();
   
   // Allow unauthenticated users to view scoreboards
   const user = userData?.user;
   const isAuthenticated = !!user;
   const userId = user?.id || null;
   const isGuest = isAuthenticated && !user?.email; // Guest = has session but no email
+
+  const localFlag = params && typeof params.local === "string" && params.local === "true";
+  const isLocal = localFlag || boardId.startsWith("local-");
+  const getParam = (key: string) => {
+    const value = params?.[key];
+    if (!value) return undefined;
+    return Array.isArray(value) ? value[0] : value;
+  };
 
   let ownerName = "you";
   let hasPaidSubscription = false;
@@ -88,6 +99,32 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
     const subscription = await getUserSubscription(supabase, user.id);
     const planType = subscription?.plan_type || "base";
     hasPaidSubscription = planType === "pro" || planType === "standard" || planType === "lifetime";
+  }
+
+  if (isLocal) {
+    const now = new Date().toISOString();
+    const board: Scoreboard = {
+      id: boardId,
+      name: getParam("name") || "New Scoreboard",
+      scoreboard_subtitle: null,
+      created_at: now,
+      share_token: null,
+      owner_id: null,
+      a_side: "A",
+      b_side: "B",
+      a_score: 0,
+      b_score: 0,
+      updated_at: now,
+      scoreboard_style: null,
+      element_positions: null,
+      title_visible: true,
+      a_side_icon: null,
+      b_side_icon: null,
+      center_text_color: null,
+      custom_logo_url: getParam("customLogoUrl") || null,
+      scoreboard_type: getParam("scoreboard_type") || null,
+    };
+    return { board, ownerName, hasPaidSubscription: false, isAuthenticated, isGuest, userId };
   }
 
   // Select all columns, but handle element_positions gracefully if it doesn't exist
@@ -152,6 +189,19 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
     return { board: null, ownerName, hasPaidSubscription, isAuthenticated, isGuest, userId };
   }
 
+  // If board is unclaimed and a real user is present, claim ownership
+  if (board.owner_id === null && isAuthenticated && !isGuest && userId) {
+    const { error: claimError } = await supabase
+      .from("scoreboards")
+      .update({ owner_id: userId })
+      .eq("id", board.id)
+      .is("owner_id", null);
+
+    if (!claimError) {
+      board.owner_id = userId;
+    }
+  }
+
   // Only ensure share token exists if user is authenticated (not guest) and owns the board
   // But keep existing token visible for all users (including guests) if it exists
   if (isAuthenticated && !isGuest && userId && board.owner_id === userId) {
@@ -169,10 +219,11 @@ async function loadScoreboard(boardId: string): Promise<LoadScoreboardResult> {
 }
 
 export async function generateMetadata(
-  props: { params: Promise<{ id: string }> }
+  props: { params: Promise<{ id: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> }
 ): Promise<Metadata> {
   const { id } = await props.params;
-  const { board } = await loadScoreboard(id);
+  const searchParams = props.searchParams ? await props.searchParams : undefined;
+  const { board } = await loadScoreboard(id, searchParams);
   
   if (!board) {
     return {
@@ -251,9 +302,16 @@ async function generateShareToken(formData: FormData) {
   revalidatePath(`/share/${newToken}`);
 }
 
-export default async function ScoreboardPage(props: { params: Promise<{ id: string }> }) {
+export default async function ScoreboardPage(props: {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await props.params;
-  const { board, hasPaidSubscription, isAuthenticated, isGuest, userId } = await loadScoreboard(id);
+  const searchParams = props.searchParams ? await props.searchParams : undefined;
+  const { board, hasPaidSubscription, isAuthenticated, isGuest, userId } = await loadScoreboard(
+    id,
+    searchParams
+  );
 
   if (!board) {
     return (
@@ -290,8 +348,14 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
     );
   }
 
+  const isLocalBoard =
+    board.id.startsWith("local-") || (searchParams && searchParams.local === "true");
+  const isOwner = userId && board.owner_id === userId;
+  const canEdit = isLocalBoard || Boolean(isAuthenticated && !isGuest && isOwner);
+  const authRedirect = `/auth?redirect=${encodeURIComponent(`/scoreboard/${id}`)}`;
+
   // Only show share URLs if user is authenticated (not guest), has paid subscription, and owns the board
-  const canShare = isAuthenticated && !isGuest && userId && board.owner_id === userId && board.share_token && hasPaidSubscription;
+  const canShare = isAuthenticated && !isGuest && isOwner && board.share_token && hasPaidSubscription;
   
   const baseUrl = await getBaseUrlFromRequest();
   // Always generate share URLs if board has a token (for display), but only allow use if canShare
@@ -333,23 +397,35 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                 <span className="sm:hidden">Back</span>
               </Link>
             )}
-            <div className="h-4 w-px bg-black/20" />
-            <UndoRedoControlsWrapper />
-            <div className="h-4 w-px bg-black/20" />
-            <ResetPositionsButton boardId={board.id} compact={true} />
+            {canEdit ? (
+              <>
+                <div className="h-4 w-px bg-black/20" />
+                <UndoRedoControlsWrapper />
+                <div className="h-4 w-px bg-black/20" />
+                <ResetPositionsButton boardId={board.id} compact={true} />
+              </>
+            ) : (
+              <>
+                <div className="h-4 w-px bg-black/20" />
+                <Link
+                  href={authRedirect}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-black/15 bg-white px-2.5 py-1 text-xs font-semibold text-black transition hover:border-black/30 hover:bg-white"
+                >
+                  Sign in to edit
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Share Controls - Full Width Link Bar */}
           <div className="flex-1 min-w-0">
             {shareUrl ? (
               <div className="relative w-full">
-                {/* Always show the input field with the share URL */}
                 <input
                   readOnly
                   value={shareUrl}
                   className="w-full truncate rounded-lg border border-black/15 bg-white px-3 py-1.5 pr-40 text-xs font-semibold text-black shadow-inner shadow-black/5"
                 />
-                {/* Buttons overlay - redirect to pricing for guests, normal behavior for authenticated paid users */}
                 <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-1 z-10">
                   {canShare ? (
                     <>
@@ -382,19 +458,15 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                     </>
                   ) : (
                     <>
-                      <PricingRedirectButton
-                        label="Copy"
-                        redirectPath={`/scoreboard/${id}`}
+                      <Link
+                        href={authRedirect}
                         className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                      />
-                      <PricingRedirectButton
-                        label="Go Live"
-                        redirectPath={`/scoreboard/${id}`}
-                        className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                      />
+                      >
+                        Sign in
+                      </Link>
                       <div className="h-4 w-px bg-black/20 mx-0.5" />
                       <PricingRedirectButton
-                        label="Share Scorekeeping"
+                        label="Upgrade"
                         redirectPath={`/scoreboard/${id}`}
                         className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
                       />
@@ -404,7 +476,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                {isAuthenticated && !isGuest ? (
+                {canEdit ? (
                   <>
                     <p className="text-xs font-medium text-black whitespace-nowrap">
                       Generate token
@@ -429,27 +501,12 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                     )}
                   </>
                 ) : (
-                  // Show pricing buttons for guests and unauthenticated users
                   <div className="flex items-center gap-2 w-full">
                     <Link
-                      href={`/pricing?redirect=${encodeURIComponent(`/scoreboard/${id}`)}`}
+                      href={authRedirect}
                       className="inline-flex items-center justify-center gap-2 rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
                     >
-                      Go Live
-                    </Link>
-                    <div className="h-4 w-px bg-black/20" />
-                    <Link
-                      href={`/pricing?redirect=${encodeURIComponent(`/scoreboard/${id}`)}`}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                    >
-                      Copy
-                    </Link>
-                    <div className="h-4 w-px bg-black/20" />
-                    <Link
-                      href={`/pricing?redirect=${encodeURIComponent(`/scoreboard/${id}`)}`}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                    >
-                      Share Scorekeeping
+                      Sign in to generate
                     </Link>
                   </div>
                 )}
@@ -477,6 +534,9 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
             initialCenterTextColor={board.center_text_color}
             initialCustomLogoUrl={board.custom_logo_url}
             initialScoreboardType={board.scoreboard_type as "melee" | "ultimate" | "guilty-gear" | "generic" | null}
+            readOnly={!canEdit}
+            isLocal={isLocalBoard}
+            isAuthenticated={isAuthenticated && !isGuest}
           />
         </div>
 
@@ -485,7 +545,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
           {/* Score Controls - Single Panel */}
           <div className="rounded-2xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] relative">
             <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
-              <SaveStatusIndicator />
+              <SaveStatusIndicator isLocal={isLocalBoard || !(isAuthenticated && !isGuest)} />
             </div>
             <div className="space-y-6">
               {/* Scoreboard Name - Centered above logo */}
@@ -499,6 +559,8 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                     align="center" 
                     showLabel={false}
                     initialPositions={board.element_positions}
+                    isLocal={isLocalBoard}
+                    isAuthenticated={isAuthenticated && !isGuest}
                   />
                 </div>
               </div>
@@ -524,6 +586,8 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                         column="a_side"
                         placeholder="A Side Name"
                         initialPositions={board.element_positions}
+                        isLocal={isLocalBoard}
+                        isAuthenticated={isAuthenticated && !isGuest}
                       />
                     </div>
                   </div>
@@ -531,7 +595,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
 
                 {/* A Side Score - Left Counter */}
                 <div className="space-y-2 min-w-0">
-                  <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} initialPositions={board.element_positions} />
+                  <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} initialPositions={board.element_positions} isLocal={isLocalBoard} isAuthenticated={isAuthenticated && !isGuest} />
                 </div>
 
                 {/* Logo */}
@@ -546,7 +610,7 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
 
                 {/* B Side Score - Right Counter */}
                 <div className="space-y-2 min-w-0">
-                  <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} initialPositions={board.element_positions} />
+                  <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} initialPositions={board.element_positions} isLocal={isLocalBoard} isAuthenticated={isAuthenticated && !isGuest} />
                 </div>
 
                 {/* B Side Name */}
@@ -568,6 +632,8 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
                         column="b_side"
                         placeholder="B Side Name"
                         initialPositions={board.element_positions}
+                        isLocal={isLocalBoard}
+                        isAuthenticated={isAuthenticated && !isGuest}
                       />
                     </div>
                   </div>
@@ -577,17 +643,24 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
               {/* Bottom Row: Style Selector, Subtitle, and Game Type */}
               <div className="grid grid-cols-3 items-end gap-4">
                 <div className="flex justify-start">
-                  <CompactStyleSelector boardId={board.id} initialStyle={board.scoreboard_style} />
+                  <CompactStyleSelector
+                    boardId={board.id}
+                    initialStyle={board.scoreboard_style}
+                    isLocal={isLocalBoard}
+                    isAuthenticated={isAuthenticated && !isGuest}
+                  />
                 </div>
                 <div className="space-y-2 flex flex-col items-center">
                   <div className="w-full max-w-[200px]">
-                    <BoardSubtitleEditor
-                      boardId={board.id}
-                      initialValue={board.scoreboard_subtitle}
-                      placeholder="Subtitle"
-                      align="center"
-                      initialPositions={board.element_positions}
-                    />
+                  <BoardSubtitleEditor
+                    boardId={board.id}
+                    initialValue={board.scoreboard_subtitle}
+                    placeholder="Subtitle"
+                    align="center"
+                    initialPositions={board.element_positions}
+                    isLocal={isLocalBoard}
+                    isAuthenticated={isAuthenticated && !isGuest}
+                  />
                   </div>
                 </div>
                 <div className="flex justify-end">
@@ -599,7 +672,6 @@ export default async function ScoreboardPage(props: { params: Promise<{ id: stri
               </div>
             </div>
           </div>
-
         </section>
       </main>
     </div>

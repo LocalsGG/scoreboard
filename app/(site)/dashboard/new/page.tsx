@@ -2,10 +2,7 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { randomUUID } from "crypto";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { ensureUserExists, getUserSubscription, getBoardLimit } from "@/lib/users";
 import { getSupabaseStorageUrl, GAME_CONFIGS } from "@/lib/assets";
 import type { ScoreboardType } from "@/lib/types";
 import { CreateBoardButton } from "@/components/CreateBoardButton";
@@ -75,51 +72,8 @@ const getGameTemplates = (): Template[] => {
 async function createBoard(formData: FormData) {
   "use server";
 
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  const userId = session?.user?.id;
-  const userEmail = session?.user?.email;
-  
-  // Allow anonymous users (users with session but no email) to create boards
-  if (!userId) {
-    // Redirect to auth page to sign in or create anonymous session
-    redirect("/auth?redirect=/dashboard/new");
-  }
-
-  // Ensure user exists in public.profiles table before creating scoreboard
-  // This handles cases where the user exists in auth.users but not in public.profiles
-  // Allow null email for anonymous users
-  const userCheck = await ensureUserExists(supabase, userId, userEmail || null);
-  if (!userCheck.success) {
-    throw new Error(`Failed to ensure user exists: ${userCheck.error}`);
-  }
-
-  // Check board limit before creating
-  const subscription = await getUserSubscription(supabase, userId);
-  const planType = subscription?.plan_type || "base";
-  const boardLimit = getBoardLimit(planType);
-  
-  // Count existing boards
-  const { count, error: countError } = await supabase
-    .from("scoreboards")
-    .select("*", { count: "exact", head: true })
-    .eq("owner_id", userId);
-  
-  if (countError) {
-    throw new Error(`Failed to check board count: ${countError.message}`);
-  }
-  
-  const currentBoardCount = count || 0;
-  if (currentBoardCount >= boardLimit) {
-    redirect("/pricing?limit_reached=true");
-  }
-
   const rawName = (formData.get("name") as string | null) ?? "";
   const name = rawName.trim() || "Generic Scoreboard";
-  const shareToken = randomUUID().replace(/-/g, "");
   
   // Get scoreboard_type from form data and map template slug to database value
   const rawType = (formData.get("scoreboard_type") as string | null) ?? "";
@@ -128,33 +82,23 @@ async function createBoard(formData: FormData) {
   // Get default logo URL based on game type
   const customLogoUrl = getDefaultLogoUrl(scoreboardType);
 
-  const { data, error } = await supabase
-    .from("scoreboards")
-    .insert({
-      name,
-      owner_id: userId,
-      share_token: shareToken,
-      scoreboard_type: scoreboardType || null,
-      custom_logo_url: customLogoUrl,
-    })
-    .select("id")
-    .maybeSingle<{ id: string }>();
-
-  if (error) {
-    throw new Error(error.message);
+  const localId = `local-${randomUUID()}`;
+  const params = new URLSearchParams();
+  params.set("local", "true");
+  params.set("name", name);
+  if (scoreboardType) {
+    params.set("scoreboard_type", scoreboardType);
+  }
+  if (customLogoUrl) {
+    params.set("customLogoUrl", customLogoUrl);
   }
 
-  if (!data?.id) {
-    throw new Error("Board created without an id");
-  }
-
-  revalidatePath("/dashboard");
-  redirect(`/scoreboard/${data.id}`);
+  redirect(`/scoreboard/${localId}?${params.toString()}`);
 }
 
 export default async function NewScoreboardPage() {
-  // Allow unauthenticated users to access this page
-  // They will be prompted to sign in (or create anonymous session) when creating a board
+  // Allow unauthenticated users to access and create a previewable board.
+  // Editing will require signing in on the scoreboard page.
 
   return (
     <div className="flex min-h-full justify-center px-6 py-16 font-sans">

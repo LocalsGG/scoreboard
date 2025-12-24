@@ -8,11 +8,13 @@ type Props = {
   column: "a_score" | "b_score";
   initialValue: number | null;
   initialPositions?: unknown;
+  isLocal?: boolean;
+  isAuthenticated?: boolean;
 };
 
 const DEBOUNCE_MS = 400;
 
-export function ScoreAdjuster({ boardId, column, initialValue }: Props) {
+export function ScoreAdjuster({ boardId, column, initialValue, isLocal = false, isAuthenticated = false }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [value, setValue] = useState<number>(initialValue ?? 0);
   const [saving, setSaving] = useState(false);
@@ -35,6 +37,11 @@ export function ScoreAdjuster({ boardId, column, initialValue }: Props) {
     const next = Math.max(0, (value ?? 0) + delta);
     setValue(next);
     broadcastLocal(next);
+    if (isLocal || !isAuthenticated) {
+      setError(null);
+      return;
+    }
+
     setSaving(true);
     window.dispatchEvent(new CustomEvent("scoreboard-saving-start"));
     const { error: updateError } = await supabase

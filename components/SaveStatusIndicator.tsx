@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function SaveStatusIndicator() {
+type Props = {
+  isLocal?: boolean;
+  isAuthenticated?: boolean;
+};
+
+export function SaveStatusIndicator({ isLocal = false, isAuthenticated = true }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const saveCountRef = useRef(0);
 
@@ -29,11 +34,9 @@ export function SaveStatusIndicator() {
     };
   }, []);
 
-  return (
-    <div className="text-xs font-semibold text-black/60">
-      {isSaving ? "Saving…" : "Saved"}
-    </div>
-  );
+  const label = isLocal || !isAuthenticated ? "Sign in to save" : isSaving ? "Saving…" : "Saved";
+
+  return <div className="text-xs font-semibold text-black/60">{label}</div>;
 }
 
 
