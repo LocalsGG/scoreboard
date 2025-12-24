@@ -30,11 +30,11 @@ const deleteBoard = async (boardId: string) => {
 
   const supabase = await createServerSupabaseClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Allow anonymous users to delete their boards
-  const userId = session?.user?.id;
+  const userId = user?.id;
   if (!userId) {
     throw new Error("You must be signed in to delete boards");
   }

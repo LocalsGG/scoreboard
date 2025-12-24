@@ -79,10 +79,10 @@ export async function ensureUserExists(
     return { success: true };
   }
 
-  // Verify we have a valid session before attempting to create profile
+  // Verify we have a valid user before attempting to create profile
   // This ensures the user exists in auth.users
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !session?.user || session.user.id !== userId) {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user || user.id !== userId) {
     return { 
       success: false, 
       error: "Invalid session. Please sign in again." 

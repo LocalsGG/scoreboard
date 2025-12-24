@@ -9,14 +9,14 @@ export async function POST() {
   try {
     const supabase = await createServerSupabaseClient()
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+    } = await supabase.auth.getUser()
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = session.user.id
+    const userId = user.id
     const subscription = await getUserSubscription(supabase, userId)
 
     if (!subscription?.stripe_subscription_id) {
@@ -89,4 +89,5 @@ export async function POST() {
     )
   }
 }
+
 

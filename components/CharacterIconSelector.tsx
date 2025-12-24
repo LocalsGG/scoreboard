@@ -11,11 +11,12 @@ type Props = {
   compact?: boolean;
 };
 
+import { cache } from "@/lib/cache";
+import { preloadImages } from "@/lib/image-cache";
+
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const CHARACTER_ICONS_BUCKET = "public images";
 const CHARACTER_ICONS_PATH = "supersmashbroscharactericons";
-const CHARACTERS_CACHE_KEY = "scoreboard_characters_cache";
-const CHARACTERS_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
 function getCharacterIconUrl(filename: string): string {
   if (!SUPABASE_URL) return "";
@@ -85,23 +86,20 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
         setError(null);
         
         // Check cache first
-        try {
-          const cached = localStorage.getItem(CHARACTERS_CACHE_KEY);
-          if (cached) {
-            const { data, timestamp } = JSON.parse(cached);
-            const now = Date.now();
-            if (now - timestamp < CHARACTERS_CACHE_EXPIRY) {
-              setCharacters(data);
-              setLoading(false);
-              return;
-            }
-          }
-        } catch (cacheError) {
-          // Ignore cache errors
+        const cached = cache.getCharacters();
+        if (cached) {
+          setCharacters(cached);
+          setLoading(false);
+          
+          // Preload images in background
+          preloadImages(cached.map((c) => c.url)).catch(console.warn);
+          return;
         }
         
         // Fetch from API route (server-side has better permissions)
-        const response = await fetch("/api/characters");
+        const response = await fetch("/api/characters", {
+          cache: "force-cache", // Use browser cache
+        });
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: "Failed to fetch characters" }));
@@ -115,14 +113,10 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
           setCharacters(data.characters);
           
           // Cache the result
-          try {
-            localStorage.setItem(CHARACTERS_CACHE_KEY, JSON.stringify({
-              data: data.characters,
-              timestamp: Date.now(),
-            }));
-          } catch (cacheError) {
-            // Ignore cache errors
-          }
+          cache.setCharacters(data.characters);
+          
+          // Preload images in background
+          preloadImages(data.characters.map((c: { url: string }) => c.url)).catch(console.warn);
         } else {
           setError("No character icons found in storage");
         }

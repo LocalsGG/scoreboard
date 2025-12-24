@@ -3,14 +3,12 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import { CopyButton } from "@/components/CopyButton";
-import { BoardNameEditor } from "@/components/BoardNameEditor";
-import { BoardSubtitleEditor } from "@/components/BoardSubtitleEditor";
 import { ScoreboardWithControls, UndoRedoControlsWrapper } from "@/components/ScoreboardWithControls";
 import { ResetPositionsButton } from "@/components/ResetPositionsButton";
 import { ScoreControlsPanel } from "@/components/ScoreControlsPanel";
 import { LivestreamWrapper } from "@/components/LivestreamWrapper";
 import { PricingRedirectButton } from "@/components/PricingRedirectButton";
-import { LivestreamLink } from "@/components/LivestreamLink";
+import { LivestreamLinkButton } from "@/components/LivestreamLinkButton";
 import { ShareScorekeepingButton } from "@/components/ShareScorekeepingButton";
 import { DisplayScoreboardButton } from "@/components/DisplayScoreboardButton";
 import { ensureShareToken, createShareToken } from "@/lib/scoreboards";
@@ -392,58 +390,25 @@ export default async function ScoreboardPage(props: {
           </div>
 
           {/* Share Controls - Full Width Link Bar */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 flex items-center gap-2">
             {shareUrl ? (
-              <div className="relative w-full">
+              <div className="relative flex-1">
                 <input
                   readOnly
                   value={shareUrl}
-                  className="w-full truncate rounded-lg border border-black/15 bg-white px-3 py-1.5 pr-40 text-xs font-semibold text-black shadow-inner shadow-black/5"
+                  className="w-full truncate rounded-lg border border-black/15 bg-white px-3 py-1.5 pr-24 text-xs font-semibold text-black shadow-inner shadow-black/5"
                 />
-                <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-1 z-10">
-                  {canShare ? (
-                    <>
-                      <CopyButton
-                        value={shareUrl}
-                        label="Copy Link"
-                        showIcon={false}
-                        className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                      />
-                      <div className="h-4 w-px bg-black/20 mx-0.5" />
-                      <DisplayScoreboardButton
-                        shareUrl={shareUrl}
-                        className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                      />
-                      {controlsShareUrl && (
-                        <>
-                          <div className="h-4 w-px bg-black/20 mx-0.5" />
-                          <ShareScorekeepingButton
-                            shareUrl={controlsShareUrl}
-                            className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                          />
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <Link
-                        href={authRedirect}
-                        className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                      >
-                        Sign in
-                      </Link>
-                      <div className="h-4 w-px bg-black/20 mx-0.5" />
-                      <PricingRedirectButton
-                        label="Upgrade"
-                        redirectPath={`/scoreboard/${id}`}
-                        className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                      />
-                    </>
-                  )}
+                <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center z-10">
+                  <CopyButton
+                    value={shareUrl}
+                    label="Copy Link"
+                    showIcon={false}
+                    className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                  />
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-1">
                 {canEdit ? (
                   <>
                     <p className="text-xs font-medium text-black whitespace-nowrap">
@@ -469,14 +434,63 @@ export default async function ScoreboardPage(props: {
                     )}
                   </>
                 ) : (
-                  <div className="flex items-center gap-2 w-full">
+                  <Link
+                    href={authRedirect}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                  >
+                    Sign in to generate
+                  </Link>
+                )}
+              </div>
+            )}
+            
+            {/* Buttons to the right of link bar */}
+            {shareUrl && (
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {canShare ? (
+                  <>
+                    <DisplayScoreboardButton
+                      shareUrl={shareUrl}
+                      className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                    />
+                    {controlsShareUrl && (
+                      <>
+                        <div className="h-4 w-px bg-black/20 mx-0.5" />
+                        <ShareScorekeepingButton
+                          shareUrl={controlsShareUrl}
+                          livestreamEnabled={board.livestream_enabled ?? false}
+                          boardId={board.id}
+                          className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                        />
+                      </>
+                    )}
+                    {canEdit && (
+                      <>
+                        <div className="h-4 w-px bg-black/20 mx-0.5" />
+                        <LivestreamLinkButton
+                          boardId={board.id}
+                          initialUrl={board.livestream_url}
+                          initialEnabled={board.livestream_enabled}
+                          className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                        />
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
                     <Link
                       href={authRedirect}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                      className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
                     >
-                      Sign in to generate
+                      Sign in
                     </Link>
-                  </div>
+                    <div className="h-4 w-px bg-black/20 mx-0.5" />
+                    <PricingRedirectButton
+                      label="Upgrade"
+                      redirectPath={`/scoreboard/${id}`}
+                      className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                    />
+                  </>
                 )}
               </div>
             )}
@@ -536,24 +550,6 @@ export default async function ScoreboardPage(props: {
             />
           </section>
         </LivestreamWrapper>
-
-        {/* Livestream Link Section */}
-        <section className="space-y-6 sm:space-y-8">
-          {canEdit && (
-            <div className="rounded-2xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] relative">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  Link your livestream and update the score automatically
-                </h3>
-                <LivestreamLink
-                  boardId={board.id}
-                  initialUrl={board.livestream_url}
-                  initialEnabled={board.livestream_enabled}
-                />
-              </div>
-            </div>
-          )}
-        </section>
       </main>
     </div>
   );

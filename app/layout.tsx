@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getSupabaseStorageUrl } from "@/lib/assets";
+import { AssetPreloader } from "@/components/AssetPreloader";
 import "./globals.css";
 
 const faviconUrl = `${getSupabaseStorageUrl()}/favicon.ico`;
@@ -57,7 +58,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <AssetPreloader />
+        {children}
+      </body>
     </html>
   );
 }

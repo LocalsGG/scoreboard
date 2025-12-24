@@ -7,10 +7,10 @@ export async function POST(request: Request) {
   try {
     const supabase = await createServerSupabaseClient()
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+    } = await supabase.auth.getUser()
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -53,8 +53,8 @@ export async function POST(request: Request) {
     // Create checkout session
     const { url } = await createCheckoutSession({
       supabase,
-      userId: session.user.id,
-      userEmail: session.user.email,
+      userId: user.id,
+      userEmail: user.email,
       priceId,
       baseUrl,
       checkoutRequestId: rawCheckoutRequestId,

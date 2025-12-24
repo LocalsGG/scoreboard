@@ -45,7 +45,16 @@ export async function GET() {
       })
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    return NextResponse.json({ characters });
+    // Return with cache headers for client-side caching
+    return NextResponse.json(
+      { characters },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400", // Cache for 1 hour, serve stale for 24 hours
+          "CDN-Cache-Control": "public, s-maxage=3600",
+        },
+      }
+    );
   } catch (err) {
     console.error("Error in characters API:", err);
     return NextResponse.json(

@@ -129,10 +129,10 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
 
   const supabase = await createServerSupabaseClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user || !session.user.email) {
+  if (!user || !user.email) {
     redirect(`/auth?redirect=${encodeURIComponent(`/share-controls/${token}`)}`);
   }
 
@@ -141,10 +141,10 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
   if (!board.owner_id) {
     await supabase
       .from("scoreboards")
-      .update({ owner_id: session.user.id })
+      .update({ owner_id: user.id })
       .eq("id", board.id)
       .is("owner_id", null);
-    board.owner_id = session.user.id;
+    board.owner_id = user.id;
   }
 
   return (

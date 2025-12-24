@@ -20,11 +20,11 @@ export function PricingPageClient() {
   // Check authentication status and handle redirect
   useEffect(() => {
     async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession()
-      setIsAuthenticated(!!session?.user)
+      const { data: { user } } = await supabase.auth.getUser()
+      setIsAuthenticated(!!user)
       
       // If user is authenticated and there's a redirect param (but not checkout), redirect them
-      if (session?.user) {
+      if (user) {
         const params = new URLSearchParams(window.location.search)
         const redirectTo = params.get('redirect')
         const shouldCheckout = params.get('checkout') === 'true'

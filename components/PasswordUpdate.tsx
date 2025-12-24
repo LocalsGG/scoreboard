@@ -14,18 +14,18 @@ export function PasswordUpdate() {
   const [status, setStatus] = useState<Status>({ type: 'idle' })
   const [sessionReady, setSessionReady] = useState(false)
 
-  // Ensure we have a session (from the magic link) before allowing password change.
+  // Ensure we have a user (from the magic link) before allowing password change.
   useEffect(() => {
     let isMounted = true
-    void supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getUser().then(({ data }) => {
       if (!isMounted) return
-      setSessionReady(!!data.session)
+      setSessionReady(!!data.user)
     })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSessionReady(!!session)
+      setSessionReady(!!session?.user)
     })
 
     return () => {

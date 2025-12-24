@@ -66,13 +66,13 @@ export function AuthForm({ isConverting = false, redirectTo, plan, isAnnual, fin
     let isMounted = true
     let hasRedirected = false
     
-    void supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getUser().then(({ data }) => {
       if (!isMounted || hasRedirected) return
-      const hasSession = !!data.session
-      const isAnonymous = hasSession && !data.session?.user?.email
+      const hasUser = !!data.user
+      const isAnonymous = hasUser && !data.user?.email
       
       // Only redirect if user has email (not anonymous) and not converting
-      if (hasSession && !isAnonymous && !isConverting && data.session?.user?.email) {
+      if (hasUser && !isAnonymous && !isConverting && data.user?.email) {
         hasRedirected = true
         if (redirectTo === 'pricing' && plan && (plan === 'standard' || plan === 'pro' || plan === 'lifetime')) {
           // Redirect back to pricing with plan info to trigger checkout

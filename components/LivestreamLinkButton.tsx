@@ -1,43 +1,19 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ShareScorekeepingModal } from "./ShareScorekeepingModal";
+import { LivestreamLinkModal } from "./LivestreamLinkModal";
 
 type Props = {
-  shareUrl: string;
+  boardId: string;
+  initialUrl: string | null;
+  initialEnabled: boolean | null;
   className?: string;
-  livestreamEnabled?: boolean;
-  boardId?: string;
 };
 
-export function ShareScorekeepingButton({ shareUrl, className, livestreamEnabled = false, boardId }: Props) {
+export function LivestreamLinkButton({ boardId, initialUrl, initialEnabled, className }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
-  const [isLivestreamEnabled, setIsLivestreamEnabled] = useState(livestreamEnabled);
-  
-  // Listen for livestream enabled changes in real-time
-  useEffect(() => {
-    setIsLivestreamEnabled(livestreamEnabled);
-  }, [livestreamEnabled]);
-  
-  useEffect(() => {
-    if (!boardId) return;
-    
-    const handleLivestreamChange = (event: CustomEvent) => {
-      setIsLivestreamEnabled(event.detail as boolean);
-    };
-    
-    const eventName = `livestream-enabled-${boardId}`;
-    window.addEventListener(eventName, handleLivestreamChange as EventListener);
-    
-    return () => {
-      window.removeEventListener(eventName, handleLivestreamChange as EventListener);
-    };
-  }, [boardId]);
-  
-  // Disable if livestream is enabled
-  const isDisabled = isLivestreamEnabled;
 
   useEffect(() => {
     if (isModalOpen && buttonRef.current) {
@@ -66,11 +42,6 @@ export function ShareScorekeepingButton({ shareUrl, className, livestreamEnabled
     }
   }, [isModalOpen]);
 
-  // Hide button entirely when livestream is enabled
-  if (isDisabled) {
-    return null;
-  }
-
   return (
     <>
       <div className="relative group">
@@ -80,16 +51,18 @@ export function ShareScorekeepingButton({ shareUrl, className, livestreamEnabled
           onClick={() => setIsModalOpen(true)}
           className={className}
         >
-          Share Scorekeeping
+          Livestream Link
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[10px] font-medium text-white bg-black/90 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-0 pointer-events-none z-50">
-          share the controls with someone
+          link your livestream
           <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/90"></div>
         </div>
       </div>
       {isModalOpen && position && (
-        <ShareScorekeepingModal
-          shareUrl={shareUrl}
+        <LivestreamLinkModal
+          boardId={boardId}
+          initialUrl={initialUrl}
+          initialEnabled={initialEnabled}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           position={position}

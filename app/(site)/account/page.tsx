@@ -25,14 +25,12 @@ export default async function AccountPage({
 }) {
   const supabase = await createServerSupabaseClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user) {
+  if (!user) {
     redirect("/auth");
   }
-
-  const user = session.user;
   const isAnonymous = !user.email;
   
   // Handle checkout success redirect

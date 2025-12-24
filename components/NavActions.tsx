@@ -23,14 +23,14 @@ export function NavActions({ email }: NavActionsProps) {
   useEffect(() => {
     let isMounted = true
 
-    void supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getUser().then(({ data }) => {
       if (!isMounted) return
       // Show email if available, otherwise show "Guest" for anonymous users
-      const email = data.session?.user?.email ?? null
-      const hasSession = !!data.session
-      const anonymous = hasSession && !email
+      const email = data.user?.email ?? null
+      const hasUser = !!data.user
+      const anonymous = hasUser && !email
       setIsAnonymous(anonymous)
-      setSessionEmail(email || (hasSession ? 'Guest' : null))
+      setSessionEmail(email || (hasUser ? 'Guest' : null))
     })
 
     const {
@@ -77,8 +77,8 @@ export function NavActions({ email }: NavActionsProps) {
 
     // If anonymous user, delete all their scoreboards before signing out
     if (isAnonymous) {
-      const { data: { session } } = await supabase.auth.getSession()
-      const userId = session?.user?.id
+      const { data: { user } } = await supabase.auth.getUser()
+      const userId = user?.id
 
       if (userId) {
         const { error: deleteError } = await supabase

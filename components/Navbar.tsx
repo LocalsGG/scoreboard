@@ -7,10 +7,10 @@ import { NavActions } from "./NavActions";
 export async function Navbar() {
   const supabase = await createServerSupabaseClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const email = session?.user?.email ?? null;
+  const email = user?.email ?? null;
 
   return (
     <nav className="flex w-full items-center justify-between px-4 py-2 text-sm font-semibold">

@@ -11,24 +11,16 @@ type Props = {
 
 const DEBOUNCE_MS = 400;
 
-function extractYouTubeVideoId(url: string): string | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/live\/)([^&\n?#]+)/,
-  ];
-  
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match && match[1]) {
-      return match[1];
-    }
-  }
-  
-  return null;
-}
-
-function validateYouTubeUrl(url: string): boolean {
+function validateStreamUrl(url: string): boolean {
   if (!url.trim()) return false;
-  return extractYouTubeVideoId(url) !== null;
+  // Validate YouTube URLs
+  const youtubePatterns = [
+    /^https?:\/\/(?:www\.)?youtube\.com\/watch\?v=[\w-]+/i,
+    /^https?:\/\/youtu\.be\/[\w-]+/i,
+    /^https?:\/\/(?:www\.)?youtube\.com\/embed\/[\w-]+/i,
+    /^https?:\/\/(?:www\.)?youtube\.com\/live\/[\w-]+/i,
+  ];
+  return youtubePatterns.some(pattern => pattern.test(url.trim()));
 }
 
 export function LivestreamLink({ boardId, initialUrl, initialEnabled }: Props) {
@@ -81,7 +73,7 @@ export function LivestreamLink({ boardId, initialUrl, initialEnabled }: Props) {
 
   const handleUrlChange = (newUrl: string) => {
     setUrl(newUrl);
-    setIsValid(!newUrl.trim() || validateYouTubeUrl(newUrl));
+    setIsValid(!newUrl.trim() || validateStreamUrl(newUrl));
     setError(null);
   };
 
@@ -103,8 +95,8 @@ export function LivestreamLink({ boardId, initialUrl, initialEnabled }: Props) {
       return;
     }
 
-    if (!validateYouTubeUrl(url)) {
-      setError("Please enter a valid YouTube livestream URL");
+    if (!validateStreamUrl(url)) {
+      setError("Please enter a valid YouTube URL (e.g., https://www.youtube.com/watch?v=...)");
       setIsValid(false);
       return;
     }
@@ -126,8 +118,8 @@ export function LivestreamLink({ boardId, initialUrl, initialEnabled }: Props) {
   };
 
   const handleToggle = async () => {
-    if (!url.trim() || !validateYouTubeUrl(url)) {
-      setError("Please enter a valid YouTube livestream URL first");
+    if (!url.trim() || !validateStreamUrl(url)) {
+      setError("Please enter a valid YouTube URL first");
       return;
     }
 
@@ -136,31 +128,70 @@ export function LivestreamLink({ boardId, initialUrl, initialEnabled }: Props) {
     setSaving(true);
     setError(null);
 
+    // When enabling livestream, clear share_token to disable share scorekeeping
+    const updateData: { 
+      livestream_enabled: boolean; 
+      share_token?: null;
+    } = {
+      livestream_enabled: newEnabled,
+    };
+    
+    if (newEnabled) {
+      updateData.share_token = null;
+    }
+
     const { error: updateError } = await supabase
       .from("scoreboards")
-      .update({ livestream_enabled: newEnabled })
+      .update(updateData)
       .eq("id", boardId);
 
     if (updateError) {
       setError(updateError.message);
       setEnabled(enabled);
-    } else {
-      // Dispatch event to notify other components
-      window.dispatchEvent(
-        new CustomEvent(`livestream-enabled-${boardId}`, {
-          detail: newEnabled,
-        })
-      );
+      setSaving(false);
+      return;
     }
+
+    // If enabling livestream, send request to Railway endpoint
+    if (newEnabled) {
+      try {
+        const response = await fetch('/api/livestream/process', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ boardId }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to process livestream:', errorData);
+          // Don't show error to user as the update was successful
+          // The Railway request is a background operation
+        }
+      } catch (error) {
+        console.error('Error sending livestream request:', error);
+        // Don't show error to user as the update was successful
+        // The Railway request is a background operation
+      }
+    }
+
+    // Dispatch event to notify other components
+    window.dispatchEvent(
+      new CustomEvent(`livestream-enabled-${boardId}`, {
+        detail: newEnabled,
+      })
+    );
     
     setSaving(false);
   };
 
   return (
     <div className="space-y-3">
+      {/* Stream URL */}
       <div className="flex items-center gap-3">
         <label className="text-sm font-medium text-gray-700 min-w-[140px]">
-          Livestream Link
+          YouTube Link
         </label>
         <div className="flex-1 flex items-center gap-2">
           <input
@@ -178,23 +209,26 @@ export function LivestreamLink({ boardId, initialUrl, initialEnabled }: Props) {
             type="button"
             onClick={handleToggle}
             disabled={saving || !url.trim() || !isValid}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
               enabled
-                ? "bg-green-500 text-white hover:bg-green-600"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                ? "bg-green-500"
+                : "bg-gray-300"
             } disabled:opacity-50 disabled:cursor-not-allowed`}
+            role="switch"
+            aria-checked={enabled}
+            aria-label={enabled ? "Disable livestream" : "Enable livestream"}
           >
-            {enabled ? "ON" : "OFF"}
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                enabled ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
           </button>
         </div>
       </div>
+      
       {error && (
         <p className="text-sm text-red-600 ml-[140px]">{error}</p>
-      )}
-      {!error && url.trim() && enabled && (
-        <p className="text-sm text-green-600 ml-[140px]">
-          Scoreboard is updating automatically from livestream
-        </p>
       )}
     </div>
   );

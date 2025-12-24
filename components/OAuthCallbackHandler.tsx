@@ -15,10 +15,10 @@ export function OAuthCallbackHandler() {
     const syncSession = async () => {
       if (hasRedirected.current) return
       const {
-        data: { session },
-      } = await supabase.auth.getSession()
+        data: { user },
+      } = await supabase.auth.getUser()
 
-      if (session?.user) {
+      if (user) {
         hasRedirected.current = true
         window.history.replaceState(null, '', window.location.pathname)
         router.replace('/dashboard')
