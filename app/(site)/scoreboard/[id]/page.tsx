@@ -1,17 +1,15 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import { CopyButton } from "@/components/CopyButton";
 import { ScoreboardWithControls, UndoRedoControlsWrapper } from "@/components/ScoreboardWithControls";
 import { ResetPositionsButton } from "@/components/ResetPositionsButton";
 import { ScoreControlsPanel } from "@/components/ScoreControlsPanel";
 import { LivestreamWrapper } from "@/components/LivestreamWrapper";
-import { PricingRedirectButton } from "@/components/PricingRedirectButton";
 import { LivestreamLinkButton } from "@/components/LivestreamLinkButton";
 import { ShareScorekeepingButton } from "@/components/ShareScorekeepingButton";
 import { DisplayScoreboardButton } from "@/components/DisplayScoreboardButton";
-import { ensureShareToken, createShareToken } from "@/lib/scoreboards";
+import { ensureShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getBaseUrlFromRequest } from "@/lib/urls";
 import { getUserSubscription } from "@/lib/users";
@@ -171,9 +169,9 @@ async function loadScoreboard(
     }
   }
 
-  // Only ensure share token exists if user is authenticated (not guest), owns the board, and has paid subscription
+  // Always ensure share token exists if user is authenticated (not guest) and owns the board
   // But keep existing token visible for all users (including guests) if it exists
-  if (isAuthenticated && !isGuest && userId && board.owner_id === userId && hasPaidSubscription) {
+  if (isAuthenticated && !isGuest && userId && board.owner_id === userId) {
     try {
       const shareToken = await ensureShareToken({
         supabase,
@@ -222,58 +220,6 @@ export async function generateMetadata(
       follow: false,
     },
   };
-}
-
-async function generateShareToken(formData: FormData) {
-  "use server";
-
-  const boardId = (formData.get("boardId") as string | null) ?? "";
-
-  if (!boardId) {
-    throw new Error("Missing board id");
-  }
-
-  const supabase = await createServerSupabaseClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-
-  // Handle authentication errors - if user doesn't exist, redirect to auth
-  if (userError) {
-    const errorMsg = userError.message || '';
-    if (errorMsg.includes('does not exist') || errorMsg.includes('JWT')) {
-      throw new Error("Your session is invalid. Please sign in again.");
-    }
-    throw new Error(errorMsg);
-  }
-
-  const user = userData.user;
-
-  // Require authenticated user with email
-  if (!user || !user.email) {
-    throw new Error("You must be signed in to generate share tokens");
-  }
-
-  // Check subscription status before allowing share token generation
-  const subscription = await getUserSubscription(supabase, user.id);
-  const planType = subscription?.plan_type || "base";
-  const hasPaidSubscription = planType === "pro" || planType === "standard" || planType === "lifetime";
-
-  if (!hasPaidSubscription) {
-    redirect("/pricing");
-  }
-
-  const newToken = createShareToken();
-  const { error: updateError } = await supabase
-    .from("scoreboards")
-    .update({ share_token: newToken })
-    .eq("id", boardId)
-    .eq("owner_id", user.id);
-
-  if (updateError) {
-    throw new Error(updateError.message || "Failed to regenerate share token");
-  }
-
-  revalidatePath(`/scoreboard/${boardId}`);
-  revalidatePath(`/share/${newToken}`);
 }
 
 export default async function ScoreboardPage(props: {
@@ -325,12 +271,8 @@ export default async function ScoreboardPage(props: {
   const isOwner = userId && board.owner_id === userId;
   const canEdit = Boolean(isAuthenticated && !isGuest && isOwner);
   const authRedirect = `/auth?redirect=${encodeURIComponent(`/scoreboard/${id}`)}`;
-
-  // Only show share URLs if user is authenticated (not guest), has paid subscription, and owns the board
-  const canShare = isAuthenticated && !isGuest && isOwner && board.share_token && hasPaidSubscription;
   
   const baseUrl = await getBaseUrlFromRequest();
-  // Always generate share URLs if board has a token (for display), but only allow use if canShare
   const sharePath = board.share_token ? `/share/${board.share_token}` : null;
   const shareUrl = sharePath
     ? baseUrl
@@ -390,64 +332,29 @@ export default async function ScoreboardPage(props: {
           </div>
 
           {/* Share Controls - Full Width Link Bar */}
-          <div className="flex-1 min-w-0 flex items-center gap-2">
-            {shareUrl ? (
-              <div className="relative flex-1">
-                <input
-                  readOnly
-                  value={shareUrl}
-                  className="w-full truncate rounded-lg border border-black/15 bg-white px-3 py-1.5 pr-24 text-xs font-semibold text-black shadow-inner shadow-black/5"
-                />
-                <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center z-10">
-                  <CopyButton
+          {isAuthenticated && !isGuest && (
+            <div className="flex-1 min-w-0 flex items-center gap-2">
+              {shareUrl && (
+                <div className="relative flex-1">
+                  <input
+                    readOnly
                     value={shareUrl}
-                    label="Copy Link"
-                    showIcon={false}
-                    className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                    className="w-full truncate rounded-lg border border-black/15 bg-white px-3 py-1.5 pr-24 text-xs font-semibold text-black shadow-inner shadow-black/5"
                   />
+                  <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center z-10">
+                    <CopyButton
+                      value={shareUrl}
+                      label="Copy Link"
+                      showIcon={false}
+                      className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 flex-1">
-                {canEdit ? (
-                  <>
-                    <p className="text-xs font-medium text-black whitespace-nowrap">
-                      Generate token
-                    </p>
-                    {hasPaidSubscription ? (
-                      <form action={generateShareToken} className="flex-shrink-0">
-                        <input type="hidden" name="boardId" value={board.id} />
-                        <button
-                          type="submit"
-                          className="inline-flex items-center justify-center rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                        >
-                          Generate
-                        </button>
-                      </form>
-                    ) : (
-                      <Link
-                        href="/pricing"
-                        className="inline-flex items-center justify-center rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95"
-                      >
-                        Generate
-                      </Link>
-                    )}
-                  </>
-                ) : (
-                  <Link
-                    href={authRedirect}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-black/20 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-all duration-150 hover:-translate-y-0.5 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                  >
-                    Sign in to generate
-                  </Link>
-                )}
-              </div>
-            )}
-            
-            {/* Buttons to the right of link bar */}
-            {shareUrl && (
+              )}
+              
+              {/* Buttons to the right of link bar */}
               <div className="flex items-center gap-1 flex-shrink-0">
-                {canShare ? (
+                {shareUrl && (
                   <>
                     <DisplayScoreboardButton
                       shareUrl={shareUrl}
@@ -464,37 +371,18 @@ export default async function ScoreboardPage(props: {
                         />
                       </>
                     )}
-                    {canEdit && (
-                      <>
-                        <div className="h-4 w-px bg-black/20 mx-0.5" />
-                        <LivestreamLinkButton
-                          boardId={board.id}
-                          initialUrl={board.livestream_url}
-                          initialEnabled={board.livestream_enabled}
-                          className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                        />
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href={authRedirect}
-                      className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                    >
-                      Sign in
-                    </Link>
                     <div className="h-4 w-px bg-black/20 mx-0.5" />
-                    <PricingRedirectButton
-                      label="Upgrade"
-                      redirectPath={`/scoreboard/${id}`}
-                      className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                    />
                   </>
                 )}
+                <LivestreamLinkButton
+                  boardId={board.id}
+                  initialUrl={board.livestream_url}
+                  initialEnabled={board.livestream_enabled}
+                  className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
+                />
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </header>
 
         {/* Scoreboard Preview and Controls Wrapped */}
