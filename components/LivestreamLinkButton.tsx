@@ -51,7 +51,7 @@ export function LivestreamLinkButton({ boardId, initialUrl, initialEnabled, clas
           onClick={() => setIsModalOpen(true)}
           className={className}
         >
-          Livestream Link
+          Auto Score Keeping (beta)
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[10px] font-medium text-white bg-black/90 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-0 pointer-events-none z-50">
           link your livestream

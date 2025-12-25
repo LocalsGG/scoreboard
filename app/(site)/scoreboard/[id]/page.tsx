@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { CopyButton } from "@/components/CopyButton";
 import { ScoreboardWithControls, UndoRedoControlsWrapper } from "@/components/ScoreboardWithControls";
 import { ResetPositionsButton } from "@/components/ResetPositionsButton";
@@ -12,7 +12,6 @@ import { DisplayScoreboardButton } from "@/components/DisplayScoreboardButton";
 import { ensureShareToken } from "@/lib/scoreboards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getBaseUrlFromRequest } from "@/lib/urls";
-import { getUserSubscription } from "@/lib/users";
 import type { ElementPositions, ScoreboardType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -44,9 +43,8 @@ type Scoreboard = {
 type LoadScoreboardResult = {
   board: Scoreboard | null;
   ownerName: string;
-  hasPaidSubscription: boolean;
   isAuthenticated: boolean;
-  isGuest: boolean; // true if user is anonymous (has session but no email)
+  isGuest: boolean;
   userId: string | null;
 };
 
@@ -66,14 +64,12 @@ async function loadScoreboard(
   const supabase = await createServerSupabaseClient();
   const { data: userData } = await supabase.auth.getUser();
   
-  // Allow unauthenticated users to view scoreboards
   const user = userData?.user;
   const isAuthenticated = !!user;
   const userId = user?.id || null;
-  const isGuest = isAuthenticated && !user?.email; // Guest = has session but no email
+  const isGuest = isAuthenticated && !user?.email;
 
   let ownerName = "you";
-  let hasPaidSubscription = false;
 
   if (isAuthenticated) {
     const metadata = (user.user_metadata ?? {}) as Record<string, unknown>;
@@ -82,30 +78,21 @@ async function loadScoreboard(
       (typeof metadata.name === "string" && metadata.name.trim()) ||
       user.email ||
       "you";
-
-    // Fetch user subscription status
-    const subscription = await getUserSubscription(supabase, user.id);
-    const planType = subscription?.plan_type || "base";
-    hasPaidSubscription = planType === "pro" || planType === "standard" || planType === "lifetime";
   }
 
-  // Local boards are no longer supported
   if (boardId.startsWith("local-")) {
-    return { board: null, ownerName, hasPaidSubscription, isAuthenticated, isGuest, userId };
+    return { board: null, ownerName, isAuthenticated, isGuest, userId };
   }
 
-  // Select all columns, but handle element_positions gracefully if it doesn't exist
   let board: Scoreboard | null = null;
   let boardError: Error | null = null;
   
   try {
-    // If authenticated, filter by owner_id. Otherwise, just get by ID/share_token
     let query = supabase
       .from("scoreboards")
       .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, element_positions, title_visible, a_side_icon, b_side_icon, center_text_color, custom_logo_url, scoreboard_type, livestream_url, livestream_enabled")
       .eq(isUuid ? "id" : "share_token", boardId);
     
-    // Only filter by owner_id if user is authenticated
     if (isAuthenticated && userId) {
       query = query.eq("owner_id", userId);
     }
@@ -115,7 +102,6 @@ async function loadScoreboard(
     if (result.error) {
       const errorMsg = result.error.message || '';
       if (errorMsg.includes("element_positions") || errorMsg.includes("column")) {
-        // Try without element_positions and icon columns
         let queryWithoutPos = supabase
           .from("scoreboards")
           .select("id, name, scoreboard_subtitle, created_at, share_token, owner_id, a_side, b_side, a_score, b_score, updated_at, scoreboard_style, title_visible, center_text_color, custom_logo_url, scoreboard_type, livestream_url, livestream_enabled")
@@ -153,10 +139,9 @@ async function loadScoreboard(
   }
 
   if (!board) {
-    return { board: null, ownerName, hasPaidSubscription, isAuthenticated, isGuest, userId };
+    return { board: null, ownerName, isAuthenticated, isGuest, userId };
   }
 
-  // If board is unclaimed and a real user is present, claim ownership
   if (board.owner_id === null && isAuthenticated && !isGuest && userId) {
     const { error: claimError } = await supabase
       .from("scoreboards")
@@ -169,8 +154,6 @@ async function loadScoreboard(
     }
   }
 
-  // Always ensure share token exists if user is authenticated (not guest) and owns the board
-  // But keep existing token visible for all users (including guests) if it exists
   if (isAuthenticated && !isGuest && userId && board.owner_id === userId) {
     try {
       const shareToken = await ensureShareToken({
@@ -182,12 +165,10 @@ async function loadScoreboard(
       board.share_token = shareToken;
     } catch (error) {
       console.error("Failed to ensure share token:", error);
-      // Continue without share token if it fails
     }
   }
-  // Don't hide share token - keep it visible if it exists (for guests to see but not use)
 
-  return { board, ownerName, hasPaidSubscription, isAuthenticated, isGuest, userId };
+  return { board, ownerName, isAuthenticated, isGuest, userId };
 }
 
 export async function generateMetadata(
@@ -228,7 +209,7 @@ export default async function ScoreboardPage(props: {
 }) {
   const { id } = await props.params;
   const searchParams = props.searchParams ? await props.searchParams : undefined;
-  const { board, hasPaidSubscription, isAuthenticated, isGuest, userId } = await loadScoreboard(
+  const { board, isAuthenticated, isGuest, userId } = await loadScoreboard(
     id,
     searchParams
   );
@@ -289,7 +270,6 @@ export default async function ScoreboardPage(props: {
   return (
     <div className="relative flex min-h-full justify-center px-4 sm:px-6 py-6 sm:py-8 lg:py-12 font-sans">
       <main className="relative w-full max-w-6xl space-y-6 sm:space-y-8 lg:space-y-10 animate-fade-in">
-        {/* Header Navigation */}
         <header className="flex items-center gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 flex-shrink-0">
             {isAuthenticated ? (
@@ -331,7 +311,6 @@ export default async function ScoreboardPage(props: {
             )}
           </div>
 
-          {/* Share Controls - Full Width Link Bar */}
           {isAuthenticated && !isGuest && (
             <div className="flex-1 min-w-0 flex items-center gap-2">
               {shareUrl && (
@@ -351,8 +330,6 @@ export default async function ScoreboardPage(props: {
                   </div>
                 </div>
               )}
-              
-              {/* Buttons to the right of link bar */}
               <div className="flex items-center gap-1 flex-shrink-0">
                 {shareUrl && (
                   <>
@@ -385,12 +362,10 @@ export default async function ScoreboardPage(props: {
           )}
         </header>
 
-        {/* Scoreboard Preview and Controls Wrapped */}
         <LivestreamWrapper
           boardId={board.id}
           initialLivestreamEnabled={board.livestream_enabled}
         >
-          {/* Scoreboard Preview */}
           <div className="relative z-0 -my-4 sm:-my-6 lg:-my-8">
             <ScoreboardWithControls
               boardId={board.id}
@@ -415,9 +390,7 @@ export default async function ScoreboardPage(props: {
             />
           </div>
 
-          {/* Controls Section */}
           <section className="space-y-6 sm:space-y-8 mt-6 sm:mt-8">
-            {/* Score Controls - Single Panel */}
             <ScoreControlsPanel
               boardId={board.id}
               initialLivestreamEnabled={board.livestream_enabled}
