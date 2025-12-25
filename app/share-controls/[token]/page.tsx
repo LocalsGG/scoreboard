@@ -1,17 +1,9 @@
 import { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
-import { BoardNameEditor } from "@/components/BoardNameEditor";
-import { BoardSubtitleEditor } from "@/components/BoardSubtitleEditor";
 import { ScoreAdjuster } from "@/components/ScoreAdjuster";
-import { SideNameEditor } from "@/components/SideNameEditor";
-import { CompactStyleSelector } from "@/components/CompactStyleSelector";
-import { ResetPositionsButton } from "@/components/ResetPositionsButton";
-import { CharacterIconSelector } from "@/components/CharacterIconSelector";
-import { LogoSelector } from "@/components/LogoSelector";
-import { GameTypeIndicator } from "@/components/GameTypeIndicator";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { ElementPositions, ScoreboardType } from "@/lib/types";
+import type { ElementPositions } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -150,6 +142,7 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
   return (
     <div className="relative flex min-h-full justify-center px-4 sm:px-6 py-6 sm:py-8 lg:py-12 font-sans">
       <main className="relative w-full max-w-6xl space-y-4 sm:space-y-6 lg:space-y-8 animate-fade-in">
+        {/* Scoreboard Preview - Read-only, mirrors main preview */}
         <div className="relative z-0 -my-8 sm:-my-12 lg:-my-16">
           <ScoreboardPreview
             boardId={board.id}
@@ -168,125 +161,54 @@ export default async function SharedControlsPage(props: { params: Promise<{ toke
             initialCenterTextColor={board.center_text_color}
             initialCustomLogoUrl={board.custom_logo_url}
             initialScoreboardType={board.scoreboard_type as "melee" | "ultimate" | "guilty-gear" | "generic" | null}
+            readOnly={true}
+            isAuthenticated={true}
           />
         </div>
 
+        {/* Score Controls Only */}
         <section className="space-y-6 sm:space-y-8">
-          {/* Score Controls - Single Panel */}
           <div className="rounded-2xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] relative">
-            <div className="space-y-6">
-              {/* Scoreboard Name - Centered above logo */}
-              <div className="flex flex-col items-center">
-                <div className="w-full max-w-md">
-                  <BoardNameEditor 
-                    boardId={board.id} 
-                    initialName={board.name} 
-                    initialTitleVisible={board.title_visible ?? true}
-                    initialCustomLogoUrl={board.custom_logo_url}
-                    align="center" 
-                    showLabel={false}
-                    initialPositions={board.element_positions}
-                  />
-                </div>
-              </div>
-
-              {/* Top Row: A Side Name | A Side Score | Logo | B Side Score | B Side Name */}
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 sm:gap-3 items-start">
-                {/* A Side Name */}
-                <div className="space-y-2 min-w-0">
-                  <div className="flex items-start gap-2">
-                    {(board.scoreboard_type === "melee" || board.scoreboard_type === "ultimate") && (
-                      <CharacterIconSelector
-                        boardId={board.id}
-                        initialValue={board.a_side_icon}
-                        column="a_side_icon"
-                        placeholder="Select character icon"
-                        compact={true}
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <SideNameEditor
-                        boardId={board.id}
-                        initialValue={board.a_side}
-                        column="a_side"
-                        placeholder="A Side Name"
-                        initialPositions={board.element_positions}
-                      />
-                    </div>
-                  </div>
-                </div>
-
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-black text-center">
+                Score Controls
+              </h2>
+              <p className="text-sm text-black/60 text-center">
+                Adjust the scores below. All other settings are controlled by the main scoreboard.
+              </p>
+              
+              {/* Score Controls - Side by Side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-2xl mx-auto">
                 {/* A Side Score */}
-                <div className="space-y-2 min-w-0">
-                  <ScoreAdjuster boardId={board.id} column="a_score" initialValue={board.a_score} initialPositions={board.element_positions} />
-                </div>
-
-                {/* Logo */}
-                <div className="space-y-2 flex flex-col items-center min-w-0">
-                  <LogoSelector
-                    boardId={board.id}
-                    initialCustomLogoUrl={board.custom_logo_url}
-                    initialScoreboardType={board.scoreboard_type as ScoreboardType | null}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-[0.1em] text-black/70">
+                    {board.a_side || "A Side"} Score
+                  </label>
+                  <ScoreAdjuster 
+                    boardId={board.id} 
+                    column="a_score" 
+                    initialValue={board.a_score} 
                     initialPositions={board.element_positions}
+                    isAuthenticated={true}
                   />
                 </div>
 
                 {/* B Side Score */}
-                <div className="space-y-2 min-w-0">
-                  <ScoreAdjuster boardId={board.id} column="b_score" initialValue={board.b_score} initialPositions={board.element_positions} />
-                </div>
-
-                {/* B Side Name */}
-                <div className="space-y-2 min-w-0">
-                  <div className="flex items-start gap-2">
-                    {(board.scoreboard_type === "melee" || board.scoreboard_type === "ultimate") && (
-                      <CharacterIconSelector
-                        boardId={board.id}
-                        initialValue={board.b_side_icon}
-                        column="b_side_icon"
-                        placeholder="Select character icon"
-                        compact={true}
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <SideNameEditor
-                        boardId={board.id}
-                        initialValue={board.b_side}
-                        column="b_side"
-                        placeholder="B Side Name"
-                        initialPositions={board.element_positions}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Row: Style Selector, Subtitle, and Game Type */}
-              <div className="grid grid-cols-3 items-end gap-4">
-                <div className="flex justify-start">
-                  <CompactStyleSelector boardId={board.id} initialStyle={board.scoreboard_style} />
-                </div>
-                <div className="space-y-2 flex flex-col items-center">
-                  <div className="w-full max-w-[200px]">
-                    <BoardSubtitleEditor
-                      boardId={board.id}
-                      initialValue={board.scoreboard_subtitle}
-                      placeholder="Subtitle"
-                      align="center"
-                      initialPositions={board.element_positions}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <GameTypeIndicator 
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-[0.1em] text-black/70">
+                    {board.b_side || "B Side"} Score
+                  </label>
+                  <ScoreAdjuster 
                     boardId={board.id} 
-                    initialType={board.scoreboard_type as ScoreboardType | null} 
+                    column="b_score" 
+                    initialValue={board.b_score} 
+                    initialPositions={board.element_positions}
+                    isAuthenticated={true}
                   />
                 </div>
               </div>
             </div>
           </div>
-
         </section>
       </main>
     </div>

@@ -1,11 +1,8 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ScoreboardPreview } from "@/components/ScoreboardPreview";
-import { CopyButton } from "@/components/CopyButton";
-import { DisplayScoreboardButton } from "@/components/DisplayScoreboardButton";
-import { ShareScorekeepingButton } from "@/components/ShareScorekeepingButton";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getSiteUrl, getBaseUrlFromRequest } from "@/lib/urls";
+import { getSiteUrl } from "@/lib/urls";
 import type { ElementPositions } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -144,64 +141,10 @@ export default async function SharedScoreboardPage(props: { params: Promise<{ to
   const { token } = await props.params;
   const { board } = await loadSharedBoard(token);
 
-  const supabase = await createServerSupabaseClient();
-  const { data: userData } = await supabase.auth.getUser();
-  const user = userData?.user;
-  const isAuthenticated = !!user;
-  const isGuest = isAuthenticated && !user?.email;
-
-  const baseUrl = await getBaseUrlFromRequest();
-  const sharePath = `/share/${token}`;
-  const shareUrl = baseUrl ? `${baseUrl}${sharePath}` : sharePath;
-  const controlsSharePath = `/share-controls/${token}`;
-  const controlsShareUrl = baseUrl ? `${baseUrl}${controlsSharePath}` : controlsSharePath;
-
   return (
     <div className="relative flex min-h-full justify-center px-4 sm:px-6 py-6 sm:py-8 lg:py-12 font-sans">
-      <main className="relative w-full max-w-6xl space-y-6 sm:space-y-8 lg:space-y-10 animate-fade-in">
-        {/* Header with Share Controls */}
-        {isAuthenticated && !isGuest && (
-          <header className="flex items-center gap-4 px-4 sm:px-6 lg:px-8">
-            <div className="flex-1 min-w-0 flex items-center gap-2">
-              <div className="relative flex-1">
-                <input
-                  readOnly
-                  value={shareUrl}
-                  className="w-full truncate rounded-lg border border-black/15 bg-white px-3 py-1.5 pr-24 text-xs font-semibold text-black shadow-inner shadow-black/5"
-                />
-                <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center z-10">
-                  <CopyButton
-                    value={shareUrl}
-                    label="Copy Link"
-                    showIcon={false}
-                    className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                  />
-                </div>
-              </div>
-              
-              {/* Buttons to the right of link bar */}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <DisplayScoreboardButton
-                  shareUrl={shareUrl}
-                  className="cursor-pointer inline-flex items-center justify-center rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                />
-                {controlsShareUrl && (
-                  <>
-                    <div className="h-4 w-px bg-black/20 mx-0.5" />
-                    <ShareScorekeepingButton
-                      shareUrl={controlsShareUrl}
-                      livestreamEnabled={board.livestream_enabled ?? false}
-                      boardId={board.id}
-                      className="cursor-pointer rounded border border-black/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-black transition-all duration-150 hover:border-black/40 hover:bg-white active:scale-95 whitespace-nowrap"
-                    />
-                  </>
-                )}
-              </div>
-            </div>
-          </header>
-        )}
-
-        {/* Scoreboard Preview */}
+      <main className="relative w-full max-w-6xl animate-fade-in">
+        {/* Scoreboard Preview - Clean display only */}
         <div className="relative z-0 -my-4 sm:-my-6 lg:-my-8">
           <ScoreboardPreview
             boardId={board.id}
