@@ -113,7 +113,7 @@ export function NavActions({ email }: NavActionsProps) {
         href="/auth"
         className="text-sm font-semibold text-black transition-colors hover:text-zinc-700"
       >
-        Sign up/Sign in
+        Log in
       </Link>
     )
   }

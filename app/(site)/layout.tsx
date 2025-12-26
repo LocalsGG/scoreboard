@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { OAuthCallbackHandler } from "@/components/OAuthCallbackHandler";
+import { AnimatedLayout } from "./animated-layout";
 
 export const metadata: Metadata = {
   title: {
@@ -24,25 +25,27 @@ export default function SiteLayout({
           <Navbar />
         </div>
       </header>
-      <main className="flex-1">{children}</main>
-      <footer className="border-t border-black/5 bg-white/80 px-6 py-8 text-sm text-zinc-700 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 text-center">
-          <span className="text-black">© 2025 LOCALS.GG</span>
-          <p className="text-sm text-zinc-600">
-            Modern tools for real-world gaming events and communities.
-          </p>
-          <p className="text-sm text-zinc-600">
-            <Link
-              href="https://discord.gg/vS6gQZyNgT"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-black hover:underline"
-            >
-              Let us know what features we should add!
-            </Link>
-          </p>
-        </div>
-      </footer>
+      <AnimatedLayout>
+        <main className="flex-1">{children}</main>
+        <footer className="border-t border-black/5 bg-white/80 px-6 py-8 text-sm text-zinc-700 backdrop-blur">
+          <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 text-center">
+            <span className="text-black">© 2025 LOCALS.GG</span>
+            <p className="text-sm text-zinc-600">
+              Modern tools for real-world gaming events and communities.
+            </p>
+            <p className="text-sm text-zinc-600">
+              <Link
+                href="https://discord.gg/vS6gQZyNgT"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-black hover:underline"
+              >
+                Let us know what features we should add!
+              </Link>
+            </p>
+          </div>
+        </footer>
+      </AnimatedLayout>
     </div>
   );
 }

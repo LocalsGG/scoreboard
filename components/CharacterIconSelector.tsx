@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = {
@@ -14,17 +15,6 @@ type Props = {
 import { cache } from "@/lib/cache";
 import { preloadImages } from "@/lib/image-cache";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const CHARACTER_ICONS_BUCKET = "public images";
-const CHARACTER_ICONS_PATH = "supersmashbroscharactericons";
-
-function getCharacterIconUrl(filename: string): string {
-  if (!SUPABASE_URL) return "";
-  const encodedBucket = encodeURIComponent(CHARACTER_ICONS_BUCKET);
-  const encodedPath = encodeURIComponent(CHARACTER_ICONS_PATH);
-  // Filename should already be just the filename (not including path) when coming from list()
-  return `${SUPABASE_URL}/storage/v1/object/public/${encodedBucket}/${encodedPath}/${encodeURIComponent(filename)}`;
-}
 
 // Lazy-loaded image component that only loads when visible
 function LazyCharacterIcon({ character }: { character: { name: string; url: string } }) {
@@ -54,15 +44,17 @@ function LazyCharacterIcon({ character }: { character: { name: string; url: stri
   }, []);
 
   return (
-    <img
+    <Image
       ref={imgRef}
-      src={isVisible ? character.url : undefined}
+      src={isVisible ? character.url : ""}
       alt={character.name}
+      width={24}
+      height={24}
       className="w-6 h-6 object-contain flex-shrink-0"
-      loading="lazy"
       onError={(e) => {
         (e.target as HTMLImageElement).style.display = "none";
       }}
+      unoptimized
     />
   );
 }
@@ -74,7 +66,6 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(initialValue);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -156,7 +147,6 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
   const handleSelectIcon = async (iconUrl: string | null) => {
     setSelectedIcon(iconUrl);
     setIsOpen(false);
-    setSaving(true);
     setError(null);
     window.dispatchEvent(new CustomEvent("scoreboard-saving-start"));
 
@@ -181,7 +171,6 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
       setError(err instanceof Error ? err.message : "Failed to save icon");
       setSelectedIcon(initialValue);
     } finally {
-      setSaving(false);
       window.dispatchEvent(new CustomEvent("scoreboard-saving-end"));
     }
   };
@@ -213,14 +202,16 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
           {loading ? (
             <span className="text-xs">...</span>
           ) : selectedIcon ? (
-            <img
+            <Image
               src={selectedIcon}
               alt={selectedCharacterName}
+              width={24}
+              height={24}
               className="w-6 h-6 object-contain"
-              loading="lazy"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = "none";
               }}
+              unoptimized
             />
           ) : (
             <svg
@@ -379,11 +370,13 @@ export function CharacterIconSelector({ boardId, initialValue, column, placehold
 
       {selectedIcon && (
         <div className="flex items-center gap-2">
-          <img
+          <Image
             src={selectedIcon}
             alt="Selected character"
+            width={32}
+            height={32}
             className="w-8 h-8 object-contain border border-black/10 rounded"
-            loading="lazy"
+            unoptimized
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
             }}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 
 const STORAGE_KEY = 'dashboard-board-limit-banner-dismissed'
@@ -10,21 +10,18 @@ interface BoardLimitBannerProps {
 }
 
 export function BoardLimitBanner({ boardLimit }: BoardLimitBannerProps) {
-  const [isDismissed, setIsDismissed] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    // Check localStorage on mount
-    const dismissed = localStorage.getItem(STORAGE_KEY)
-    setIsDismissed(dismissed === 'true')
-  }, [])
+  // Initialize from localStorage to avoid hydration mismatch and setState in effect
+  const [isDismissed, setIsDismissed] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) === 'true' : false
+  )
 
   const handleDismiss = () => {
     localStorage.setItem(STORAGE_KEY, 'true')
     setIsDismissed(true)
   }
 
-  // Don't render until we've checked localStorage to avoid hydration mismatch
-  if (isDismissed === null || isDismissed) {
+  // Don't render if dismissed
+  if (isDismissed) {
     return null
   }
 

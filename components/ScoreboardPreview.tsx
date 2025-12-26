@@ -7,6 +7,8 @@ import type { ElementPositions, ScoreboardPreviewProps } from "@/lib/types";
 import { getMergedPositions, DEFAULT_POSITIONS, DEBOUNCE_MS, DEFAULT_CENTER_TEXT_COLOR } from "./scoreboard-preview/constants";
 import { usePreviewState } from "./scoreboard-preview/usePreviewState";
 import { usePreviewSubscriptions } from "./scoreboard-preview/usePreviewSubscriptions";
+import { useDragAndDrop } from "./scoreboard-preview/useDragAndDrop";
+import { ScoreboardCanvas } from "./scoreboard-preview/ScoreboardCanvas";
 import type { PreviewState } from "./scoreboard-preview/types";
 
 type Props = ScoreboardPreviewProps & { 
@@ -55,6 +57,12 @@ export function ScoreboardPreview({
 
   const [livestreamEnabledState, setLivestreamEnabledState] = useState<boolean>(initialLivestreamEnabled ?? false);
 
+  // Animation state for floating +1/-1 indicators
+  const [scoreAnimations, setScoreAnimations] = useState<{
+    aScore: { delta: number; id: number } | null;
+    bScore: { delta: number; id: number } | null;
+  }>({ aScore: null, bScore: null });
+
   const [positions, setPositions] = useState<ElementPositions>(
     getMergedPositions(initialPositions, initialScoreboardType)
   );
@@ -75,10 +83,10 @@ export function ScoreboardPreview({
   const [historyIndex, setHistoryIndex] = useState(0);
   const isUndoRedoRef = useRef(false);
 
-  const [dragging, setDragging] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const { dragging, startDrag, handleMouseMove, stopDrag } = useDragAndDrop(svgRef);
 
   const supabase = useMemo(() => createClient(), []);
 
@@ -87,16 +95,6 @@ export function ScoreboardPreview({
     [boardId]
   );
 
-  // Get SVG point from mouse event
-  const getSVGPoint = useCallback((event: MouseEvent | React.MouseEvent) => {
-    if (!svgRef.current) return null;
-    const svg = svgRef.current;
-    const point = svg.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
-    const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
-    return svgPoint;
-  }, []);
 
   // Save positions to database
   const savePositions = useCallback(
@@ -202,115 +200,68 @@ export function ScoreboardPreview({
   const handleMouseDown = useCallback(
     (elementId: keyof ElementPositions, event: React.MouseEvent) => {
       if (readOnly) return;
-      event.preventDefault();
-      const svgPoint = getSVGPoint(event);
-      if (!svgPoint) return;
-
-      const currentPos = positions[elementId] ?? DEFAULT_POSITIONS[elementId];
-      if (!currentPos) return;
-
-      setDragging(elementId);
-      setDragOffset({
-        x: svgPoint.x - currentPos.x,
-        y: svgPoint.y - currentPos.y,
-      });
+      startDrag(elementId, event, positions);
     },
-    [positions, getSVGPoint, readOnly]
+    [positions, startDrag, readOnly]
   );
 
-  // Handle logo drag start
-  const handleLogoMouseDown = useCallback(
-    (event: React.MouseEvent) => {
-      if (readOnly) return;
-      event.preventDefault();
-      event.stopPropagation();
-      
-      const svgPoint = getSVGPoint(event);
-      if (!svgPoint) return;
-
-      const logo = positions.logo;
-      if (!logo) return;
-
-      setDragging("logo");
-      setDragOffset({
-        x: svgPoint.x - logo.x,
-        y: svgPoint.y - logo.y,
-      });
-    },
-    [positions, getSVGPoint, readOnly]
-  );
 
   // Handle icon drag start
   const handleIconMouseDown = useCallback(
     (elementId: "a_side_icon" | "b_side_icon", event: React.MouseEvent) => {
       if (readOnly) return;
-      event.preventDefault();
-      event.stopPropagation();
-      
-      const svgPoint = getSVGPoint(event);
-      if (!svgPoint) return;
-
-      const icon = positions[elementId];
-      if (!icon) return;
-
-      setDragging(elementId);
-      setDragOffset({
-        x: svgPoint.x - icon.x,
-        y: svgPoint.y - icon.y,
-      });
+      startDrag(elementId, event, positions);
     },
-    [positions, getSVGPoint, readOnly]
+    [positions, startDrag, readOnly]
   );
 
   // Handle drag
   useEffect(() => {
-    if (!dragging || !dragOffset) return;
+    if (!dragging) return;
 
     let lastPositions: ElementPositions | null = null;
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const svgPoint = getSVGPoint(event);
-      if (!svgPoint) return;
+    const mouseMoveHandler = (event: MouseEvent) => {
+      handleMouseMove(event, positions, (elementId, x, y) => {
+        setPositions((prev) => {
+          const elementIdKey = elementId as keyof ElementPositions;
+          const currentElement = prev[elementIdKey];
+          if (!currentElement) return prev;
 
-      setPositions((prev) => {
-        const elementId = dragging as keyof ElementPositions;
-        const currentElement = prev[elementId];
-        if (!currentElement) return prev;
-        
-        const updatedElement = {
-          ...currentElement,
-          x: svgPoint.x - dragOffset.x,
-          y: svgPoint.y - dragOffset.y,
-        };
-        
-        const newPositions: ElementPositions = {
-          ...prev,
-        };
-        (newPositions as any)[elementId] = updatedElement;
-        
-        lastPositions = newPositions;
-        savePositions(newPositions);
-        return newPositions;
+          const updatedElement = {
+            ...currentElement,
+            x,
+            y,
+          };
+
+          const newPositions: ElementPositions = {
+            ...prev,
+          };
+          (newPositions as any)[elementIdKey] = updatedElement;
+
+          lastPositions = newPositions;
+          savePositions(newPositions);
+          return newPositions;
+        });
       });
     };
 
-    const handleMouseUp = () => {
+    const mouseUpHandler = () => {
       // Add to history when drag ends
       if (lastPositions) {
         addToHistory(lastPositions, state);
       }
-      setDragging(null);
-      setDragOffset(null);
+      stopDrag();
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousemove", mouseMoveHandler);
+    window.addEventListener("mouseup", mouseUpHandler);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mousemove", mouseMoveHandler);
+      window.removeEventListener("mouseup", mouseUpHandler);
     };
-  }, [dragging, dragOffset, getSVGPoint, savePositions, state, addToHistory]);
+  }, [dragging, positions, handleMouseMove, savePositions, state, addToHistory, stopDrag]);
 
 
   // Update state when initial values change (excluding positions-related changes)
@@ -466,10 +417,35 @@ export function ScoreboardPreview({
     const handleScoreA = handleScore("aScore");
     const handleScoreB = handleScore("bScore");
 
+    // Handle score animation events for floating +1/-1 indicators
+    const handleScoreAnimation = (column: "aScore" | "bScore") => (event: Event) => {
+      const detail = (event as CustomEvent<{ delta: number; score: number }>).detail;
+      if (detail && typeof detail.delta === "number") {
+        const animationId = Date.now() + Math.random();
+        setScoreAnimations(prev => ({
+          ...prev,
+          [column]: { delta: detail.delta, id: animationId }
+        }));
+
+        // Clear animation after it completes
+        setTimeout(() => {
+          setScoreAnimations(prev => ({
+            ...prev,
+            [column]: null
+          }));
+        }, 800);
+      }
+    };
+
+    const handleScoreAnimationA = handleScoreAnimation("aScore");
+    const handleScoreAnimationB = handleScoreAnimation("bScore");
+
     window.addEventListener(`board-name-local-${boardId}`, handleBoardName);
     window.addEventListener(`board-subtitle-local-${boardId}`, handleBoardSubtitle);
     window.addEventListener(`score-local-${boardId}-a_score`, handleScoreA);
     window.addEventListener(`score-local-${boardId}-b_score`, handleScoreB);
+    window.addEventListener(`score-animation-${boardId}-a_score`, handleScoreAnimationA);
+    window.addEventListener(`score-animation-${boardId}-b_score`, handleScoreAnimationB);
     window.addEventListener(`reset-positions-${boardId}`, handleResetPositions);
     window.addEventListener(`title-visibility-${boardId}`, handleTitleVisibility);
     window.addEventListener(`center-text-color-local-${boardId}`, handleCenterTextColor);
@@ -482,6 +458,8 @@ export function ScoreboardPreview({
       window.removeEventListener(`board-subtitle-local-${boardId}`, handleBoardSubtitle);
       window.removeEventListener(`score-local-${boardId}-a_score`, handleScoreA);
       window.removeEventListener(`score-local-${boardId}-b_score`, handleScoreB);
+      window.removeEventListener(`score-animation-${boardId}-a_score`, handleScoreAnimationA);
+      window.removeEventListener(`score-animation-${boardId}-b_score`, handleScoreAnimationB);
       window.removeEventListener(`reset-positions-${boardId}`, handleResetPositions);
       window.removeEventListener(`title-visibility-${boardId}`, handleTitleVisibility);
       window.removeEventListener(`center-text-color-local-${boardId}`, handleCenterTextColor);
@@ -703,6 +681,26 @@ export function ScoreboardPreview({
         {state.aScore}
       </text>
 
+      {/* A Score Animation */}
+      {scoreAnimations.aScore && (
+        <text
+          key={`a-score-anim-${scoreAnimations.aScore.id}`}
+          x={safeNumber(positions.a_score.x, DEFAULT_POSITIONS.a_score.x)}
+          y={safeNumber(positions.a_score.y, DEFAULT_POSITIONS.a_score.y) - 20}
+          fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
+          fontSize="48"
+          fill={scoreAnimations.aScore.delta > 0 ? "#22c55e" : "#ef4444"}
+          fontWeight="800"
+          textAnchor="middle"
+          opacity="0"
+          style={{
+            animation: "scoreFloat 0.8s ease-out forwards"
+          }}
+        >
+          {scoreAnimations.aScore.delta > 0 ? "+" : ""}{scoreAnimations.aScore.delta}
+        </text>
+      )}
+
       <text
         x={safeNumber(positions.b_score.x, DEFAULT_POSITIONS.b_score.x)}
         y={safeNumber(positions.b_score.y, DEFAULT_POSITIONS.b_score.y)}
@@ -724,6 +722,26 @@ export function ScoreboardPreview({
         {state.bScore}
       </text>
 
+      {/* B Score Animation */}
+      {scoreAnimations.bScore && (
+        <text
+          key={`b-score-anim-${scoreAnimations.bScore.id}`}
+          x={safeNumber(positions.b_score.x, DEFAULT_POSITIONS.b_score.x)}
+          y={safeNumber(positions.b_score.y, DEFAULT_POSITIONS.b_score.y) - 20}
+          fontFamily="Impact, 'Anton', 'Bebas Neue', 'Arial Black', sans-serif"
+          fontSize="48"
+          fill={scoreAnimations.bScore.delta > 0 ? "#22c55e" : "#ef4444"}
+          fontWeight="800"
+          textAnchor="middle"
+          opacity="0"
+          style={{
+            animation: "scoreFloat 0.8s ease-out forwards"
+          }}
+        >
+          {scoreAnimations.bScore.delta > 0 ? "+" : ""}{scoreAnimations.bScore.delta}
+        </text>
+      )}
+
       {logo && (
         <g>
           <image
@@ -737,11 +755,6 @@ export function ScoreboardPreview({
               cursor: readOnly ? "default" : "move",
               pointerEvents: "all",
               opacity: isDragging("logo") ? 0.8 : 1,
-            }}
-            onMouseDown={(e) => {
-              if (!readOnly) {
-                handleLogoMouseDown(e);
-              }
             }}
           />
         </g>

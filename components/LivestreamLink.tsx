@@ -9,8 +9,6 @@ type Props = {
   initialEnabled: boolean | null;
 };
 
-const DEBOUNCE_MS = 400;
-
 function validateStreamUrl(url: string): boolean {
   if (!url.trim()) return false;
   // Validate YouTube URLs

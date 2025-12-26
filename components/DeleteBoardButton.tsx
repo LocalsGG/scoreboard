@@ -4,11 +4,10 @@ import { useState, useTransition } from "react";
 
 interface Props {
   boardId: string;
-  boardName: string | null;
   deleteAction: (boardId: string) => Promise<void>;
 }
 
-export function DeleteBoardButton({ boardId, boardName, deleteAction }: Props) {
+export function DeleteBoardButton({ boardId, deleteAction }: Props) {
   const [isPending, startTransition] = useTransition();
   const [showConfirm, setShowConfirm] = useState(false);
 

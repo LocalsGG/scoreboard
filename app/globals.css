@@ -1,9 +1,24 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 :root {
   --background: #fdfdfc;
   --foreground: #0b1220;
+}
+
+/* Score animation keyframes */
+@keyframes scoreFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px) scale(1);
+  }
 }
 
 @theme inline {
@@ -46,11 +61,6 @@ body.share-overlay {
   background-image: none !important;
 }
 
-.skeleton-shimmer {
-  background: linear-gradient(110deg, rgba(255, 255, 255, 0.9), rgba(244, 244, 244, 0.85), rgba(255, 255, 255, 0.9));
-  background-size: 200% 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
-}
 
 .animate-fade-in {
   animation: fade-in 320ms ease-out both;
@@ -99,14 +109,6 @@ body.share-overlay {
   width: 100%;
   height: 100%;
   background: transparent;
-}
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
 }
 
 @keyframes glow {

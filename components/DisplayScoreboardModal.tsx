@@ -13,11 +13,7 @@ type Props = {
 
 export function DisplayScoreboardModal({ shareUrl, isOpen, onClose, position }: Props) {
   const modalRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [mounted, setMounted] = useState(true);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {

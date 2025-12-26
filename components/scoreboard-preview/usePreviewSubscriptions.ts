@@ -29,32 +29,55 @@ export function usePreviewSubscriptions({
         { event: "UPDATE", schema: "public", table: "scoreboards", filter: `id=eq.${boardId}` },
         (payload) => {
           const next = payload.new as Record<string, unknown>;
-          setState((prev) => ({
-            name: typeof next.name === "string" ? next.name : prev.name,
-            subtitle:
-              typeof next.scoreboard_subtitle === "string" ? next.scoreboard_subtitle : prev.subtitle,
-            aSide: typeof next.a_side === "string" ? next.a_side : prev.aSide,
-            bSide: typeof next.b_side === "string" ? next.b_side : prev.bSide,
-            aScore: typeof next.a_score === "number" ? next.a_score : prev.aScore,
-            bScore: typeof next.b_score === "number" ? next.b_score : prev.bScore,
-            updatedAt: typeof next.updated_at === "string" ? next.updated_at : prev.updatedAt,
-            style:
-              typeof next.scoreboard_style === "string"
-                ? next.scoreboard_style
-                : prev.style,
-            titleVisible:
-              typeof next.title_visible === "boolean" ? next.title_visible : prev.titleVisible ?? true,
-            aSideIcon: typeof next.a_side_icon === "string" ? next.a_side_icon : prev.aSideIcon,
-            bSideIcon: typeof next.b_side_icon === "string" ? next.b_side_icon : prev.bSideIcon,
-            centerTextColor:
-              typeof next.center_text_color === "string"
-                ? next.center_text_color
-                : prev.centerTextColor,
-            customLogoUrl:
-              typeof next.custom_logo_url === "string" ? next.custom_logo_url : prev.customLogoUrl ?? null,
-            scoreboardType:
-              typeof next.scoreboard_type === "string" ? next.scoreboard_type as ScoreboardType : prev.scoreboardType ?? null,
-          }));
+          setState((prev) => {
+            const newState = {
+              name: typeof next.name === "string" ? next.name : prev.name,
+              subtitle:
+                typeof next.scoreboard_subtitle === "string" ? next.scoreboard_subtitle : prev.subtitle,
+              aSide: typeof next.a_side === "string" ? next.a_side : prev.aSide,
+              bSide: typeof next.b_side === "string" ? next.b_side : prev.bSide,
+              aScore: typeof next.a_score === "number" ? next.a_score : prev.aScore,
+              bScore: typeof next.b_score === "number" ? next.b_score : prev.bScore,
+              updatedAt: typeof next.updated_at === "string" ? next.updated_at : prev.updatedAt,
+              style:
+                typeof next.scoreboard_style === "string"
+                  ? next.scoreboard_style
+                  : prev.style,
+              titleVisible:
+                typeof next.title_visible === "boolean" ? next.title_visible : prev.titleVisible ?? true,
+              aSideIcon: typeof next.a_side_icon === "string" ? next.a_side_icon : prev.aSideIcon,
+              bSideIcon: typeof next.b_side_icon === "string" ? next.b_side_icon : prev.bSideIcon,
+              centerTextColor:
+                typeof next.center_text_color === "string"
+                  ? next.center_text_color
+                  : prev.centerTextColor,
+              customLogoUrl:
+                typeof next.custom_logo_url === "string" ? next.custom_logo_url : prev.customLogoUrl ?? null,
+              scoreboardType:
+                typeof next.scoreboard_type === "string" ? next.scoreboard_type as ScoreboardType : prev.scoreboardType ?? null,
+            };
+
+            // Dispatch animation events for score changes
+            if (typeof next.a_score === "number" && next.a_score !== prev.aScore) {
+              const delta = next.a_score - prev.aScore;
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent(`score-animation-${boardId}-a_score`, {
+                  detail: { delta, score: next.a_score as number }
+                }));
+              }, 0);
+            }
+
+            if (typeof next.b_score === "number" && next.b_score !== prev.bScore) {
+              const delta = next.b_score - prev.bScore;
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent(`score-animation-${boardId}-b_score`, {
+                  detail: { delta, score: next.b_score as number }
+                }));
+              }, 0);
+            }
+
+            return newState;
+          });
 
           if (next.element_positions && typeof next.element_positions === "object") {
             const scoreboardType = typeof next.scoreboard_type === "string" 

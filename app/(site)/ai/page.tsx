@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "AI-Powered Livestream Score Management | Coming Soon",
     description:
-      "We're working on an AI-powered feature that will automatically manage your livestream scores. Let AI handle score tracking so you can focus on your stream.",
+      "We&apos;re working on an AI-powered feature that will automatically manage your livestream scores. Let AI handle score tracking so you can focus on your stream.",
     keywords: [
       "AI scoreboard",
       "AI livestream",
@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: "AI-Powered Livestream Score Management | Scoreboardtools",
       description:
-        "We're working on an AI-powered feature that will automatically manage your livestream scores. Coming soon.",
+        "We&apos;re working on an AI-powered feature that will automatically manage your livestream scores. Coming soon.",
       type: "website",
       siteName: "Scoreboardtools",
       url: siteUrl ? `${siteUrl}/ai` : undefined,
@@ -35,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: "AI-Powered Livestream Score Management | Scoreboardtools",
       description:
-        "We're working on an AI-powered feature that will automatically manage your livestream scores. Coming soon.",
+        "We&apos;re working on an AI-powered feature that will automatically manage your livestream scores. Coming soon.",
     },
     robots: {
       index: true,
@@ -45,7 +45,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AIPage() {
-  const siteUrl = await getSiteUrl();
   
   const features = [
     {
@@ -90,7 +89,7 @@ export default async function AIPage() {
               Let AI manage your livestream scores automatically
             </p>
             <p className="text-sm sm:text-base lg:text-lg text-zinc-600 px-2 max-w-3xl mx-auto">
-              We're building an intelligent feature that uses AI to automatically track and update scores in your livestream. No more manual score updates—just focus on your stream while AI handles the rest.
+              We&apos;re building an intelligent feature that uses AI to automatically track and update scores in your livestream. No more manual score updates—just focus on your stream while AI handles the rest.
             </p>
           </div>
         </section>

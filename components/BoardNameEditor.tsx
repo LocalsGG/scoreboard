@@ -2,73 +2,34 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { GAME_CONFIGS, getSupabaseStorageUrl } from "@/lib/assets";
-import type { ElementPositions } from "@/lib/types";
 
 type Props = {
   boardId: string;
   initialName: string | null;
   initialTitleVisible?: boolean | null;
-  initialCustomLogoUrl?: string | null;
   placeholder?: string;
   align?: "left" | "center";
   showLabel?: boolean;
-  initialPositions?: unknown;
   isAuthenticated?: boolean;
 };
 
 const DEBOUNCE_MS = 400;
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
-const ALLOWED_TYPES = ["image/svg+xml", "image/png", "image/jpeg", "image/jpg"];
-const ALLOWED_EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg"];
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const LOGOS_BUCKET = "public images";
-const LOGOS_PATH = "custom-logos";
-
-function getLogoUrl(filename: string): string {
-  if (!SUPABASE_URL) return "";
-  const encodedBucket = encodeURIComponent(LOGOS_BUCKET);
-  const encodedPath = encodeURIComponent(LOGOS_PATH);
-  return `${SUPABASE_URL}/storage/v1/object/public/${encodedBucket}/${encodedPath}/${encodeURIComponent(filename)}`;
-}
 
 export function BoardNameEditor({
   boardId,
   initialName,
   initialTitleVisible = true,
-  initialCustomLogoUrl,
   placeholder = "Scoreboard title",
   align = "left",
   showLabel = false,
-  initialPositions,
   isAuthenticated = false,
 }: Props) {
   const supabase = useMemo(() => createClient(), []);
-  const [value, setValue] = useState(initialName ?? "");
-  const [saving, setSaving] = useState(false);
+  const [value, setValue] = useState(() => initialName ?? "");
   const [error, setError] = useState<string | null>(null);
-  const [titleVisible, setTitleVisible] = useState(initialTitleVisible ?? true);
+  const [titleVisible, setTitleVisible] = useState(() => initialTitleVisible ?? true);
   const [savingVisibility, setSavingVisibility] = useState(false);
-  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(initialCustomLogoUrl ?? null);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [savingLogo, setSavingLogo] = useState(false);
-  const [logoError, setLogoError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const isFirstRun = useRef(true);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setValue(initialName ?? "");
-  }, [boardId, initialName]);
-
-  useEffect(() => {
-    setTitleVisible(initialTitleVisible ?? true);
-  }, [boardId, initialTitleVisible]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCustomLogoUrl(initialCustomLogoUrl ?? null);
-  }, [boardId, initialCustomLogoUrl]);
 
 
   const broadcastLocal = (next: string) => {
@@ -85,12 +46,9 @@ export function BoardNameEditor({
 
     const handler = setTimeout(async () => {
       if (!isAuthenticated) {
-        setSaving(false);
         setError(null);
         return;
       }
-
-      setSaving(true);
       window.dispatchEvent(new CustomEvent("scoreboard-saving-start"));
       const trimmed = value.trim();
       const { error: updateError } = await supabase
@@ -103,7 +61,6 @@ export function BoardNameEditor({
       } else {
         setError(null);
       }
-      setSaving(false);
       window.dispatchEvent(new CustomEvent("scoreboard-saving-end"));
     }, DEBOUNCE_MS);
 
@@ -144,165 +101,6 @@ export function BoardNameEditor({
     }
     setSavingVisibility(false);
     window.dispatchEvent(new CustomEvent("scoreboard-saving-end"));
-  };
-
-  const DEFAULT_LOGO_URL = `${getSupabaseStorageUrl()}/${GAME_CONFIGS.generic.icon}`;
-  const currentLogoUrl = customLogoUrl || DEFAULT_LOGO_URL;
-
-  const validateFile = (file: File): string | null => {
-    // Check file size
-    if (file.size > MAX_FILE_SIZE) {
-      return `File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`;
-    }
-
-    // Check file type
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-      if (!ALLOWED_EXTENSIONS.includes(extension)) {
-        return "Only SVG, PNG, and JPG files are allowed";
-      }
-    }
-
-    return null;
-  };
-
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!isAuthenticated) {
-      setLogoError("Sign in to upload a logo");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
-
-    setLogoError(null);
-
-    // Validate file
-    const validationError = validateFile(file);
-    if (validationError) {
-      setLogoError(validationError);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
-
-    setUploadingLogo(true);
-    setLogoError(null);
-
-    try {
-      // Generate unique filename: boardId-timestamp.extension
-      const extension = file.name.substring(file.name.lastIndexOf("."));
-      const timestamp = Date.now();
-      const filename = `${boardId}-${timestamp}${extension}`;
-      const filePath = `${LOGOS_PATH}/${filename}`;
-
-      // Upload to Supabase storage
-      const { error: uploadError } = await supabase.storage
-        .from(LOGOS_BUCKET)
-        .upload(filePath, file, {
-          cacheControl: "31536000", // 1 year cache
-          upsert: false,
-        });
-
-      if (uploadError) {
-        throw new Error(uploadError.message || "Failed to upload logo");
-      }
-
-      // Get public URL
-      const logoUrl = getLogoUrl(filename);
-
-      // Delete old logo if it exists
-      if (customLogoUrl && customLogoUrl.includes(LOGOS_PATH)) {
-        try {
-          const oldFilename = customLogoUrl.split("/").pop();
-          if (oldFilename) {
-            await supabase.storage
-              .from(LOGOS_BUCKET)
-              .remove([`${LOGOS_PATH}/${oldFilename}`]);
-          }
-        } catch (deleteError) {
-          console.warn("Failed to delete old logo:", deleteError);
-        }
-      }
-
-      // Update state immediately for preview
-      setCustomLogoUrl(logoUrl);
-
-      // Broadcast local change immediately for preview
-      const eventName = `custom-logo-local-${boardId}`;
-      window.dispatchEvent(new CustomEvent(eventName, { detail: logoUrl }));
-
-      // Save to database
-      setSavingLogo(true);
-      const { error: updateError } = await supabase
-        .from("scoreboards")
-        .update({ custom_logo_url: logoUrl })
-        .eq("id", boardId);
-
-      if (updateError) {
-        throw new Error(updateError.message || "Failed to save logo URL");
-      }
-
-      setLogoError(null);
-    } catch (err) {
-      setLogoError(err instanceof Error ? err.message : "Failed to upload logo");
-      setCustomLogoUrl(initialCustomLogoUrl ?? null);
-    } finally {
-      setUploadingLogo(false);
-      setSavingLogo(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
-  const handleRemoveLogo = async () => {
-    if (!customLogoUrl) return;
-
-    setLogoError(null);
-    setSavingLogo(true);
-
-    try {
-      // Delete file from storage
-      if (customLogoUrl.includes(LOGOS_PATH)) {
-        const filename = customLogoUrl.split("/").pop();
-        if (filename) {
-          const { error: deleteError } = await supabase.storage
-            .from(LOGOS_BUCKET)
-            .remove([`${LOGOS_PATH}/${filename}`]);
-
-          if (deleteError) {
-            console.warn("Failed to delete logo file:", deleteError);
-          }
-        }
-      }
-
-      // Update database
-      const { error: updateError } = await supabase
-        .from("scoreboards")
-        .update({ custom_logo_url: null })
-        .eq("id", boardId);
-
-      if (updateError) {
-        throw new Error(updateError.message || "Failed to remove logo");
-      }
-
-      setCustomLogoUrl(null);
-      
-      // Broadcast removal for preview
-      const eventName = `custom-logo-local-${boardId}`;
-      window.dispatchEvent(new CustomEvent(eventName, { detail: null }));
-
-      setLogoError(null);
-    } catch (err) {
-      setLogoError(err instanceof Error ? err.message : "Failed to remove logo");
-    } finally {
-      setSavingLogo(false);
-    }
   };
 
 

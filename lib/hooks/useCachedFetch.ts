@@ -60,19 +60,6 @@ export function useCachedFetch<T>(
         }
       }
 
-      // Check response cache
-      if (!skipCache) {
-        const cachedResponse = await cache.responses.get(url);
-        if (cachedResponse) {
-          const json = await cachedResponse.json();
-          setData(json as T);
-          setLoading(false);
-          if (cacheKey) {
-            cache.setScoreboard(cacheKey, json);
-          }
-          return;
-        }
-      }
 
       // Fetch from API
       const response = await fetch(url, {
@@ -89,9 +76,6 @@ export function useCachedFetch<T>(
       const json = await response.json();
       setData(json as T);
 
-      // Cache the response
-      await cache.responses.set(url, response.clone());
-      
       // Cache the data
       if (cacheKey) {
         cache.setScoreboard(cacheKey, json);

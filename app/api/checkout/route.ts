@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createCheckoutSession, getBaseUrl } from '@/lib/stripe/checkout'
-import { getValidPriceIds, validatePriceId } from '@/lib/stripe/config'
+import { validatePriceId } from '@/lib/stripe/config'
 
 export async function POST(request: Request) {
   try {

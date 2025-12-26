@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { HERO_SCOREBOARD_IMAGES, SCOREBOARD_OVERLAY_IMAGE } from "@/lib/assets";
 import { createClient } from "@/lib/supabase/client";
 
@@ -32,16 +33,11 @@ const STYLE_OPTIONS = [
 
 export function CompactStyleSelector({ boardId, initialStyle, isAuthenticated = true }: Props) {
   const supabase = useMemo(() => createClient(), []);
-  const [selectedStyle, setSelectedStyle] = useState<string>(
+  const [selectedStyle, setSelectedStyle] = useState<string>(() =>
     initialStyle || SCOREBOARD_OVERLAY_IMAGE
   );
   const [saving, setSaving] = useState(false);
   const isFirstRun = useRef(true);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSelectedStyle(initialStyle || SCOREBOARD_OVERLAY_IMAGE);
-  }, [boardId, initialStyle]);
 
   useEffect(() => {
     if (isFirstRun.current) {
@@ -70,7 +66,7 @@ export function CompactStyleSelector({ boardId, initialStyle, isAuthenticated = 
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(handler);
-  }, [boardId, supabase, selectedStyle]);
+  }, [boardId, supabase, selectedStyle, isAuthenticated]);
 
   return (
     <div className="flex items-center gap-1.5">
@@ -89,11 +85,13 @@ export function CompactStyleSelector({ boardId, initialStyle, isAuthenticated = 
             } ${saving ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
             title={option.label}
           >
-            <img
+            <Image
               src={option.preview}
               alt={option.label}
+              width={60}
+              height={20}
               className="h-full w-auto object-contain"
-              loading="lazy"
+              unoptimized
             />
             {isSelected && (
               <div className="absolute right-0.5 top-0.5 flex h-2.5 w-2.5 sm:h-3 sm:w-3 items-center justify-center rounded-full bg-black">

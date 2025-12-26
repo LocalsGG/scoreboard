@@ -1,65 +1,99 @@
-import { Skeleton, SkeletonTextRow } from "@/components/Skeleton";
-
-export default function ScoreboardLoading() {
+function ScoreboardSkeleton() {
   return (
-    <div className="flex min-h-full justify-center px-6 py-16 font-sans">
-      <main className="w-full max-w-5xl space-y-10 animate-fade-in">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="space-y-3">
-            <Skeleton className="h-3 w-28" />
-            <Skeleton className="h-9 w-64" />
-            <Skeleton className="h-4 w-40" />
+    <div className="relative flex min-h-screen flex-col">
+      {/* Header */}
+      <header className="sticky top-16 z-20 border-b border-black/5 bg-white/80 px-4 py-3 sm:px-6 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-white/20 rounded animate-pulse"></div>
+            <div className="h-6 w-24 bg-white/20 rounded animate-pulse"></div>
           </div>
           <div className="flex items-center gap-2">
-            <Skeleton className="h-7 w-24" />
-            <Skeleton className="h-8 w-32" />
+            <div className="h-8 w-16 bg-white/20 rounded animate-pulse"></div>
+            <div className="h-8 w-20 bg-white/20 rounded animate-pulse"></div>
+            <div className="h-8 w-20 bg-white/20 rounded animate-pulse"></div>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1">
+        {/* Scoreboard Preview Skeleton */}
+        <div className="relative z-0 -my-4 sm:-my-6 lg:-my-8">
+          <div className="flex justify-center p-8">
+            <div className="w-full max-w-4xl">
+              <div className="aspect-video bg-white/20 rounded-lg animate-pulse"></div>
+            </div>
           </div>
         </div>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm animate-rise">
-          <div className="aspect-[1440/810] w-full overflow-hidden rounded-xl border border-zinc-200 bg-white">
-            <div className="flex h-full items-center justify-center">
-              <Skeleton className="h-[60%] w-[70%]" />
+        {/* Controls Panel Skeleton */}
+        <section className="space-y-6 sm:space-y-8 mt-6 sm:mt-8 px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)]">
+            {/* Header */}
+            <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
+              <div className="h-6 w-6 bg-white/20 rounded animate-pulse"></div>
             </div>
-          </div>
-        </section>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm animate-rise">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-          <div className="grid gap-4 lg:grid-cols-3">
-            {[0, 1, 2].map((item) => (
-              <div
-                key={item}
-                className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5"
-              >
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-10 w-full" />
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-9 w-16" />
-                  <Skeleton className="h-9 w-16" />
+            <div className="space-y-6">
+              {/* Scoreboard Name */}
+              <div className="flex flex-col items-center">
+                <div className="w-full max-w-md">
+                  <div className="h-8 w-48 bg-white/20 rounded mx-auto animate-pulse"></div>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
 
-        <section className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm animate-rise">
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[0, 1].map((item) => (
-              <div
-                key={item}
-                className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4"
-              >
-                <SkeletonTextRow />
-                <Skeleton className="h-8 w-full" />
+              {/* Score Controls Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 sm:gap-3 items-start">
+                {/* A Side */}
+                <div className="space-y-2 min-w-0">
+                  <div className="h-4 w-16 bg-white/20 rounded animate-pulse"></div>
+                  <div className="h-8 w-24 bg-white/20 rounded animate-pulse"></div>
+                </div>
+
+                {/* A Score */}
+                <div className="space-y-2 min-w-0">
+                  <div className="flex items-center justify-between rounded-md border border-black/20 bg-white px-2 py-2">
+                    <div className="h-6 w-8 bg-white/20 rounded animate-pulse"></div>
+                    <div className="h-8 w-12 bg-white/20 rounded animate-pulse"></div>
+                    <div className="h-6 w-8 bg-white/20 rounded animate-pulse"></div>
+                  </div>
+                </div>
+
+                {/* Logo */}
+                <div className="space-y-2 flex flex-col items-center min-w-0">
+                  <div className="h-12 w-12 bg-white/20 rounded animate-pulse"></div>
+                </div>
+
+                {/* B Score */}
+                <div className="space-y-2 min-w-0">
+                  <div className="flex items-center justify-between rounded-md border border-black/20 bg-white px-2 py-2">
+                    <div className="h-6 w-8 bg-white/20 rounded animate-pulse"></div>
+                    <div className="h-8 w-12 bg-white/20 rounded animate-pulse"></div>
+                    <div className="h-6 w-8 bg-white/20 rounded animate-pulse"></div>
+                  </div>
+                </div>
+
+                {/* B Side */}
+                <div className="space-y-2 min-w-0">
+                  <div className="h-4 w-16 bg-white/20 rounded animate-pulse"></div>
+                  <div className="h-8 w-24 bg-white/20 rounded animate-pulse"></div>
+                </div>
               </div>
-            ))}
+
+              {/* Bottom Controls */}
+              <div className="grid grid-cols-3 items-end gap-4">
+                <div className="h-8 w-20 bg-white/20 rounded animate-pulse"></div>
+                <div className="h-8 w-32 bg-white/20 rounded animate-pulse"></div>
+                <div className="h-8 w-16 bg-white/20 rounded animate-pulse"></div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
     </div>
   );
+}
+
+export default function ScoreboardLoading() {
+  return <ScoreboardSkeleton />;
 }

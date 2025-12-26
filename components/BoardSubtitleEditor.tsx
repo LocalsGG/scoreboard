@@ -8,7 +8,6 @@ type Props = {
   initialValue: string | null;
   placeholder?: string;
   align?: "left" | "center";
-  initialPositions?: unknown;
   isAuthenticated?: boolean;
 };
 
@@ -22,15 +21,9 @@ export function BoardSubtitleEditor({
   isAuthenticated = false,
 }: Props) {
   const supabase = useMemo(() => createClient(), []);
-  const [value, setValue] = useState(initialValue ?? "");
-  const [saving, setSaving] = useState(false);
+  const [value, setValue] = useState(() => initialValue ?? "");
   const [error, setError] = useState<string | null>(null);
   const isFirstRun = useRef(true);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setValue(initialValue ?? "");
-  }, [boardId, initialValue]);
 
 
   const broadcastLocal = (next: string) => {
@@ -47,12 +40,10 @@ export function BoardSubtitleEditor({
 
     const handler = setTimeout(async () => {
       if (!isAuthenticated) {
-        setSaving(false);
         setError(null);
         return;
       }
 
-      setSaving(true);
       window.dispatchEvent(new CustomEvent("scoreboard-saving-start"));
       const trimmed = value.trim();
       const { error: updateError } = await supabase
@@ -65,12 +56,11 @@ export function BoardSubtitleEditor({
       } else {
         setError(null);
       }
-      setSaving(false);
       window.dispatchEvent(new CustomEvent("scoreboard-saving-end"));
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(handler);
-  }, [boardId, supabase, value]);
+  }, [boardId, supabase, value, isAuthenticated]);
 
 
   const inputAlignment = align === "center" ? "text-center" : "text-left";

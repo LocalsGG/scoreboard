@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { ScoreAdjuster } from "./ScoreAdjuster";
 import { SideNameEditor } from "./SideNameEditor";
@@ -97,31 +98,54 @@ export function ScoreControlsPanel({
   }, [boardId, supabase]);
 
   return (
-    <div className="rounded-2xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] relative">
-      <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="rounded-2xl border border-black/5 bg-white/80 p-4 sm:p-6 lg:p-8 shadow-[0_22px_65px_rgba(12,18,36,0.12)] relative"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
+        className="absolute top-4 left-4 sm:top-6 sm:left-6"
+      >
         <SaveStatusIndicator isAuthenticated={isAuthenticated} />
-      </div>
+      </motion.div>
       <div className="space-y-6">
         {/* Scoreboard Name - Centered above logo */}
-        <div className="flex flex-col items-center">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+          className="flex flex-col items-center"
+        >
           <div className="w-full max-w-md">
             <BoardNameEditor
               boardId={boardId}
               initialName={name}
               initialTitleVisible={titleVisible ?? true}
-              initialCustomLogoUrl={customLogoUrl}
               align="center"
               showLabel={false}
-              initialPositions={elementPositions}
               isAuthenticated={isAuthenticated}
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Top Row: A Side Name | A Side Score | Logo | B Side Score | B Side Name */}
-        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 sm:gap-3 items-start">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5, staggerChildren: 0.1 }}
+          className="grid grid-cols-1 sm:grid-cols-5 gap-4 sm:gap-3 items-start"
+        >
           {/* A Side Name */}
-          <div className="space-y-2 min-w-0">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+            className="space-y-2 min-w-0"
+          >
             <div className="flex items-start gap-2">
               {(scoreboardType === "melee" || scoreboardType === "ultimate") && (
                 <CharacterIconSelector
@@ -143,10 +167,15 @@ export function ScoreControlsPanel({
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* A Side Score - Left Counter */}
-          <div className="space-y-2 min-w-0">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6, duration: 0.4, type: "spring", stiffness: 200 }}
+            className="space-y-2 min-w-0"
+          >
             <ScoreAdjuster
               boardId={boardId}
               column="a_score"
@@ -155,20 +184,30 @@ export function ScoreControlsPanel({
               isAuthenticated={isAuthenticated}
               disabled={livestreamEnabled}
             />
-          </div>
+          </motion.div>
 
           {/* Logo */}
-          <div className="space-y-2 flex flex-col items-center min-w-0">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.7, duration: 0.5, type: "spring", stiffness: 150 }}
+            className="space-y-2 flex flex-col items-center min-w-0"
+          >
             <LogoSelector
               boardId={boardId}
               initialCustomLogoUrl={customLogoUrl}
               initialScoreboardType={scoreboardType}
               initialPositions={elementPositions}
             />
-          </div>
+          </motion.div>
 
           {/* B Side Score - Right Counter */}
-          <div className="space-y-2 min-w-0">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, duration: 0.4, type: "spring", stiffness: 200 }}
+            className="space-y-2 min-w-0"
+          >
             <ScoreAdjuster
               boardId={boardId}
               column="b_score"
@@ -177,10 +216,15 @@ export function ScoreControlsPanel({
               isAuthenticated={isAuthenticated}
               disabled={livestreamEnabled}
             />
-          </div>
+          </motion.div>
 
           {/* B Side Name */}
-          <div className="space-y-2 min-w-0">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.9, duration: 0.4 }}
+            className="space-y-2 min-w-0"
+          >
             <div className="flex items-start gap-2">
               {(scoreboardType === "melee" || scoreboardType === "ultimate") && (
                 <CharacterIconSelector
@@ -202,36 +246,55 @@ export function ScoreControlsPanel({
                 />
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Bottom Row: Style Selector, Subtitle, and Game Type */}
-        <div className="grid grid-cols-3 items-end gap-4">
-          <div className="flex justify-start">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0, duration: 0.5 }}
+          className="grid grid-cols-3 items-end gap-4"
+        >
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1.1, duration: 0.4 }}
+            className="flex justify-start"
+          >
             <CompactStyleSelector
               boardId={boardId}
               initialStyle={scoreboardStyle}
               isAuthenticated={isAuthenticated}
             />
-          </div>
-          <div className="space-y-2 flex flex-col items-center">
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.2, duration: 0.4 }}
+            className="space-y-2 flex flex-col items-center"
+          >
             <div className="w-full max-w-[200px]">
               <BoardSubtitleEditor
                 boardId={boardId}
                 initialValue={scoreboardSubtitle}
                 placeholder="Subtitle"
                 align="center"
-                initialPositions={elementPositions}
                 isAuthenticated={isAuthenticated}
               />
             </div>
-          </div>
-          <div className="flex justify-end">
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1.3, duration: 0.4 }}
+            className="flex justify-end"
+          >
             <GameTypeIndicator boardId={boardId} initialType={scoreboardType} />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

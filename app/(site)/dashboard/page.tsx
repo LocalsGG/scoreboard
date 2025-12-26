@@ -8,7 +8,7 @@ import { getGameIcon, getGameName, GAME_CONFIGS } from "@/lib/assets";
 import { getDefaultLogo } from "@/components/scoreboard-preview/gameConfigs";
 import type { ScoreboardType } from "@/lib/types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getUserData, getUserSubscription, getBoardLimit } from "@/lib/users";
+import { getUserSubscription, getBoardLimit } from "@/lib/users";
 import { DeleteBoardButton } from "@/components/DeleteBoardButton";
 import { UpgradeBanner } from "@/components/UpgradeBanner";
 import { BoardLimitBanner } from "@/components/BoardLimitBanner";
@@ -199,7 +199,6 @@ export default async function DashboardPage() {
                             </Link>
                             <DeleteBoardButton
                               boardId={board.id}
-                              boardName={board.name}
                               deleteAction={deleteBoard}
                             />
                           </div>

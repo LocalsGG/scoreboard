@@ -49,8 +49,7 @@ type LoadScoreboardResult = {
 };
 
 async function loadScoreboard(
-  boardId: string,
-  params?: Record<string, string | string[] | undefined>
+  boardId: string
 ): Promise<LoadScoreboardResult> {
   if (!boardId) {
     notFound();
@@ -176,7 +175,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { id } = await props.params;
   const searchParams = props.searchParams ? await props.searchParams : undefined;
-  const { board } = await loadScoreboard(id, searchParams);
+  const { board } = await loadScoreboard(id);
   
   if (!board) {
     return {
@@ -209,10 +208,7 @@ export default async function ScoreboardPage(props: {
 }) {
   const { id } = await props.params;
   const searchParams = props.searchParams ? await props.searchParams : undefined;
-  const { board, isAuthenticated, isGuest, userId } = await loadScoreboard(
-    id,
-    searchParams
-  );
+  const { board, isAuthenticated, isGuest, userId } = await loadScoreboard(id);
 
   if (!board) {
     return (

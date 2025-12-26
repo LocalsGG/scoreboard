@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -175,7 +175,7 @@ export function PricingPageClient() {
     return priceId || null
   }
 
-  const handleCheckout = async (plan: 'standard' | 'pro' | 'lifetime') => {
+  const handleCheckout = useCallback(async (plan: 'standard' | 'pro' | 'lifetime') => {
     if (isCheckoutInFlightRef.current) return
     if (loading) return
 
@@ -253,7 +253,7 @@ export function PricingPageClient() {
       setLoading(null)
       isCheckoutInFlightRef.current = false
     }
-  }
+  }, [isAuthenticated, isAnnual, router, setLoading, setError])
 
   return (
     <>
