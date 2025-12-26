@@ -2,10 +2,6 @@ import { Metadata } from "next";
 import Image from "next/image";
 import { headers } from "next/headers";
 
-function getImageBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "https://scoreboardtools.com/images";
-}
-
 async function getSiteUrl(): Promise<string> {
   try {
     const headersList = await headers();
@@ -53,34 +49,31 @@ async function getSiteUrl(): Promise<string> {
   return 'https://scoreboardtools.com';
 }
 
-const IMAGE_BASE_URL = getImageBaseUrl();
-
 const HERO_SCOREBOARD_IMAGES = [
-  `${IMAGE_BASE_URL}/scoreboard1.svg`,
-  `${IMAGE_BASE_URL}/scoreboard2.svg`,
-  `${IMAGE_BASE_URL}/scoreboard3.svg`,
+  "/scoreboard1.svg",
+  "/scoreboard2.svg",
+  "/scoreboard3.svg",
 ];
 
 const getOBSOverlayExamples = () => {
-  const baseUrl = IMAGE_BASE_URL;
   return [
     {
       title: "Live overlay in OBS",
       description:
         "Drop the Scoreboardtools link straight into OBS and the overlay updates the second you change the score.",
-      src: `${baseUrl}/1.webp`,
+      src: "/1.webp",
     },
     {
       title: "Add language + context",
       description:
         "Customize labels, languages, and team details from any browser so viewers always know what they are watching.",
-      src: `${baseUrl}/2.webp`,
+      src: "/2.webp",
     },
     {
       title: "Brand it with your logo",
       description:
         "Layer in team or sponsor logos right inside OBS while keeping the overlay synced to the live game.",
-      src: `${baseUrl}/3.webp`,
+      src: "/3.webp",
     },
   ];
 };
@@ -181,6 +174,16 @@ export default async function Home() {
       />
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 sm:gap-10 lg:gap-16 px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16 pt-8 sm:pt-12">
         <section className="flex flex-col items-center gap-0">
+          <div className="relative w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 mb-4 sm:mb-6">
+            <Image
+              src="/logo.svg"
+              alt="Scoreboardtools logo"
+              fill
+              sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 192px"
+              priority
+              className="object-contain"
+            />
+          </div>
           <div className="space-y-0.5 sm:space-y-1 text-center w-full max-w-4xl">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black uppercase leading-tight tracking-tight text-black text-center">
               Live Scoreboard Overlays
