@@ -20,11 +20,9 @@ body {
   background-color: #fdfdfc;
   background-image:
     radial-gradient(circle at 14% 18%, rgba(56, 189, 248, 0.22), transparent 32%),
-    radial-gradient(circle at 82% 0%, rgba(251, 146, 60, 0.18), transparent 28%),
-    linear-gradient(rgba(12, 18, 36, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(12, 18, 36, 0.08) 1px, transparent 1px);
-  background-size: auto, auto, 44px 44px, 44px 44px;
-  background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+    radial-gradient(circle at 82% 0%, rgba(251, 146, 60, 0.18), transparent 28%);
+  background-size: auto, auto;
+  background-position: 0 0, 0 0;
   background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans);
@@ -178,10 +176,8 @@ body.share-overlay {
     background-color: #fdfdfc;
     background-image:
       radial-gradient(circle at 14% 18%, rgba(56, 189, 248, 0.22), transparent 32%),
-      radial-gradient(circle at 82% 0%, rgba(251, 146, 60, 0.18), transparent 28%),
-      linear-gradient(rgba(12, 18, 36, 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(12, 18, 36, 0.08) 1px, transparent 1px);
-    background-size: auto, auto, 44px 44px, 44px 44px;
-    background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+      radial-gradient(circle at 82% 0%, rgba(251, 146, 60, 0.18), transparent 28%);
+    background-size: auto, auto;
+    background-position: 0 0, 0 0;
   }
 }
