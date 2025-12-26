@@ -147,13 +147,15 @@ export function ScoreControlsPanel({
             className="space-y-2 min-w-0"
           >
             <div className="flex items-start gap-2">
-              {(scoreboardType === "melee" || scoreboardType === "ultimate") && (
+              {(scoreboardType === "melee" || scoreboardType === "ultimate" || scoreboardType === "guilty-gear") && (
                 <CharacterIconSelector
                   boardId={boardId}
                   initialValue={aSideIcon}
                   column="a_side_icon"
                   placeholder="Select character icon"
                   compact={true}
+                  scoreboardType={scoreboardType}
+                  elementPositions={elementPositions}
                 />
               )}
               <div className="flex-1 min-w-0">
@@ -226,13 +228,15 @@ export function ScoreControlsPanel({
             className="space-y-2 min-w-0"
           >
             <div className="flex items-start gap-2">
-              {(scoreboardType === "melee" || scoreboardType === "ultimate") && (
+              {(scoreboardType === "melee" || scoreboardType === "ultimate" || scoreboardType === "guilty-gear") && (
                 <CharacterIconSelector
                   boardId={boardId}
                   initialValue={bSideIcon}
                   column="b_side_icon"
                   placeholder="Select character icon"
                   compact={true}
+                  scoreboardType={scoreboardType}
+                  elementPositions={elementPositions}
                 />
               )}
               <div className="flex-1 min-w-0">

@@ -22,40 +22,43 @@ export async function getOrCreateCustomerId(
       throw new Error(`Failed to ensure user profile exists: ${userCheck.error}`)
     }
 
-    // Check if user already has a Stripe customer ID stored
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+    // Check if user already has a Stripe customer ID stored in subscriptions
+    const { data: subscription, error: subscriptionError } = await supabase
+      .from('subscriptions')
       .select('stripe_customer_id')
-      .eq('id', userId)
+      .eq('user_id', userId)
+      .not('stripe_customer_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle()
 
-    if (profileError) {
-      console.error('Error fetching profile:', {
+    if (subscriptionError) {
+      console.error('Error fetching subscription:', {
         userId,
-        error: profileError,
-        code: profileError.code,
-        message: profileError.message,
-        details: profileError.details,
-        hint: profileError.hint,
+        error: subscriptionError,
+        code: subscriptionError.code,
+        message: subscriptionError.message,
+        details: subscriptionError.details,
+        hint: subscriptionError.hint,
       })
-      throw new Error(`Failed to fetch user profile: ${profileError.message || profileError.code || 'Unknown error'}`)
+      // Don't throw here, continue to create new customer
     }
 
-    if (profile?.stripe_customer_id) {
+    if (subscription?.stripe_customer_id) {
       // Verify the customer actually exists in Stripe
       // It might have been deleted or belong to a different Stripe account/environment
       try {
-        const existingCustomer = await stripe.customers.retrieve(profile.stripe_customer_id)
+        const existingCustomer = await stripe.customers.retrieve(subscription.stripe_customer_id)
         
         // If customer exists and is not deleted, return it
         if (existingCustomer && !existingCustomer.deleted) {
-          return profile.stripe_customer_id
+          return subscription.stripe_customer_id
         }
         
         // Customer was deleted, log and continue to create a new one
         console.warn('Stored Stripe customer was deleted, creating new one:', {
           userId,
-          deletedCustomerId: profile.stripe_customer_id,
+          deletedCustomerId: subscription.stripe_customer_id,
         })
       } catch (error) {
         // Customer doesn't exist (404) or other error
@@ -66,26 +69,19 @@ export async function getOrCreateCustomerId(
         if (stripeError.code === 'resource_missing' || errorMessage.includes('No such customer')) {
           console.warn('Stored Stripe customer does not exist, creating new one:', {
             userId,
-            invalidCustomerId: profile.stripe_customer_id,
+            invalidCustomerId: subscription.stripe_customer_id,
             error: errorMessage,
           })
         } else {
           // Some other error occurred, log it but still try to create a new customer
           console.error('Error verifying Stripe customer, will create new one:', {
             userId,
-            customerId: profile.stripe_customer_id,
+            customerId: subscription.stripe_customer_id,
             error: errorMessage,
             stripeErrorCode: stripeError.code,
           })
         }
       }
-      
-      // Clear the invalid customer ID from the database
-      // We'll update it with the new customer ID after creation
-      await supabase
-        .from('profiles')
-        .update({ stripe_customer_id: null })
-        .eq('id', userId)
     }
 
     // Create new Stripe customer
@@ -111,65 +107,54 @@ export async function getOrCreateCustomerId(
       throw new Error(`Failed to create Stripe customer: ${errorMessage}`)
     }
 
-    // Store customer ID in Supabase
-    // Try update first (most common case)
-    // Use .select() to check if any rows were actually updated
-    const { data: updatedRows, error: updateError, count } = await supabase
-      .from('profiles')
-      .update({ stripe_customer_id: customer.id })
-      .eq('id', userId)
+    // Store customer ID in subscriptions table
+    // First, try to update existing subscription
+    const { data: existingSubscription, error: updateError } = await supabase
+      .from('subscriptions')
+      .update({ stripe_customer_id: customer.id, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
       .select('id')
+      .limit(1)
 
-    // Check if update actually modified any rows
-    // Supabase returns error: null even when 0 rows are updated
-    const rowsUpdated = (updatedRows && updatedRows.length > 0) || (count !== null && count > 0)
-
-    if (updateError || !rowsUpdated) {
-      // If update failed OR no rows were updated, try upsert
-      // This handles the case where profile doesn't exist despite ensureUserExists
-      const reason = updateError 
-        ? `Update error: ${updateError.message}` 
-        : 'No rows updated (profile may not exist)'
-      
-      console.warn('Update failed or no rows updated, trying upsert:', {
+    if (updateError) {
+      console.error('Error updating subscription with Stripe customer ID:', {
         userId,
-        reason,
-        updateError: updateError?.message,
-        updateErrorCode: updateError?.code,
-        rowsUpdated,
-        updatedRowsCount: updatedRows?.length || 0,
-        count,
+        customerId: customer.id,
+        error: updateError,
+        code: updateError.code,
+        message: updateError.message,
+        details: updateError.details,
+        hint: updateError.hint,
       })
-      
-      const { error: upsertError } = await supabase
-        .from('profiles')
-        .upsert(
-          {
-            id: userId,
-            email: email || null,
-            stripe_customer_id: customer.id,
-          },
-          {
-            onConflict: 'id',
-          }
-        )
+      // Still return the customer ID since Stripe customer was created successfully
+      // The customer ID will be stored on next attempt or via webhook
+    }
 
-      if (upsertError) {
-        console.error('Error upserting profile with Stripe customer ID:', {
+    // If no subscription exists, create a new one with base plan
+    if (!existingSubscription || existingSubscription.length === 0) {
+      const { error: insertError } = await supabase
+        .from('subscriptions')
+        .insert({
+          user_id: userId,
+          stripe_customer_id: customer.id,
+          plan_type: 'base',
+          status: 'active',
+          updated_at: new Date().toISOString(),
+        })
+
+      if (insertError) {
+        console.error('Error creating subscription with Stripe customer ID:', {
           userId,
           customerId: customer.id,
-          error: upsertError,
-          code: upsertError.code,
-          message: upsertError.message,
-          details: upsertError.details,
-          hint: upsertError.hint,
+          error: insertError,
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint,
         })
-        // If both update and upsert fail, this is likely an RLS policy issue
-        // But we still return the customer ID since Stripe customer was created successfully
+        // Still return the customer ID since Stripe customer was created successfully
         // The customer ID will be stored on next attempt or via webhook
-      } else {
       }
-    } else {
     }
 
     return customer.id

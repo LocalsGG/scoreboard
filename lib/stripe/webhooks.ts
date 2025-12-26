@@ -40,29 +40,31 @@ export async function resolveSupabaseUserIdFromStripe(params: {
     const customer = await stripe.customers.retrieve(resolvedCustomerId)
     if (!('deleted' in customer) && customer.metadata?.supabase_user_id) {
       const userId = customer.metadata.supabase_user_id
-      // Best-effort: keep profiles.stripe_customer_id in sync.
+      // Best-effort: keep subscriptions.stripe_customer_id in sync.
       await supabase
-        .from('profiles')
-        .update({ stripe_customer_id: resolvedCustomerId })
-        .eq('id', userId)
+        .from('subscriptions')
+        .update({ stripe_customer_id: resolvedCustomerId, updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
       return userId
     }
   } catch (error) {
     console.error('Failed to retrieve customer for user resolution:', error)
   }
 
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('id')
+  const { data: subscriptionRecord, error } = await supabase
+    .from('subscriptions')
+    .select('user_id')
     .eq('stripe_customer_id', resolvedCustomerId)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
 
   if (error) {
-    console.error('Failed to resolve profile by stripe_customer_id:', error)
+    console.error('Failed to resolve subscription by stripe_customer_id:', error)
     return null
   }
 
-  return profile?.id ?? null
+  return subscriptionRecord?.user_id ?? null
 }
 
 export function getPlanTypeFromSubscription(

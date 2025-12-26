@@ -18,23 +18,30 @@ const SUPABASE_PUBLIC_IMAGE_BASE = getSupabaseStorageUrl();
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_TYPES = ["image/svg+xml", "image/png", "image/jpeg", "image/jpg"];
 const ALLOWED_EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg"];
-const LOGOS_BUCKET = "public images";
-const LOGOS_PATH = "custom-logos";
+const LOGOS_BUCKET = "scoreboard-public";
 
-function getLogoUrl(filename: string): string {
+function getLogoUrl(boardId: string, extension: string): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!supabaseUrl) return "";
   const encodedBucket = encodeURIComponent(LOGOS_BUCKET);
-  const encodedPath = encodeURIComponent(LOGOS_PATH);
-  return `${supabaseUrl}/storage/v1/object/public/${encodedBucket}/${encodedPath}/${encodeURIComponent(filename)}`;
+  const filename = `${boardId}${extension}`;
+  return `${supabaseUrl}/storage/v1/object/public/${encodedBucket}/${encodeURIComponent(filename)}`;
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function validateFile(file: File): string | null {
   if (!ALLOWED_TYPES.includes(file.type)) {
-    return `File type not allowed. Please use: ${ALLOWED_EXTENSIONS.join(", ")}`;
+    return `File type not allowed. Accepted formats: ${ALLOWED_EXTENSIONS.join(", ")}`;
   }
   if (file.size > MAX_FILE_SIZE) {
-    return `File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`;
+    const fileSize = formatFileSize(file.size);
+    const maxSize = formatFileSize(MAX_FILE_SIZE);
+    return `File too large (${fileSize}). Maximum size is ${maxSize}`;
   }
   return null;
 }
@@ -91,35 +98,60 @@ export function LogoSelector({ boardId, initialCustomLogoUrl, initialScoreboardT
     setError(null);
 
     try {
-      // Generate unique filename: boardId-timestamp.extension
+      // Generate filename: boardId.extension (renamed after scoreboard id)
       const extension = file.name.substring(file.name.lastIndexOf("."));
-      const timestamp = Date.now();
-      const filename = `${boardId}-${timestamp}${extension}`;
-      const filePath = `${LOGOS_PATH}/${filename}`;
+      const filename = `${boardId}${extension}`;
 
-      // Upload to Supabase storage
+      // Upload to Supabase storage (use upsert to overwrite if exists)
       const { error: uploadError } = await supabase.storage
         .from(LOGOS_BUCKET)
-        .upload(filePath, file, {
+        .upload(filename, file, {
           cacheControl: "31536000", // 1 year cache
-          upsert: false,
+          upsert: true, // Overwrite existing file with same boardId
         });
 
       if (uploadError) {
-        throw new Error(uploadError.message || "Failed to upload logo");
+        // Check if error is related to file size and include max size info
+        const errorMessage = uploadError.message || "Failed to upload logo";
+        const lowerMessage = errorMessage.toLowerCase();
+        const isSizeError = lowerMessage.includes("maximum allowed size") || 
+            (lowerMessage.includes("exceeded") && lowerMessage.includes("size")) ||
+            lowerMessage.includes("too large");
+        if (isSizeError) {
+          const maxSize = formatFileSize(MAX_FILE_SIZE);
+          throw new Error(`File too large. Maximum allowed size is ${maxSize}. Please use a smaller file.`);
+        }
+        throw new Error(errorMessage);
       }
 
       // Get public URL
-      const logoUrl = getLogoUrl(filename);
+      const logoUrl = getLogoUrl(boardId, extension);
 
-      // Delete old logo if it exists and is a custom upload
-      if (initialCustomLogoUrl && initialCustomLogoUrl.includes(LOGOS_PATH)) {
+      // Delete old logo if it exists and is a custom upload (different filename/extension)
+      if (initialCustomLogoUrl) {
         try {
-          const oldFilename = initialCustomLogoUrl.split("/").pop();
-          if (oldFilename) {
-            await supabase.storage
-              .from(LOGOS_BUCKET)
-              .remove([`${LOGOS_PATH}/${oldFilename}`]);
+          // Check if it's from the new bucket structure
+          if (initialCustomLogoUrl.includes(LOGOS_BUCKET)) {
+            // Extract old filename from URL
+            const urlParts = initialCustomLogoUrl.split("/");
+            const oldFilename = urlParts[urlParts.length - 1];
+            // Only delete if it's different from the new filename
+            if (oldFilename && oldFilename !== filename) {
+              await supabase.storage
+                .from(LOGOS_BUCKET)
+                .remove([oldFilename]);
+            }
+          }
+          // Also handle old bucket structure ("public images" with "custom-logos" path)
+          else if (initialCustomLogoUrl.includes("custom-logos")) {
+            const urlParts = initialCustomLogoUrl.split("/");
+            const oldFilename = urlParts[urlParts.length - 1];
+            if (oldFilename) {
+              // Try to delete from old bucket structure
+              await supabase.storage
+                .from("public images")
+                .remove([`custom-logos/${oldFilename}`]);
+            }
           }
         } catch (deleteError) {
           console.warn("Failed to delete old logo:", deleteError);
@@ -150,7 +182,16 @@ export function LogoSelector({ boardId, initialCustomLogoUrl, initialScoreboardT
       setSaving(false);
       window.dispatchEvent(new CustomEvent("scoreboard-saving-end"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to upload logo");
+      const errorMessage = err instanceof Error ? err.message : "Failed to upload logo";
+      // Ensure max size is mentioned in error if it's a size-related error
+      if (errorMessage.toLowerCase().includes("too large") || 
+          errorMessage.toLowerCase().includes("maximum") ||
+          (errorMessage.toLowerCase().includes("exceeded") && errorMessage.toLowerCase().includes("size"))) {
+        const maxSize = formatFileSize(MAX_FILE_SIZE);
+        setError(errorMessage.includes(maxSize) ? errorMessage : `File too large. Maximum allowed size is ${maxSize}.`);
+      } else {
+        setError(errorMessage);
+      }
       // Revert to previous logo on error
       const defaultLogo = getDefaultLogo(scoreboardType);
       setSelectedLogoUrl(initialCustomLogoUrl || defaultLogo);
@@ -183,7 +224,7 @@ export function LogoSelector({ boardId, initialCustomLogoUrl, initialScoreboardT
             className={`relative h-16 w-16 rounded-lg border-2 border-black/10 bg-white p-2 transition-all duration-150 hover:border-black/30 hover:scale-105 active:scale-95 ${
               saving || uploading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
             }`}
-            title="Click to upload logo"
+            title={`Click to upload logo\n\nAccepted: ${ALLOWED_EXTENSIONS.join(", ").toUpperCase()}\nMax size: ${formatFileSize(MAX_FILE_SIZE)}`}
           >
             <img
               src={selectedLogoUrl || defaultLogoUrl}
@@ -207,8 +248,8 @@ export function LogoSelector({ boardId, initialCustomLogoUrl, initialScoreboardT
 
         {/* Error messages */}
         {error && (
-          <div className="flex items-center gap-2 text-xs text-red-600 justify-center">
-            <span>({error})</span>
+          <div className="flex items-center gap-2 text-xs text-red-600 justify-center max-w-full">
+            <span className="text-center">{error}</span>
           </div>
         )}
       </div>

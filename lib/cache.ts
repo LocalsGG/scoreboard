@@ -137,20 +137,20 @@ const CACHE_CONFIG = {
  */
 export const cache = {
   /**
-   * Get characters from cache
+   * Get characters from cache (game-type specific)
    */
-  getCharacters: () =>
+  getCharacters: (gameType?: string | null) =>
     CacheManager.get<Array<{ name: string; url: string }>>(
-      CACHE_CONFIG.CHARACTERS.key,
+      gameType ? `${CACHE_CONFIG.CHARACTERS.key}_${gameType}` : CACHE_CONFIG.CHARACTERS.key,
       CACHE_CONFIG.CHARACTERS.expiry
     ),
 
   /**
-   * Set characters in cache
+   * Set characters in cache (game-type specific)
    */
-  setCharacters: (characters: Array<{ name: string; url: string }>) =>
+  setCharacters: (characters: Array<{ name: string; url: string }>, gameType?: string | null) =>
     CacheManager.set(
-      CACHE_CONFIG.CHARACTERS.key,
+      gameType ? `${CACHE_CONFIG.CHARACTERS.key}_${gameType}` : CACHE_CONFIG.CHARACTERS.key,
       characters,
       CACHE_CONFIG.CHARACTERS.expiry
     ),

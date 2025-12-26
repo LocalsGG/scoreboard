@@ -71,6 +71,9 @@ export function ScoreboardPreview({
   const initialPositionsRef = useRef<ElementPositions>(
     getMergedPositions(initialPositions, initialScoreboardType)
   );
+  
+  // Track current scoreboard type for event handlers
+  const scoreboardTypeRef = useRef<typeof initialScoreboardType>(initialScoreboardType);
 
   // Undo/Redo history
   type HistorySnapshot = {
@@ -94,6 +97,11 @@ export function ScoreboardPreview({
     () => `scoreboard-preview-${(boardId || "default").replace(/[^a-zA-Z0-9]/g, "")}`,
     [boardId]
   );
+  
+  // Update scoreboard type ref when state changes
+  useEffect(() => {
+    scoreboardTypeRef.current = state.scoreboardType;
+  }, [state.scoreboardType]);
 
 
   // Save positions to database
@@ -440,6 +448,14 @@ export function ScoreboardPreview({
     const handleScoreAnimationA = handleScoreAnimation("aScore");
     const handleScoreAnimationB = handleScoreAnimation("bScore");
 
+    const handleElementPositions = (event: Event) => {
+      const detail = (event as CustomEvent<ElementPositions>).detail;
+      if (detail && typeof detail === "object") {
+        const newPositions = getMergedPositions(detail, scoreboardTypeRef.current);
+        setPositions(newPositions);
+      }
+    };
+
     window.addEventListener(`board-name-local-${boardId}`, handleBoardName);
     window.addEventListener(`board-subtitle-local-${boardId}`, handleBoardSubtitle);
     window.addEventListener(`score-local-${boardId}-a_score`, handleScoreA);
@@ -451,6 +467,7 @@ export function ScoreboardPreview({
     window.addEventListener(`center-text-color-local-${boardId}`, handleCenterTextColor);
     window.addEventListener(`custom-logo-local-${boardId}`, handleCustomLogo);
     window.addEventListener(`scoreboard-type-local-${boardId}`, handleScoreboardType);
+    window.addEventListener(`element-positions-local-${boardId}`, handleElementPositions);
 
     return () => {
       supabase.removeChannel(channel);
@@ -465,6 +482,7 @@ export function ScoreboardPreview({
       window.removeEventListener(`center-text-color-local-${boardId}`, handleCenterTextColor);
       window.removeEventListener(`custom-logo-local-${boardId}`, handleCustomLogo);
       window.removeEventListener(`scoreboard-type-local-${boardId}`, handleScoreboardType);
+      window.removeEventListener(`element-positions-local-${boardId}`, handleElementPositions);
     };
   }, [boardId, supabase, resetPositions]);
 
@@ -755,6 +773,11 @@ export function ScoreboardPreview({
               cursor: readOnly ? "default" : "move",
               pointerEvents: "all",
               opacity: isDragging("logo") ? 0.8 : 1,
+            }}
+            onMouseDown={(e) => {
+              if (!readOnly) {
+                handleMouseDown("logo", e);
+              }
             }}
           />
         </g>

@@ -41,6 +41,73 @@ const deleteBoard = async (boardId: string) => {
 
   if (!boardId) return;
 
+  // Get the scoreboard's custom_logo_url and character icons before deleting
+  const { data: scoreboard } = await supabase
+    .from("scoreboards")
+    .select("custom_logo_url, a_side_icon, b_side_icon")
+    .eq("id", boardId)
+    .eq("owner_id", userId)
+    .single();
+
+  const CHARACTER_ICONS_BUCKET = "scoreboard-public";
+  const LOGOS_BUCKET = "scoreboard-public";
+
+  // Delete the logo file from storage if it exists
+  if (scoreboard?.custom_logo_url) {
+    const logoUrl = scoreboard.custom_logo_url;
+    
+    try {
+      // Check if this is a custom logo from the new bucket structure
+      if (logoUrl.includes(LOGOS_BUCKET)) {
+        // Extract filename from URL
+        const urlParts = logoUrl.split("/");
+        const filename = urlParts[urlParts.length - 1];
+        
+        if (filename) {
+          // Delete the file from storage
+          await supabase.storage
+            .from(LOGOS_BUCKET)
+            .remove([filename]);
+        }
+      }
+      // Also handle old bucket structure ("public images" with "custom-logos" path)
+      else if (logoUrl.includes("custom-logos")) {
+        const urlParts = logoUrl.split("/");
+        const filename = urlParts[urlParts.length - 1];
+        if (filename) {
+          // Try to delete from old bucket structure
+          await supabase.storage
+            .from("public images")
+            .remove([`custom-logos/${filename}`]);
+        }
+      }
+    } catch (deleteError) {
+      // Log error but don't fail the deletion - storage cleanup is best effort
+      console.warn("Failed to delete logo file from storage:", deleteError);
+    }
+  }
+
+  // Delete custom character icons from storage if they exist
+  const iconUrls = [scoreboard?.a_side_icon, scoreboard?.b_side_icon].filter(Boolean) as string[];
+  for (const iconUrl of iconUrls) {
+    if (iconUrl && iconUrl.includes(CHARACTER_ICONS_BUCKET)) {
+      try {
+        const urlParts = iconUrl.split("/");
+        const filename = urlParts[urlParts.length - 1];
+        // Only delete if it's a custom upload (starts with boardId_)
+        if (filename && filename.startsWith(`${boardId}_`)) {
+          await supabase.storage
+            .from(CHARACTER_ICONS_BUCKET)
+            .remove([filename]);
+        }
+      } catch (deleteError) {
+        // Log error but don't fail the deletion - storage cleanup is best effort
+        console.warn("Failed to delete character icon file from storage:", deleteError);
+      }
+    }
+  }
+
+  // Delete the scoreboard from database
   const { error } = await supabase
     .from("scoreboards")
     .delete()
