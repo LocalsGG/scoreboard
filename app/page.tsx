@@ -3,6 +3,7 @@ import Image from "next/image";
 import { headers } from "next/headers";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import PricingSection from "./components/PricingSection";
 import { 
   HiBolt, 
   HiRocketLaunch, 
@@ -15,7 +16,6 @@ import {
   HiSparkles,
   HiArrowRight
 } from "react-icons/hi2";
-import ScoreboardMagic from "./components/ScoreboardMagic";
 
 async function getSiteUrl(): Promise<string> {
   try {
@@ -121,64 +121,6 @@ const getBenefits = () => {
   ];
 };
 
-const getPricingPlans = () => {
-  return [
-    {
-      name: "Free",
-      price: "$0",
-      period: "forever",
-      description: "Perfect for getting started",
-      cta: "Get Started Free",
-      ctaLink: "/signup",
-      featured: false,
-      features: [
-        "Unlimited scoreboards",
-        "Real-time updates",
-        "Basic customization",
-        "Works with all streaming platforms",
-        "Share with team members",
-        "Community support",
-      ],
-    },
-    {
-      name: "Pro",
-      price: "$9",
-      period: "per month",
-      description: "For serious streamers and tournaments",
-      cta: "Start Pro Trial",
-      ctaLink: "/signup?plan=pro",
-      featured: true,
-      features: [
-        "Everything in Free",
-        "Custom branding & logos",
-        "Advanced customization",
-        "Priority support",
-        "API access",
-        "Analytics & insights",
-        "Team collaboration tools",
-        "Custom domains",
-      ],
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      period: "pricing",
-      description: "For large tournaments and organizations",
-      cta: "Contact Sales",
-      ctaLink: "/contact",
-      featured: false,
-      features: [
-        "Everything in Pro",
-        "Dedicated account manager",
-        "SLA guarantee",
-        "Custom integrations",
-        "White-label options",
-        "Training & onboarding",
-        "Volume discounts",
-      ],
-    },
-  ];
-};
 
 
 export const dynamic = "force-dynamic";
@@ -353,35 +295,6 @@ export default async function Home() {
           </section>
 
 
-          {/* Scoreboard Magic Section */}
-          <section id="see-it-work" className="w-full rounded-3xl border-2 border-black/10 bg-gradient-to-br from-white/95 to-white/70 px-6 sm:px-8 lg:px-12 py-14 sm:py-18 lg:py-24 shadow-2xl shadow-black/10 backdrop-blur">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 sm:gap-14 text-center">
-              <div className="space-y-5">
-                <div className="flex items-center justify-center gap-3 mb-2">
-                  <HiSparkles className="w-7 h-7 sm:w-9 sm:h-9 text-black" />
-                  <p className="text-sm font-bold uppercase tracking-wider text-zinc-500">
-                    The Magic
-                  </p>
-                  <span className="px-3 py-1 bg-orange-500 text-white text-xs font-black uppercase rounded-full tracking-wide">
-                    Beta
-                  </span>
-                </div>
-                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-black">
-                  Paste Your Stream. Watch Scores Update.
-                </h2>
-                <p className="text-lg sm:text-xl lg:text-2xl text-zinc-700 max-w-4xl mx-auto leading-relaxed">
-                  Enter your livestream link and watch the magic happen. Scores update <span className="font-black text-black">auto-magically</span>— 
-                  giving you more time to focus on what matters: <span className="font-semibold">commentating, callouts, and engaging with your audience</span>.
-                </p>
-                <p className="text-sm text-zinc-600 italic">
-                  Currently in beta—help us improve by trying it out!
-                </p>
-              </div>
-              
-              <ScoreboardMagic />
-            </div>
-          </section>
-
           {/* Benefits Section */}
           <section className="w-full">
             <div className="text-center mb-10 sm:mb-12">
@@ -400,7 +313,7 @@ export default async function Home() {
                     key={benefit.title}
                     className="flex flex-col gap-4 p-8 rounded-3xl bg-white/60 border border-black/5 backdrop-blur-sm hover:bg-white/90 hover:border-black/10 transition-all duration-200 group"
                   >
-                    <div className="w-14 h-14 rounded-2xl bg-black/5 flex items-center justify-center mb-2 group-hover:bg-black/10 transition-colors">
+                    <div className="w-14 h-14 rounded-2xl bg-black/5 flex items-center justify-center mb-2 group-hover:bg-black/10 transition-colors" suppressHydrationWarning>
                       <IconComponent className="w-7 h-7 text-black" />
                     </div>
                     <h3 className="text-xl font-black text-black">{benefit.title}</h3>
@@ -447,7 +360,7 @@ export default async function Home() {
                         />
                       </div>
                       <div>
-                        <div className="flex items-center gap-3 mb-3">
+                        <div className="flex items-center gap-3 mb-3" suppressHydrationWarning>
                           <IconComponent className="w-6 h-6 text-black" />
                           <h3 className="text-xl font-black text-black">{card.title}</h3>
                         </div>
@@ -462,106 +375,7 @@ export default async function Home() {
 
 
           {/* Pricing Section */}
-          <section id="pricing" className="w-full">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-14 sm:mb-18">
-                <p className="text-sm font-bold uppercase tracking-wider text-zinc-500 mb-4">
-                  Simple Pricing
-                </p>
-                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-black mb-6">
-                  Start Free. Upgrade When Ready.
-                </h2>
-                <p className="text-lg sm:text-xl text-zinc-700 max-w-3xl mx-auto">
-                  No credit card required. Cancel anytime. All plans include a 14-day free trial.
-                </p>
-              </div>
-
-              <div className="grid gap-8 sm:gap-10 lg:gap-8 grid-cols-1 md:grid-cols-3 max-w-6xl mx-auto">
-                {getPricingPlans().map((plan, index) => (
-                  <div
-                    key={plan.name}
-                    className={`relative flex flex-col rounded-3xl border-2 p-10 ${
-                      plan.featured
-                        ? "border-black bg-black text-white shadow-2xl scale-105 md:scale-110 z-10"
-                        : "border-black/10 bg-white/80 backdrop-blur-sm"
-                    }`}
-                  >
-                    {plan.featured && (
-                      <div className="absolute -top-5 left-1/2 -translate-x-1/2 px-5 py-2 bg-white text-black text-xs font-black rounded-full uppercase tracking-wide">
-                        Most Popular
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <h3 className={`text-3xl font-black mb-3 ${plan.featured ? "text-white" : "text-black"}`}>
-                        {plan.name}
-                      </h3>
-                      <p className={`text-sm mb-8 ${plan.featured ? "text-zinc-300" : "text-zinc-600"}`}>
-                        {plan.description}
-                      </p>
-                      <div className="mb-8">
-                        <div className="flex items-baseline gap-2">
-                          <span className={`text-6xl font-black ${plan.featured ? "text-white" : "text-black"}`}>
-                            {plan.price}
-                          </span>
-                          {plan.period !== "forever" && plan.period !== "pricing" && (
-                            <span className={`text-xl ${plan.featured ? "text-zinc-300" : "text-zinc-600"}`}>
-                              /{plan.period}
-                            </span>
-                          )}
-                        </div>
-                        {plan.period === "forever" && (
-                          <span className={`text-base ${plan.featured ? "text-zinc-300" : "text-zinc-600"}`}>
-                            Free forever
-                          </span>
-                        )}
-                      </div>
-                      <ul className="space-y-4 mb-10">
-                        {plan.features.map((feature, featureIndex) => (
-                          <li key={featureIndex} className="flex items-start gap-3">
-                            <HiCheckCircle
-                              className={`w-6 h-6 flex-shrink-0 mt-0.5 ${
-                                plan.featured ? "text-white" : "text-black"
-                              }`}
-                            />
-                            <span
-                              className={`text-base leading-relaxed ${
-                                plan.featured ? "text-zinc-200" : "text-zinc-700"
-                              }`}
-                            >
-                              {feature}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <a
-                      href={plan.ctaLink}
-                      className={`block w-full text-center px-8 py-5 rounded-2xl font-black text-lg transition-all duration-200 ${
-                        plan.featured
-                          ? "bg-white text-black hover:bg-zinc-100 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
-                          : "bg-black text-white hover:bg-zinc-800 shadow-lg hover:shadow-xl"
-                      }`}
-                    >
-                      {plan.cta}
-                    </a>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-14 text-center">
-                <p className="text-base text-zinc-600 mb-6">
-                  All plans include 14-day free trial • Cancel anytime • No hidden fees
-                </p>
-                <a
-                  href="/contact"
-                  className="text-base font-semibold text-black hover:underline inline-flex items-center gap-2"
-                >
-                  Need help choosing? Contact us
-                  <HiArrowRight className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-          </section>
+          <PricingSection />
 
           {/* Final CTA Section */}
           <section className="w-full rounded-3xl border-2 border-black bg-gradient-to-br from-black via-zinc-900 to-black px-6 sm:px-8 lg:px-12 py-20 sm:py-24 lg:py-32 text-center shadow-2xl">
