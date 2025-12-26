@@ -12,14 +12,9 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.87.1",
     "next": "16.0.8",
-    "postcss": "^8.5.6",
     "react": "19.2.1",
-    "react-dom": "19.2.1",
-    "server-only": "^0.0.1",
-    "stripe": "^17.3.1"
+    "react-dom": "19.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -28,6 +23,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.8",
+    "postcss": "^8.5.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

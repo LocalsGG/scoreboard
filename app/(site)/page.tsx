@@ -1,14 +1,68 @@
 import { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { HERO_SCOREBOARD_IMAGES, getSupabaseStorageUrl } from "@/lib/assets";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getSiteUrl } from "@/lib/urls";
-import { LifetimeDealBanner } from "@/components/LifetimeDealBanner";
+import { headers } from "next/headers";
+
+function getImageBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "https://scoreboardtools.com/images";
+}
+
+async function getSiteUrl(): Promise<string> {
+  try {
+    const headersList = await headers();
+    const host = headersList.get('host');
+    const forwardedHost = headersList.get('x-forwarded-host');
+    const forwardedProto = headersList.get('x-forwarded-proto');
+    const origin = headersList.get('origin');
+    
+    let requestOrigin = '';
+    if (origin) {
+      requestOrigin = origin;
+    } else {
+      const finalHost = forwardedHost || host;
+      if (finalHost) {
+        const protocol = forwardedProto 
+          ? `${forwardedProto}://`
+          : (process.env.NODE_ENV === 'production' ? 'https://' : 'http://');
+        requestOrigin = `${protocol}${finalHost}`;
+      }
+    }
+
+    if (requestOrigin) {
+      if (process.env.NEXT_PUBLIC_SITE_URL) {
+        const envUrl = process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
+        try {
+          const envUrlObj = new URL(envUrl);
+          const requestUrlObj = new URL(requestOrigin);
+          if (envUrlObj.hostname === requestUrlObj.hostname) {
+            return envUrl;
+          }
+        } catch {
+          // If URL parsing fails, use request origin
+        }
+      }
+      return requestOrigin;
+    }
+  } catch {
+    // Headers might not be available in all contexts
+  }
+
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
+  }
+
+  return 'https://scoreboardtools.com';
+}
+
+const IMAGE_BASE_URL = getImageBaseUrl();
+
+const HERO_SCOREBOARD_IMAGES = [
+  `${IMAGE_BASE_URL}/scoreboard1.svg`,
+  `${IMAGE_BASE_URL}/scoreboard2.svg`,
+  `${IMAGE_BASE_URL}/scoreboard3.svg`,
+];
 
 const getOBSOverlayExamples = () => {
-  const baseUrl = getSupabaseStorageUrl();
+  const baseUrl = IMAGE_BASE_URL;
   return [
     {
       title: "Live overlay in OBS",
@@ -89,22 +143,6 @@ export async function generateMetadata(): Promise<Metadata> {
 const splashImagePaddingTop =
   process.env.NEXT_PUBLIC_SPLASH_IMAGE_PADDING_TOP ?? "0px";
 export default async function Home() {
-  let user = null;
-
-  if (
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-  ) {
-    const supabase = await createServerSupabaseClient();
-    const userResponse = await supabase.auth.getUser();
-    user = userResponse.data.user;
-  }
-
-  // Only redirect to dashboard if user has email (authenticated, not anonymous)
-  if (user && user.email) {
-    redirect("/dashboard");
-  }
-
   const siteUrl = await getSiteUrl();
   const structuredData = {
     "@context": "https://schema.org",
@@ -177,14 +215,6 @@ export default async function Home() {
             <p className="text-sm sm:text-base lg:text-lg xl:text-xl text-zinc-800 text-center px-2">
               Create live scoreboard overlays for esports streaming. Add to any streaming solution—OBS, Streamlabs, vMix, Wirecast, and more. Easily share and update your scoreboard in real time. No installs, runs from your browser.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Link
-                href={`/auth?redirect=${encodeURIComponent("/dashboard/new")}`}
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-black via-black to-zinc-800 px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold uppercase tracking-wide text-white shadow-[0_15px_45px_rgba(12,18,36,0.18)] transition duration-150 hover:-translate-y-0.5 active:scale-95"
-              >
-                Create a Scoreboard for free
-              </Link>
-            </div>
           </div>
         </section>
 
@@ -229,7 +259,6 @@ export default async function Home() {
           </div>
         </section>
       </div>
-      <LifetimeDealBanner />
     </main>
   );
 }
